@@ -1,0 +1,34 @@
+pipeline:
+  api-test:
+    image: node:14.6-alpine
+    commands:
+      - apk update && apk upgrade
+      - node -v
+      - cd api/
+      - npm i
+      - npm run ci-test-token
+      - npm run ci-test-native
+
+  watcher-test:
+    image: node:14.6-alpine
+    commands:
+      - apk update && apk upgrade
+      - node -v
+      - cd watcher/
+      - npm i
+      - npm run ci-test-token
+      - npm run ci-test-native
+
+services:
+  chain-token:
+    image: iexechub/poco-chaintest:v5.1.0-token-parity
+    pull: true
+  chain-native:
+    image: iexechub/poco-chaintest:v5.1.0-native-parity
+    pull: true
+  mongo:
+    image: mongo:latest
+    pull: true
+  redis:
+    image: redis:alpine
+    pull: true
