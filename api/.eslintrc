@@ -1,0 +1,18 @@
+{
+  "extends": "airbnb-base",
+  "rules": {
+    "no-console": 0,
+    "no-param-reassign": [
+      "error",
+      { "props": true, "ignorePropertyModificationsFor": ["ctx", "ret"] }
+    ],
+    "no-underscore-dangle": [
+      "error",
+      {
+        "allow": ["_id"]
+      }
+    ],
+    "no-template-curly-in-string": "off",
+    "max-len": "off"
+  }
+}

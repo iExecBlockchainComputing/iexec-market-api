@@ -1,0 +1,17 @@
+{
+  "extends": "airbnb-base",
+  "rules": {
+    "no-await-in-loop": "off",
+    "no-console": 0,
+    "no-constant-condition": ["error", { "checkLoops": false }],
+    "max-len": "off",
+    "no-param-reassign": [
+      "error",
+      { "props": true, "ignorePropertyModificationsFor": ["ret"] }
+    ],
+    "no-underscore-dangle": [
+      "error",
+      { "allow": ["_id", "_isBigNumber", "_websocket"] }
+    ]
+  }
+}

@@ -1,0 +1,53 @@
+const { Schema } = require('mongoose');
+const { getMongoose } = require('../loaders/mongoose');
+const { logger } = require('../utils/logger');
+
+const log = logger.extend('models:counterModel');
+
+const connectedModels = {};
+
+const counterSchema = new Schema({
+  name: {
+    type: String,
+    required: true,
+    index: true,
+    unique: true,
+  },
+  value: { type: Number, required: true },
+});
+
+const getModel = async (db) => {
+  try {
+    if (connectedModels[db]) {
+      const model = await connectedModels[db];
+      return model;
+    }
+    connectedModels[db] = new Promise(async (resolve, reject) => {
+      try {
+        log('getting connection');
+        const mongoose = await getMongoose({ db });
+        log('instanciating model');
+        const CounterModel = mongoose.model('Counter', counterSchema);
+        CounterModel.on('index', (err) => {
+          if (err) {
+            log(`error creating index: ${err}`);
+          } else {
+            log('index created');
+          }
+        });
+        resolve(CounterModel);
+      } catch (e) {
+        reject(e);
+      }
+    });
+    const model = await connectedModels[db];
+    return model;
+  } catch (e) {
+    log('getModel() error', e);
+    throw e;
+  }
+};
+
+module.exports = {
+  getModel,
+};

@@ -1,0 +1,38 @@
+version: '3'
+services:
+  mongo:
+    image: mongo:latest
+    restart: unless-stopped
+    expose:
+      - '27017'
+    ports:
+      - '27017:27017'
+
+  redis:
+    image: redis:alpine
+    restart: unless-stopped
+    command: redis-server --appendonly yes
+    expose:
+      - '6379'
+    ports:
+      - '6379:6379'
+
+  chain-token:
+    image: iexechub/poco-chaintest:v5.1.0-token-parity
+    restart: unless-stopped
+    expose:
+      - '8545'
+      - '8546'
+    ports:
+      - '8545:8545'
+      - '8546:8546'
+
+  chain-native:
+    image: iexechub/poco-chaintest:v5.1.0-native-parity
+    restart: unless-stopped
+    expose:
+      - '8545'
+      - '8546'
+    ports:
+      - '18545:8545'
+      - '18546:8546'

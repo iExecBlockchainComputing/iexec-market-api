@@ -1,0 +1,14 @@
+{
+  "name": "socket-client",
+  "version": "0.0.1",
+  "description": "socket client snippet",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "iExec",
+  "license": "ISC",
+  "dependencies": {
+    "socket.io-client": "^2.3.0"
+  }
+}

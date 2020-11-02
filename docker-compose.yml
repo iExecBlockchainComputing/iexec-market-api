@@ -1,0 +1,112 @@
+version: "3.4"
+
+networks:
+  database:
+  webproxy:
+    external: true
+
+services:
+  mongo:
+    restart: unless-stopped
+    image: mongo:latest
+    expose:
+      - "27017"
+    networks:
+      - database
+
+  redis:
+    restart: unless-stopped
+    image: redis:alpine
+    command: redis-server --appendonly yes
+    expose:
+      - "6379"
+    networks:
+      - database
+
+  iexec-market-api:
+    restart: unless-stopped
+    image: iexechub/iexec-market-api
+    ports:
+      - "3000:3000"
+    expose:
+      - "3000"
+    environment:
+      # - DEBUG=iexec-market-api:*
+      - DEBUG_COLORS=true
+      - CHAINS=GOERLI,VIVIANI,MAINNET,BELLECOUR
+      - MONGO_HOST=mongo
+      - REDIS_HOST=redis
+      - INFURA_PROJECT_ID=${INFURA_PROJECT_ID}
+      - CREATE_INDEX=${CREATE_INDEX}
+    depends_on:
+      - mongo
+      - redis
+    networks:
+      - webproxy
+      - database
+
+  goerli-watcher:
+    restart: unless-stopped
+    image: iexechub/iexec-market-watcher
+    environment:
+      - DEBUG=iexec-watcher:app
+      - DEBUG_COLORS=true
+      - CHAIN=GOERLI
+      - MONGO_HOST=mongo
+      - REDIS_HOST=redis
+      - INFURA_PROJECT_ID=${INFURA_PROJECT_ID}
+      - CREATE_INDEX=${CREATE_INDEX}
+    depends_on:
+      - mongo
+      - redis
+    networks:
+      - database
+
+  viviani-watcher:
+    restart: unless-stopped
+    image: iexechub/iexec-market-watcher
+    environment:
+      - DEBUG=iexec-watcher:app
+      - DEBUG_COLORS=true
+      - CHAIN=VIVIANI
+      - MONGO_HOST=mongo
+      - REDIS_HOST=redis
+      - CREATE_INDEX=${CREATE_INDEX}
+    depends_on:
+      - mongo
+      - redis
+    networks:
+      - database
+
+  mainnet-watcher:
+    restart: unless-stopped
+    image: iexechub/iexec-market-watcher
+    environment:
+      - DEBUG=iexec-watcher:app
+      - DEBUG_COLORS=true
+      - CHAIN=MAINNET
+      - MONGO_HOST=mongo
+      - REDIS_HOST=redis
+      - INFURA_PROJECT_ID=${INFURA_PROJECT_ID}
+      - CREATE_INDEX=${CREATE_INDEX}
+    depends_on:
+      - mongo
+      - redis
+    networks:
+      - database
+
+  bellecour-watcher:
+    restart: unless-stopped
+    image: iexechub/iexec-market-watcher
+    environment:
+      - DEBUG=iexec-watcher:app
+      - DEBUG_COLORS=true
+      - CHAIN=BELLECOUR
+      - MONGO_HOST=mongo
+      - REDIS_HOST=redis
+      - CREATE_INDEX=${CREATE_INDEX}
+    depends_on:
+      - mongo
+      - redis
+    networks:
+      - database
