@@ -732,6 +732,8 @@ router.get('/metrics', async (ctx) => {
     chainId: chainIdSchema().required(),
   }).validate(ctx.query);
   const {
+    lastBlock,
+    checkpointBlock,
     apporders,
     datasetorders,
     workerpoolorders,
@@ -739,6 +741,8 @@ router.get('/metrics', async (ctx) => {
   } = await getMetrics({ chainId });
   ctx.body = {
     ok: true,
+    lastBlock,
+    checkpointBlock,
     apporders,
     datasetorders,
     workerpoolorders,
