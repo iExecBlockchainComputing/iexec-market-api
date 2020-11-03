@@ -369,7 +369,9 @@ const cleanDatasetorderDependantOrders = async ({
 const countApporders = async ({ chainId = throwIfMissing() } = {}) => {
   try {
     const ApporderModel = await apporderModel.getModel(chainId);
-    const count = await ApporderModel.find({}).countDocuments();
+    const count = await ApporderModel.find({
+      status: STATUS_MAP.OPEN,
+    }).countDocuments();
     return count;
   } catch (e) {
     log('countApporders() error', e);
@@ -380,7 +382,9 @@ const countApporders = async ({ chainId = throwIfMissing() } = {}) => {
 const countDatasetorders = async ({ chainId = throwIfMissing() } = {}) => {
   try {
     const DatasetorderModel = await datasetorderModel.getModel(chainId);
-    const count = await DatasetorderModel.find({}).countDocuments();
+    const count = await DatasetorderModel.find({
+      status: STATUS_MAP.OPEN,
+    }).countDocuments();
     return count;
   } catch (e) {
     log('countDatasetorders() error', e);
@@ -391,7 +395,9 @@ const countDatasetorders = async ({ chainId = throwIfMissing() } = {}) => {
 const countWorkerpoolorders = async ({ chainId = throwIfMissing() } = {}) => {
   try {
     const WorkerpoolorderModel = await workerpoolorderModel.getModel(chainId);
-    const count = await WorkerpoolorderModel.find({}).countDocuments();
+    const count = await WorkerpoolorderModel.find({
+      status: STATUS_MAP.OPEN,
+    }).countDocuments();
     return count;
   } catch (e) {
     log('countWorkerpoolorders() error', e);
@@ -402,7 +408,9 @@ const countWorkerpoolorders = async ({ chainId = throwIfMissing() } = {}) => {
 const countRequestorders = async ({ chainId = throwIfMissing() } = {}) => {
   try {
     const RequestorderModel = await requestorderModel.getModel(chainId);
-    const count = await RequestorderModel.find({}).countDocuments();
+    const count = await RequestorderModel.find({
+      status: STATUS_MAP.OPEN,
+    }).countDocuments();
     return count;
   } catch (e) {
     log('countRequestorders() error', e);
