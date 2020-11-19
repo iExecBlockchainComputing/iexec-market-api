@@ -22,6 +22,7 @@
   },
   "homepage": "https://github.com/iExecBlockchainComputing/iexec-market-api#readme",
   "dependencies": {
+    "@iexec/erlc": "^0.0.5",
     "@iexec/poco": "^5.2.1",
     "bignumber.js": "^9.0.0",
     "bn.js": "^5.1.3",

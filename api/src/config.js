@@ -6,6 +6,12 @@ const datasetRegistryDesc = require('@iexec/poco/build/contracts-min/DatasetRegi
 const appDesc = require('@iexec/poco/build/contracts-min/App.json');
 const workerpoolDesc = require('@iexec/poco/build/contracts-min/Workerpool.json');
 const datasetDesc = require('@iexec/poco/build/contracts-min/Dataset.json');
+const eRlcDesc = require('@iexec/erlc/build/contracts-min/ERLCSwap.json');
+const {
+  FLAVOURS,
+  STANDARD_FLAVOUR,
+  isEnterpriseFlavour,
+} = require('./utils/iexec-utils');
 const { logger } = require('./utils/logger');
 
 const log = logger.extend('config');
@@ -14,6 +20,7 @@ const {
   CHAINS,
   MONGO_HOST,
   REDIS_HOST,
+  FLAVOUR,
   RATE_LIMIT_MAX,
   RATE_LIMIT_PERIOD,
   GOERLI_ETH_RPC_HOST,
@@ -32,6 +39,11 @@ const {
 
 const chainsNames = CHAINS.split(',').map(e => e.toUpperCase());
 
+const flavour = FLAVOUR !== undefined ? FLAVOUR : STANDARD_FLAVOUR;
+if (!FLAVOURS.includes(flavour)) {
+  throw Error(`invalid FLAVOUR ${flavour} must be one of ${FLAVOURS}`);
+}
+
 const abis = {
   app: appDesc.abi,
   dataset: datasetDesc.abi,
@@ -39,6 +51,7 @@ const abis = {
   appregistry: appRegistryDesc.abi,
   datasetregistry: datasetRegistryDesc.abi,
   workerpoolregistry: workerpoolRegistryDesc.abi,
+  erlc: eRlcDesc.abi,
 };
 
 const tokenAbis = {
@@ -62,14 +75,20 @@ const DEFAULT_CHAINS_CONFIG = {
       || (GOERLI_ALCHEMY_API_KEY
         && `https://eth-goerli.alchemyapi.io/v2/${GOERLI_ALCHEMY_API_KEY}`),
     hubAddress:
-      GOERLI_IEXEC_ADDRESS || '0x3eca1B216A7DF1C7689aEb259fFB83ADFB894E7f',
+      GOERLI_IEXEC_ADDRESS
+      || (!isEnterpriseFlavour(flavour)
+        ? '0x3eca1B216A7DF1C7689aEb259fFB83ADFB894E7f'
+        : '0x0bf375A6238359CE14987C2285B8B099eE8e8709'),
   },
   VIVIANI: {
     id: '133',
     isNative: true,
     host: VIVIANI_ETH_RPC_HOST || 'https://viviani.iex.ec',
     hubAddress:
-      VIVIANI_IEXEC_ADDRESS || '0x3eca1B216A7DF1C7689aEb259fFB83ADFB894E7f',
+      VIVIANI_IEXEC_ADDRESS
+      || (!isEnterpriseFlavour(flavour)
+        ? '0x3eca1B216A7DF1C7689aEb259fFB83ADFB894E7f'
+        : undefined),
   },
   MAINNET: {
     id: '1',
@@ -81,14 +100,20 @@ const DEFAULT_CHAINS_CONFIG = {
       || (MAINNET_ALCHEMY_API_KEY
         && `https://eth-mainnet.alchemyapi.io/v2/${MAINNET_ALCHEMY_API_KEY}`),
     hubAddress:
-      MAINNET_IEXEC_ADDRESS || '0x3eca1B216A7DF1C7689aEb259fFB83ADFB894E7f',
+      MAINNET_IEXEC_ADDRESS
+      || (!isEnterpriseFlavour(flavour)
+        ? '0x3eca1B216A7DF1C7689aEb259fFB83ADFB894E7f'
+        : undefined),
   },
   BELLECOUR: {
     id: '134',
     isNative: true,
     host: BELLECOUR_ETH_RPC_HOST || 'https://bellecour.iex.ec',
     hubAddress:
-      BELLECOUR_IEXEC_ADDRESS || '0x3eca1B216A7DF1C7689aEb259fFB83ADFB894E7f',
+      BELLECOUR_IEXEC_ADDRESS
+      || (!isEnterpriseFlavour(flavour)
+        ? '0x3eca1B216A7DF1C7689aEb259fFB83ADFB894E7f'
+        : undefined),
   },
 };
 
@@ -120,6 +145,7 @@ chainsNames.forEach((name) => {
     chains[name] = {
       id: getEnv(name, 'CHAIN_ID'),
       isNative: stringToBoolean(getEnv(name, 'IS_NATIVE', { strict: false })),
+      flavour: getEnv(name, 'FLAVOUR', { strict: false }) || 'standard',
       host: getEnv(name, 'ETH_RPC_HOST'),
       hubAddress: getEnv(name, 'IEXEC_ADDRESS'),
     };
@@ -152,6 +178,8 @@ Object.entries(chains).forEach(([name, { host }]) => {
     );
   }
 });
+
+log('flavour', flavour);
 
 log('chains', chains);
 
@@ -190,6 +218,7 @@ log('rateLimit', rateLimit);
 module.exports = {
   chains,
   supportedChainsIds,
+  flavour,
   mongo,
   redis,
   rateLimit,

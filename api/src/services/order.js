@@ -38,6 +38,8 @@ const {
   tagToArray,
   excludeTagArray,
 } = require('../utils/order-utils');
+const { isEnterpriseFlavour } = require('../utils/iexec-utils');
+const { flavour } = require('../config');
 
 const MAX_OPEN_ORDER_PER_WALLET = 50;
 
@@ -98,6 +100,129 @@ const fetchContractOwner = async ({
   });
   const owner = await wrapEthCall(deployedContract.owner());
   return owner;
+};
+
+const checkAddressInWhitelist = async ({
+  chainId = throwIfMissing(),
+  iExecContract = throwIfMissing(),
+  address = throwIfMissing(),
+} = {}) => {
+  const tokenAddress = await wrapEthCall(iExecContract.token());
+  const tokenContract = getContract('erlc', chainId, { at: tokenAddress });
+  const isWhitelisted = await wrapEthCall(tokenContract.isKYC(address));
+  return isWhitelisted;
+};
+
+const checkSignerInWhitelist = async ({
+  chainId = throwIfMissing(),
+  iExecContract = throwIfMissing(),
+  signer = throwIfMissing(),
+} = {}) => {
+  const isInWhitelist = await checkAddressInWhitelist({
+    chainId,
+    iExecContract,
+    address: signer,
+  });
+  if (!isInWhitelist) {
+    throw new BusinessError(`Order signer ${signer} is not authorized by eRLC`);
+  }
+};
+
+const checkAppownerInWhitelist = async ({
+  chainId = throwIfMissing(),
+  iExecContract = throwIfMissing(),
+  app = throwIfMissing(),
+} = {}) => {
+  if (app !== NULL_ADDRESS) {
+    const appOwner = await fetchContractOwner({
+      chainId,
+      iExecContract,
+      deployedAddress: app,
+      registryName: OBJ_MAP.apporder.registryName,
+      contractName: OBJ_MAP.apporder.contractName,
+    });
+    const isAppOwnerInWhitelist = await checkAddressInWhitelist({
+      chainId,
+      iExecContract,
+      address: appOwner,
+    });
+    if (!isAppOwnerInWhitelist) {
+      throw new BusinessError(
+        `App owner ${appOwner} is not authorized by eRLC`,
+      );
+    }
+  }
+};
+
+const checkDatasetownerInWhitelist = async ({
+  chainId = throwIfMissing(),
+  iExecContract = throwIfMissing(),
+  dataset = throwIfMissing(),
+} = {}) => {
+  if (dataset !== NULL_ADDRESS) {
+    const datasetOwner = await fetchContractOwner({
+      chainId,
+      iExecContract,
+      deployedAddress: dataset,
+      registryName: OBJ_MAP.datasetorder.registryName,
+      contractName: OBJ_MAP.datasetorder.contractName,
+    });
+    const isDatasetOwnerInWhitelist = await checkAddressInWhitelist({
+      chainId,
+      iExecContract,
+      address: datasetOwner,
+    });
+    if (!isDatasetOwnerInWhitelist) {
+      throw new BusinessError(
+        `Dataset owner ${datasetOwner} is not authorized by eRLC`,
+      );
+    }
+  }
+};
+
+const checkWorkerpoolownerInWhitelist = async ({
+  chainId = throwIfMissing(),
+  iExecContract = throwIfMissing(),
+  workerpool = throwIfMissing(),
+} = {}) => {
+  if (workerpool !== NULL_ADDRESS) {
+    const workerpoolOwner = await fetchContractOwner({
+      chainId,
+      iExecContract,
+      deployedAddress: workerpool,
+      registryName: OBJ_MAP.workerpoolorder.registryName,
+      contractName: OBJ_MAP.workerpoolorder.contractName,
+    });
+    const isWorkerpoolOwnerInWhitelist = await checkAddressInWhitelist({
+      chainId,
+      iExecContract,
+      address: workerpoolOwner,
+    });
+    if (!isWorkerpoolOwnerInWhitelist) {
+      throw new BusinessError(
+        `Workerpool owner ${workerpoolOwner} is not authorized by eRLC`,
+      );
+    }
+  }
+};
+
+const checkRequesterInWhitelist = async ({
+  chainId = throwIfMissing(),
+  iExecContract = throwIfMissing(),
+  requester = throwIfMissing(),
+} = {}) => {
+  if (requester !== NULL_ADDRESS) {
+    const isInWhitelist = await checkAddressInWhitelist({
+      chainId,
+      iExecContract,
+      address: requester,
+    });
+    if (!isInWhitelist) {
+      throw new BusinessError(
+        `Requester ${requester} is not authorized by eRLC`,
+      );
+    }
+  }
 };
 
 const checkMatchableApporder = async ({
@@ -789,22 +914,27 @@ const publishApporder = async ({
       );
     }
 
-    // check restrict
-    // if (formatedSignedOrder.datasetrestrict !== NULL_ADDRESS) {
-    //   throw new BusinessError(
-    //     `${orderName} with datasetrestrict can't be published`,
-    //   );
-    // }
-    // if (formatedSignedOrder.workerpoolrestrict !== NULL_ADDRESS) {
-    //   throw new BusinessError(
-    //     `${orderName} with workerpoolrestrict can't be published`,
-    //   );
-    // }
-    // if (formatedSignedOrder.requesterrestrict !== NULL_ADDRESS) {
-    //   throw new BusinessError(
-    //     `${orderName} with requesterrestrict can't be published`,
-    //   );
-    // }
+    if (isEnterpriseFlavour(flavour)) {
+      // check whitelist
+      await Promise.all([
+        checkSignerInWhitelist({ chainId, iExecContract, signer }),
+        checkDatasetownerInWhitelist({
+          chainId,
+          iExecContract,
+          dataset: formatedSignedOrder.datasetrestrict,
+        }),
+        checkWorkerpoolownerInWhitelist({
+          chainId,
+          iExecContract,
+          workerpool: formatedSignedOrder.workerpoolrestrict,
+        }),
+        checkRequesterInWhitelist({
+          chainId,
+          iExecContract,
+          requester: formatedSignedOrder.requesterrestrict,
+        }),
+      ]);
+    }
 
     // check remaining volume
     const consumedVolume = ethersBnToBn(
@@ -912,18 +1042,27 @@ const publishDatasetorder = async ({
       );
     }
 
-    // check restrict
-    // apprestrict is allowed
-    // if (formatedSignedOrder.workerpoolrestrict !== NULL_ADDRESS) {
-    //   throw new BusinessError(
-    //     `${orderName} with workerpoolrestrict can't be published`,
-    //   );
-    // }
-    // if (formatedSignedOrder.requesterrestrict !== NULL_ADDRESS) {
-    //   throw new BusinessError(
-    //     `${orderName} with requesterrestrict can't be published`,
-    //   );
-    // }
+    if (isEnterpriseFlavour(flavour)) {
+      // check whitelist
+      await Promise.all([
+        checkSignerInWhitelist({ chainId, iExecContract, signer }),
+        checkAppownerInWhitelist({
+          chainId,
+          iExecContract,
+          app: formatedSignedOrder.apprestrict,
+        }),
+        checkWorkerpoolownerInWhitelist({
+          chainId,
+          iExecContract,
+          workerpool: formatedSignedOrder.workerpoolrestrict,
+        }),
+        checkRequesterInWhitelist({
+          chainId,
+          iExecContract,
+          requester: formatedSignedOrder.requesterrestrict,
+        }),
+      ]);
+    }
 
     // check remaining volume
     const consumedVolume = ethersBnToBn(
@@ -1031,22 +1170,27 @@ const publishWorkerpoolorder = async ({
       );
     }
 
-    // check restrict
-    // if (formatedSignedOrder.apprestrict !== NULL_ADDRESS) {
-    //   throw new BusinessError(
-    //     `${orderName} with apprestrict can't be published`,
-    //   );
-    // }
-    // if (formatedSignedOrder.datasetrestrict !== NULL_ADDRESS) {
-    //   throw new BusinessError(
-    //     `${orderName} with datasetrestrict can't be published`,
-    //   );
-    // }
-    // if (formatedSignedOrder.requesterrestrict !== NULL_ADDRESS) {
-    //   throw new BusinessError(
-    //     `${orderName} with requesterrestrict can't be published`,
-    //   );
-    // }
+    if (isEnterpriseFlavour(flavour)) {
+      // check whitelist
+      await Promise.all([
+        checkSignerInWhitelist({ chainId, iExecContract, signer }),
+        checkAppownerInWhitelist({
+          chainId,
+          iExecContract,
+          app: formatedSignedOrder.apprestrict,
+        }),
+        checkDatasetownerInWhitelist({
+          chainId,
+          iExecContract,
+          dataset: formatedSignedOrder.datasetrestrict,
+        }),
+        checkRequesterInWhitelist({
+          chainId,
+          iExecContract,
+          requester: formatedSignedOrder.requesterrestrict,
+        }),
+      ]);
+    }
 
     // check remaining volume
     const consumedVolume = ethersBnToBn(
@@ -1188,15 +1332,27 @@ const publishRequestorder = async ({
       );
     }
 
-    // check restrict
-    // if (
-    //   formatedSignedOrder.workerpool
-    //   && formatedSignedOrder.workerpool !== NULL_ADDRESS
-    // ) {
-    //   throw new BusinessError(
-    //     `${orderName} with workerpool restriction can't be published`,
-    //   );
-    // }
+    if (isEnterpriseFlavour(flavour)) {
+      // check whitelist
+      await Promise.all([
+        checkSignerInWhitelist({ chainId, iExecContract, signer }),
+        checkAppownerInWhitelist({
+          chainId,
+          iExecContract,
+          app: formatedSignedOrder.app,
+        }),
+        checkDatasetownerInWhitelist({
+          chainId,
+          iExecContract,
+          dataset: formatedSignedOrder.dataset,
+        }),
+        checkWorkerpoolownerInWhitelist({
+          chainId,
+          iExecContract,
+          workerpool: formatedSignedOrder.workerpool,
+        }),
+      ]);
+    }
 
     // check remaining volume
     const consumedVolume = ethersBnToBn(
