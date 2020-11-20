@@ -40,10 +40,10 @@ pipeline:
 
 services:
   chain-token:
-    image: iexechub/poco-chaintest:v5.2.0-alpha-token-parity
+    image: iexechub/poco-chaintest:5.3.0-alpha.1-token-parity
     pull: true
   chain-native:
-    image: iexechub/poco-chaintest:v5.1.0-native-parity
+    image: iexechub/poco-chaintest:5.3.0-alpha.1-native-parity
     pull: true
   mongo:
     image: mongo:latest
