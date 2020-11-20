@@ -12,6 +12,35 @@ const requestorderModel = require('../src/models/requestorderModel');
 
 const sleep = ms => new Promise(res => setTimeout(res, ms));
 
+const WALLETS = {
+  DEFAULT: {
+    address: '0x7bd4783FDCAD405A28052a0d1f11236A741da593',
+    privateKey:
+      '0x564a9db84969c8159f7aa3d5393c5ecd014fce6a375842a45b12af6677b12407',
+    challenge: {
+      hash:
+        '0x7ff13783ecb384e98174335a8dd1d0bcda3809f5b2cec2e007a2f4aaa40ed6b0',
+      value: 'ycY7boPtnwWuBhmvfId6gROtOFwuiInQ',
+      address: '0x7bd4783FDCAD405A28052a0d1f11236A741da593',
+    },
+    authorization:
+      '0x7ff13783ecb384e98174335a8dd1d0bcda3809f5b2cec2e007a2f4aaa40ed6b0_0x0ae7e415bc0021fe90df0f8f1a312501bc968772ec73ab39620b300b13d2b212607d1adc4741f771568ac52fbc5c042787a2bf7df2872f4a7fac93d3a46fe2341b_0x7bd4783FDCAD405A28052a0d1f11236A741da593',
+  },
+  NOT_KYC: {
+    address: '0x2b5c3D5af9222E4ab413D3cf35d5B79da588b2f6',
+    privateKey:
+      '0x468b0125d362c26088645cec820da8520e1d48e57a55dd29427512f256a0105e',
+    challenge: {
+      hash:
+        '0x7c46593ab14c9a80ca75f3600915943773214720d11d756f93ca3c6801cdd514',
+      value: 'sih7Ir1dqZFOi5Qx7VH3A3SnRpkDLPKD',
+      address: '0x2b5c3D5af9222E4ab413D3cf35d5B79da588b2f6',
+    },
+    authorization:
+      '0x7c46593ab14c9a80ca75f3600915943773214720d11d756f93ca3c6801cdd514_0xc51a35a36de3cad994606c6e569dabc7ec879dec4cf36019a77a66f87dadc8197bc89c1579c40583c43042f571a13d9b4a86deb285c1648716a65f6760c7c8941b_0x2b5c3D5af9222E4ab413D3cf35d5B79da588b2f6',
+  },
+};
+
 let sequenceId = Date.now();
 const getId = () => {
   sequenceId += 1;
@@ -259,21 +288,11 @@ const dropDB = async (dbName) => {
   );
 };
 
-const AUTH = {
-  challenge: {
-    hash: '0x7ff13783ecb384e98174335a8dd1d0bcda3809f5b2cec2e007a2f4aaa40ed6b0',
-    value: 'ycY7boPtnwWuBhmvfId6gROtOFwuiInQ',
-    address: '0x7bd4783FDCAD405A28052a0d1f11236A741da593',
-  },
-  authorization:
-    '0x7ff13783ecb384e98174335a8dd1d0bcda3809f5b2cec2e007a2f4aaa40ed6b0_0x0ae7e415bc0021fe90df0f8f1a312501bc968772ec73ab39620b300b13d2b212607d1adc4741f771568ac52fbc5c042787a2bf7df2872f4a7fac93d3a46fe2341b_0x7bd4783FDCAD405A28052a0d1f11236A741da593',
-};
-
-const setChallenge = async (dbName) => {
+const setChallenge = async (dbName, challenge) => {
   const { db } = await getMongoose({ db: dbName });
   await db.collection('challenges').findOneAndUpdate(
-    { hash: AUTH.challenge.hash },
-    { $set: AUTH.challenge },
+    { hash: challenge.hash },
+    { $set: challenge },
     {
       upsert: true,
     },
@@ -417,11 +436,11 @@ const buildQuery = (endpoint, params) => {
 };
 
 module.exports = {
+  WALLETS,
   sleep,
   parseResult,
   buildQuery,
   setChallenge,
-  authorization: AUTH.authorization,
   addCategories,
   addDeals,
   addApporders,

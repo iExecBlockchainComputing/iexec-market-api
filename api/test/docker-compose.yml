@@ -22,7 +22,7 @@ services:
       - market-api-test
 
   chain-token:
-    image: iexechub/poco-chaintest:v5.1.0-token-parity
+    image: iexechub/poco-chaintest:v5.2.0-alpha-token-parity
     restart: unless-stopped
     expose:
       - '8545'

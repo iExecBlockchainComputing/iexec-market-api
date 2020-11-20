@@ -9,11 +9,11 @@ const appli = require('../src/app');
 const { chains } = require('../src/config');
 const { STATUS_MAP } = require('../src/utils/order-utils');
 const {
+  WALLETS,
   sleep,
   parseResult,
   buildQuery,
   setChallenge,
-  authorization,
   find,
   dropDB,
   addCategories,
@@ -49,10 +49,12 @@ const UNPUBLISH_TARGET_LAST_ORDER = 'unpublish_last';
 
 const [chainName] = Object.keys(chains);
 
-const PRIVATE_KEY = '0x564a9db84969c8159f7aa3d5393c5ecd014fce6a375842a45b12af6677b12407';
 const chainUrl = chains[chainName].host;
 const chainId = chains[chainName].id;
-const signer = utils.getSignerFromPrivateKey(chainUrl, PRIVATE_KEY);
+const signer = utils.getSignerFromPrivateKey(
+  chainUrl,
+  WALLETS.DEFAULT.privateKey,
+);
 const iexec = new IExec(
   {
     ethProvider: signer,
@@ -163,7 +165,7 @@ describe('API', () => {
             const hash = await iexec.order.hashApporder(order);
             const address = await iexec.wallet.getAddress();
             jest.clearAllMocks();
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             const { data, status } = await request
               .post(
                 buildQuery('/apporders', {
@@ -173,7 +175,7 @@ describe('API', () => {
               .send({
                 order,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             expect(status).toBe(OK_STATUS);
             expect(data.ok).toBe(true);
@@ -195,7 +197,7 @@ describe('API', () => {
 
           test('POST /apporders (already published)', async () => {
             const order = await iexec.order.signApporder(apporderTemplate);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .post(
                 buildQuery('/apporders', {
@@ -205,10 +207,10 @@ describe('API', () => {
               .send({
                 order,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             jest.clearAllMocks();
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             const { data, status } = await request
               .post(
                 buildQuery('/apporders', {
@@ -218,7 +220,7 @@ describe('API', () => {
               .send({
                 order,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             expect(status).toBe(BUSINESS_ERROR_STATUS);
             expect(data.ok).toBe(false);
@@ -234,13 +236,13 @@ describe('API', () => {
                 '0x1000000000000000000000000000000000000000000000000000000000000101',
             });
             jest.clearAllMocks();
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             const { data, status } = await request
               .post(buildQuery('/apporders', {}))
               .send({
                 order,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             expect(status).toBe(VALIDATION_ERROR_STATUS);
             expect(data.ok).toBe(false);
@@ -260,7 +262,7 @@ describe('API', () => {
               .send({
                 order,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             expect(status).toBe(AUTH_ERROR_STATUS);
             expect(data.ok).toBe(false);
@@ -271,7 +273,7 @@ describe('API', () => {
 
           test('POST /apporders (no authorization header)', async () => {
             const order = await iexec.order.signApporder(apporderTemplate);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             const { data, status } = await request
               .post(
                 buildQuery('/apporders', {
@@ -291,7 +293,7 @@ describe('API', () => {
 
           test('POST /apporders (bad sign)', async () => {
             const order = await iexec.order.signApporder(apporderTemplate);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             const { data, status } = await request
               .post(
                 buildQuery('/apporders', {
@@ -304,7 +306,7 @@ describe('API', () => {
                   sign: apporderTemplate.sign,
                 },
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             expect(status).toBe(BUSINESS_ERROR_STATUS);
             expect(data.ok).toBe(false);
@@ -330,7 +332,7 @@ describe('API', () => {
               },
               { checkRequest: false },
             );
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             const { data, status } = await request
               .post(
                 buildQuery('/apporders', {
@@ -340,7 +342,7 @@ describe('API', () => {
               .send({
                 order,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             expect(status).toBe(BUSINESS_ERROR_STATUS);
             expect(data.ok).toBe(false);
@@ -354,7 +356,7 @@ describe('API', () => {
           //     ...apporderTemplate,
           //     datasetrestrict: datasetorderTemplate.dataset,
           //   });
-          //   await setChallenge(chainId);
+          //   await setChallenge(chainId, WALLETS.DEFAULT.challenge);
           //   const { data, status } = await request
           //     .post(
           //       buildQuery('/apporders', {
@@ -364,7 +366,7 @@ describe('API', () => {
           //     .send({
           //       order,
           //     })
-          //     .set('authorization', authorization)
+          //     .set('authorization', WALLETS.DEFAULT.authorization)
           //     .then(parseResult);
           //   expect(status).toBe(BUSINESS_ERROR_STATUS);
           //   expect(data.ok).toBe(false);
@@ -380,7 +382,7 @@ describe('API', () => {
           //     ...apporderTemplate,
           //     workerpoolrestrict: workerpoolorderTemplate.workerpool,
           //   });
-          //   await setChallenge(chainId);
+          //   await setChallenge(chainId, WALLETS.DEFAULT.challenge);
           //   const { data, status } = await request
           //     .post(
           //       buildQuery('/apporders', {
@@ -390,7 +392,7 @@ describe('API', () => {
           //     .send({
           //       order,
           //     })
-          //     .set('authorization', authorization)
+          //     .set('authorization', WALLETS.DEFAULT.authorization)
           //     .then(parseResult);
           //   expect(status).toBe(BUSINESS_ERROR_STATUS);
           //   expect(data.ok).toBe(false);
@@ -406,7 +408,7 @@ describe('API', () => {
           //     ...apporderTemplate,
           //     requesterrestrict: '0xA1162f07afC3e45Ae89D2252706eB355F6349641',
           //   });
-          //   await setChallenge(chainId);
+          //   await setChallenge(chainId, WALLETS.DEFAULT.challenge);
           //   const { data, status } = await request
           //     .post(
           //       buildQuery('/apporders', {
@@ -416,7 +418,7 @@ describe('API', () => {
           //     .send({
           //       order,
           //     })
-          //     .set('authorization', authorization)
+          //     .set('authorization', WALLETS.DEFAULT.authorization)
           //     .then(parseResult);
           //   expect(status).toBe(BUSINESS_ERROR_STATUS);
           //   expect(data.ok).toBe(false);
@@ -432,7 +434,7 @@ describe('API', () => {
           test('PUT /apporders (standard)', async () => {
             const order = await iexec.order.signApporder(apporderTemplate);
             const hash = await iexec.order.hashApporder(order);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .post(
                 buildQuery('/apporders', {
@@ -442,10 +444,10 @@ describe('API', () => {
               .send({
                 order,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             jest.clearAllMocks();
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             const { data, status } = await request
               .put(
                 buildQuery('/apporders', {
@@ -455,7 +457,7 @@ describe('API', () => {
               .send({
                 orderHash: hash,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             expect(status).toBe(OK_STATUS);
             expect(data.ok).toBe(true);
@@ -472,7 +474,7 @@ describe('API', () => {
           test('PUT /apporders (not published)', async () => {
             const order = await iexec.order.signApporder(apporderTemplate);
             const hash = await iexec.order.hashApporder(order);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             const { data, status } = await request
               .put(
                 buildQuery('/apporders', {
@@ -482,7 +484,7 @@ describe('API', () => {
               .send({
                 orderHash: hash,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             expect(status).toBe(BUSINESS_ERROR_STATUS);
             expect(data.ok).toBe(false);
@@ -495,7 +497,7 @@ describe('API', () => {
 
           test('PUT /apporders (last)', async () => {
             const order1 = await iexec.order.signApporder(apporderTemplate);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .post(
                 buildQuery('/apporders', {
@@ -505,11 +507,11 @@ describe('API', () => {
               .send({
                 order: order1,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             const order2 = await iexec.order.signApporder(apporderTemplate);
             const hash2 = await iexec.order.hashApporder(order2);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .post(
                 buildQuery('/apporders', {
@@ -519,10 +521,10 @@ describe('API', () => {
               .send({
                 order: order2,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             jest.clearAllMocks();
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             const { data, status } = await request
               .put(
                 buildQuery('/apporders', {
@@ -533,7 +535,7 @@ describe('API', () => {
                 target: UNPUBLISH_TARGET_LAST_ORDER,
                 app: order2.app,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             expect(status).toBe(OK_STATUS);
             expect(data.ok).toBe(true);
@@ -550,7 +552,7 @@ describe('API', () => {
           test('PUT /apporders (all)', async () => {
             const order1 = await iexec.order.signApporder(apporderTemplate);
             const hash1 = await iexec.order.hashApporder(order1);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .post(
                 buildQuery('/apporders', {
@@ -560,11 +562,11 @@ describe('API', () => {
               .send({
                 order: order1,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             const order2 = await iexec.order.signApporder(apporderTemplate);
             const hash2 = await iexec.order.hashApporder(order2);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .post(
                 buildQuery('/apporders', {
@@ -574,10 +576,10 @@ describe('API', () => {
               .send({
                 order: order2,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             jest.clearAllMocks();
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             const { data, status } = await request
               .put(
                 buildQuery('/apporders', {
@@ -588,7 +590,7 @@ describe('API', () => {
                 target: UNPUBLISH_TARGET_ALL_ORDERS,
                 app: order2.app,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             expect(status).toBe(OK_STATUS);
             expect(data.ok).toBe(true);
@@ -614,7 +616,7 @@ describe('API', () => {
           test('PUT /apporders (missing chainId)', async () => {
             const order = await iexec.order.signApporder(apporderTemplate);
             const hash = await iexec.order.hashApporder(order);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .post(
                 buildQuery('/apporders', {
@@ -624,16 +626,16 @@ describe('API', () => {
               .send({
                 order,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             jest.clearAllMocks();
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             const { data, status } = await request
               .put(buildQuery('/apporders', {}))
               .send({
                 orderHash: hash,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             expect(status).toBe(VALIDATION_ERROR_STATUS);
             expect(data.ok).toBe(false);
@@ -654,7 +656,7 @@ describe('API', () => {
               .send({
                 orderHash: hash,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             expect(status).toBe(AUTH_ERROR_STATUS);
             expect(data.ok).toBe(false);
@@ -666,7 +668,7 @@ describe('API', () => {
           test('PUT /apporders (no authorization header)', async () => {
             const order = await iexec.order.signApporder(apporderTemplate);
             const hash = await iexec.order.hashApporder(order);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             const { data, status } = await request
               .put(
                 buildQuery('/apporders', {
@@ -753,7 +755,7 @@ describe('API', () => {
             const request5nRlcHash = await iexec.order.hashRequestorder(
               requestorder5nRlc,
             );
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .post(
                 buildQuery('/apporders', {
@@ -763,9 +765,9 @@ describe('API', () => {
               .send({
                 order: order1nRlc,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .post(
                 buildQuery('/apporders', {
@@ -775,9 +777,9 @@ describe('API', () => {
               .send({
                 order: order5nRlc,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .post(
                 buildQuery('/apporders', {
@@ -787,9 +789,9 @@ describe('API', () => {
               .send({
                 order: orderPrivate1,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .post(
                 buildQuery('/apporders', {
@@ -799,9 +801,9 @@ describe('API', () => {
               .send({
                 order: orderPrivate2,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .post(
                 buildQuery('/apporders', {
@@ -811,9 +813,9 @@ describe('API', () => {
               .send({
                 order: orderPrivateOtherUser,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .post(
                 buildQuery('/requestorders', {
@@ -823,9 +825,9 @@ describe('API', () => {
               .send({
                 order: requestorder2nRlc,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .post(
                 buildQuery('/requestorders', {
@@ -835,9 +837,9 @@ describe('API', () => {
               .send({
                 order: requestorder5nRlc,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .post(
                 buildQuery('/requestorders', {
@@ -847,11 +849,11 @@ describe('API', () => {
               .send({
                 order: requestorderUsePrivate,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
 
             jest.clearAllMocks();
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .put(
                 buildQuery('/apporders', {
@@ -861,14 +863,14 @@ describe('API', () => {
               .send({
                 orderHash: orderPrivate1Hash,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
 
             await sleep(1000);
             expect(socketEmitSpy).toHaveBeenCalledTimes(1);
 
             jest.clearAllMocks();
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .put(
                 buildQuery('/apporders', {
@@ -878,7 +880,7 @@ describe('API', () => {
               .send({
                 orderHash: orderPrivate2Hash,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
 
             await sleep(1000);
@@ -898,7 +900,7 @@ describe('API', () => {
             );
 
             jest.clearAllMocks();
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .put(
                 buildQuery('/apporders', {
@@ -908,7 +910,7 @@ describe('API', () => {
               .send({
                 orderHash: order1nRlcHash,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
 
             await sleep(1000);
@@ -974,7 +976,7 @@ describe('API', () => {
             const requestTeeHash = await iexec.order.hashRequestorder(
               requestorderTee,
             );
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .post(
                 buildQuery('/apporders', {
@@ -985,9 +987,9 @@ describe('API', () => {
                 chainId,
                 order,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .post(
                 buildQuery('/apporders', {
@@ -998,9 +1000,9 @@ describe('API', () => {
                 chainId,
                 order: orderTee,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .post(
                 buildQuery('/requestorders', {
@@ -1011,9 +1013,9 @@ describe('API', () => {
                 chainId,
                 order: requestorder,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .post(
                 buildQuery('/requestorders', {
@@ -1024,10 +1026,10 @@ describe('API', () => {
                 chainId,
                 order: requestorderTee,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             jest.clearAllMocks();
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .put(
                 buildQuery('/apporders', {
@@ -1038,7 +1040,7 @@ describe('API', () => {
                 chainId,
                 orderHash: appTeeHash,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
 
             await sleep(1000);
@@ -1079,7 +1081,7 @@ describe('API', () => {
             const hash = await iexec.order.hashDatasetorder(order);
             const address = await iexec.wallet.getAddress();
             jest.clearAllMocks();
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             const { data, status } = await request
               .post(
                 buildQuery('/datasetorders', {
@@ -1089,7 +1091,7 @@ describe('API', () => {
               .send({
                 order,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             expect(status).toBe(OK_STATUS);
             expect(data.ok).toBe(true);
@@ -1114,7 +1116,7 @@ describe('API', () => {
               datasetorderTemplate,
             );
             jest.clearAllMocks();
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .post(
                 buildQuery('/datasetorders', {
@@ -1124,10 +1126,10 @@ describe('API', () => {
               .send({
                 order,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             jest.clearAllMocks();
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             const { data, status } = await request
               .post(
                 buildQuery('/datasetorders', {
@@ -1137,7 +1139,7 @@ describe('API', () => {
               .send({
                 order,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             expect(status).toBe(BUSINESS_ERROR_STATUS);
             expect(data.ok).toBe(false);
@@ -1153,13 +1155,13 @@ describe('API', () => {
                 '0x1000000000000000000000000000000000000000000000000000000000000101',
             });
             jest.clearAllMocks();
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             const { data, status } = await request
               .post(buildQuery('/datasetorders', {}))
               .send({
                 order,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             expect(status).toBe(VALIDATION_ERROR_STATUS);
             expect(data.ok).toBe(false);
@@ -1182,7 +1184,7 @@ describe('API', () => {
               .send({
                 order,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             expect(status).toBe(AUTH_ERROR_STATUS);
             expect(data.ok).toBe(false);
@@ -1196,7 +1198,7 @@ describe('API', () => {
               datasetorderTemplate,
             );
             jest.clearAllMocks();
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             const { data, status } = await request
               .post(
                 buildQuery('/datasetorders', {
@@ -1218,7 +1220,7 @@ describe('API', () => {
             const order = await iexec.order.signDatasetorder(
               datasetorderTemplate,
             );
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             const { data, status } = await request
               .post(
                 buildQuery('/datasetorders', {
@@ -1228,7 +1230,7 @@ describe('API', () => {
               .send({
                 order: { ...order, sign: datasetorderTemplate.sign },
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             expect(status).toBe(BUSINESS_ERROR_STATUS);
             expect(data.ok).toBe(false);
@@ -1260,7 +1262,7 @@ describe('API', () => {
               },
               { checkRequest: false },
             );
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             const { data, status } = await request
               .post(
                 buildQuery('/datasetorders', {
@@ -1270,7 +1272,7 @@ describe('API', () => {
               .send({
                 order,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             expect(status).toBe(BUSINESS_ERROR_STATUS);
             expect(data.ok).toBe(false);
@@ -1286,7 +1288,7 @@ describe('API', () => {
             });
             const hash = await iexec.order.hashDatasetorder(order);
             jest.clearAllMocks();
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             const { data, status } = await request
               .post(
                 buildQuery('/datasetorders', {
@@ -1296,7 +1298,7 @@ describe('API', () => {
               .send({
                 order,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             expect(status).toBe(OK_STATUS);
             expect(data.ok).toBe(true);
@@ -1316,7 +1318,7 @@ describe('API', () => {
           //     ...datasetorderTemplate,
           //     workerpoolrestrict: workerpoolorderTemplate.workerpool,
           //   });
-          //   await setChallenge(chainId);
+          //   await setChallenge(chainId, WALLETS.DEFAULT.challenge);
           //   const { data, status } = await request
           //     .post(
           //       buildQuery('/datasetorders', {
@@ -1326,7 +1328,7 @@ describe('API', () => {
           //     .send({
           //       order,
           //     })
-          //     .set('authorization', authorization)
+          //     .set('authorization', WALLETS.DEFAULT.authorization)
           //     .then(parseResult);
           //   expect(status).toBe(BUSINESS_ERROR_STATUS);
           //   expect(data.ok).toBe(false);
@@ -1342,7 +1344,7 @@ describe('API', () => {
           //     ...datasetorderTemplate,
           //     requesterrestrict: '0xA1162f07afC3e45Ae89D2252706eB355F6349641',
           //   });
-          //   await setChallenge(chainId);
+          //   await setChallenge(chainId, WALLETS.DEFAULT.challenge);
           //   const { data, status } = await request
           //     .post(
           //       buildQuery('/datasetorders', {
@@ -1352,7 +1354,7 @@ describe('API', () => {
           //     .send({
           //       order,
           //     })
-          //     .set('authorization', authorization)
+          //     .set('authorization', WALLETS.DEFAULT.authorization)
           //     .then(parseResult);
           //   expect(status).toBe(BUSINESS_ERROR_STATUS);
           //   expect(data.ok).toBe(false);
@@ -1370,7 +1372,7 @@ describe('API', () => {
               datasetorderTemplate,
             );
             const hash = await iexec.order.hashDatasetorder(order);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .post(
                 buildQuery('/datasetorders', {
@@ -1380,9 +1382,9 @@ describe('API', () => {
               .send({
                 order,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             jest.clearAllMocks();
             const { data, status } = await request
               .put(
@@ -1393,7 +1395,7 @@ describe('API', () => {
               .send({
                 orderHash: hash,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             expect(status).toBe(OK_STATUS);
             expect(data.ok).toBe(true);
@@ -1412,7 +1414,7 @@ describe('API', () => {
               datasetorderTemplate,
             );
             const hash = await iexec.order.hashDatasetorder(order);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             const { data, status } = await request
               .put(
                 buildQuery('/datasetorders', {
@@ -1422,7 +1424,7 @@ describe('API', () => {
               .send({
                 orderHash: hash,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             expect(status).toBe(BUSINESS_ERROR_STATUS);
             expect(data.ok).toBe(false);
@@ -1437,7 +1439,7 @@ describe('API', () => {
             const order1 = await iexec.order.signDatasetorder(
               datasetorderTemplate,
             );
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .post(
                 buildQuery('/datasetorders', {
@@ -1447,13 +1449,13 @@ describe('API', () => {
               .send({
                 order: order1,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             const order2 = await iexec.order.signDatasetorder(
               datasetorderTemplate,
             );
             const hash2 = await iexec.order.hashDatasetorder(order2);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .post(
                 buildQuery('/datasetorders', {
@@ -1463,10 +1465,10 @@ describe('API', () => {
               .send({
                 order: order2,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             jest.clearAllMocks();
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             const { data, status } = await request
               .put(
                 buildQuery('/datasetorders', {
@@ -1477,7 +1479,7 @@ describe('API', () => {
                 target: UNPUBLISH_TARGET_LAST_ORDER,
                 dataset: order2.dataset,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             expect(status).toBe(OK_STATUS);
             expect(data.ok).toBe(true);
@@ -1496,7 +1498,7 @@ describe('API', () => {
               datasetorderTemplate,
             );
             const hash1 = await iexec.order.hashDatasetorder(order1);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .post(
                 buildQuery('/datasetorders', {
@@ -1506,13 +1508,13 @@ describe('API', () => {
               .send({
                 order: order1,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             const order2 = await iexec.order.signDatasetorder(
               datasetorderTemplate,
             );
             const hash2 = await iexec.order.hashDatasetorder(order2);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .post(
                 buildQuery('/datasetorders', {
@@ -1522,10 +1524,10 @@ describe('API', () => {
               .send({
                 order: order2,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             jest.clearAllMocks();
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             const { data, status } = await request
               .put(
                 buildQuery('/datasetorders', {
@@ -1536,7 +1538,7 @@ describe('API', () => {
                 target: UNPUBLISH_TARGET_ALL_ORDERS,
                 dataset: order2.dataset,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             expect(status).toBe(OK_STATUS);
             expect(data.ok).toBe(true);
@@ -1564,7 +1566,7 @@ describe('API', () => {
               datasetorderTemplate,
             );
             const hash = await iexec.order.hashDatasetorder(order);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .post(
                 buildQuery('/datasetorders', {
@@ -1574,16 +1576,16 @@ describe('API', () => {
               .send({
                 order,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             jest.clearAllMocks();
             const { data, status } = await request
               .put(buildQuery('/datasetorders', {}))
               .send({
                 orderHash: hash,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             expect(status).toBe(VALIDATION_ERROR_STATUS);
             expect(data.ok).toBe(false);
@@ -1606,7 +1608,7 @@ describe('API', () => {
               .send({
                 orderHash: hash,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             expect(status).toBe(AUTH_ERROR_STATUS);
             expect(data.ok).toBe(false);
@@ -1620,7 +1622,7 @@ describe('API', () => {
               datasetorderTemplate,
             );
             const hash = await iexec.order.hashDatasetorder(order);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             const { data, status } = await request
               .put(
                 buildQuery('/datasetorders', {
@@ -1719,7 +1721,7 @@ describe('API', () => {
             const requestorder5nRlcHash = await iexec.order.hashRequestorder(
               requestorder5nRlc,
             );
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .post(
                 buildQuery('/apporders', {
@@ -1730,9 +1732,9 @@ describe('API', () => {
                 chainId,
                 order: apporder,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .post(
                 buildQuery('/datasetorders', {
@@ -1743,9 +1745,9 @@ describe('API', () => {
                 chainId,
                 order: order1nRlc,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .post(
                 buildQuery('/datasetorders', {
@@ -1756,9 +1758,9 @@ describe('API', () => {
                 chainId,
                 order: order5nRlc,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .post(
                 buildQuery('/datasetorders', {
@@ -1769,9 +1771,9 @@ describe('API', () => {
                 chainId,
                 order: orderPrivate1,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .post(
                 buildQuery('/datasetorders', {
@@ -1782,9 +1784,9 @@ describe('API', () => {
                 chainId,
                 order: orderPrivate2,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .post(
                 buildQuery('/datasetorders', {
@@ -1795,9 +1797,9 @@ describe('API', () => {
                 chainId,
                 order: orderPrivateOtherUser,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .post(
                 buildQuery('/requestorders', {
@@ -1808,9 +1810,9 @@ describe('API', () => {
                 chainId,
                 order: requestorder1nRlc,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .post(
                 buildQuery('/requestorders', {
@@ -1821,9 +1823,9 @@ describe('API', () => {
                 chainId,
                 order: requestorder5nRlc,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .post(
                 buildQuery('/requestorders', {
@@ -1834,11 +1836,11 @@ describe('API', () => {
                 chainId,
                 order: requestorderUsePrivate,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
 
             jest.clearAllMocks();
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .put(
                 buildQuery('/datasetorders', {
@@ -1849,13 +1851,13 @@ describe('API', () => {
                 chainId,
                 orderHash: orderPrivate1Hash,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             await sleep(1000);
             expect(socketEmitSpy).toHaveBeenCalledTimes(1);
 
             jest.clearAllMocks();
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .put(
                 buildQuery('/datasetorders', {
@@ -1866,7 +1868,7 @@ describe('API', () => {
                 chainId,
                 orderHash: orderPrivate2Hash,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             await sleep(1000);
             const [[savedRequestorderUsePrivate]] = await Promise.all([
@@ -1885,7 +1887,7 @@ describe('API', () => {
             );
 
             jest.clearAllMocks();
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .put(
                 buildQuery('/datasetorders', {
@@ -1896,7 +1898,7 @@ describe('API', () => {
                 chainId,
                 orderHash: order1nRlcHash,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             await sleep(1000);
             const [
@@ -1936,7 +1938,7 @@ describe('API', () => {
             });
             const hash = await iexec.order.hashWorkerpoolorder(order);
             jest.clearAllMocks();
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             const { data, status } = await request
               .post(
                 buildQuery('/workerpoolorders', {
@@ -1946,7 +1948,7 @@ describe('API', () => {
               .send({
                 order,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             expect(status).toBe(OK_STATUS);
             expect(data.ok).toBe(true);
@@ -1970,7 +1972,7 @@ describe('API', () => {
             const order = await iexec.order.signWorkerpoolorder(
               workerpoolorderTemplate,
             );
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .post(
                 buildQuery('/workerpoolorders', {
@@ -1980,10 +1982,10 @@ describe('API', () => {
               .send({
                 order,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             jest.clearAllMocks();
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             const { data, status } = await request
               .post(
                 buildQuery('/workerpoolorders', {
@@ -1993,7 +1995,7 @@ describe('API', () => {
               .send({
                 order,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             expect(status).toBe(BUSINESS_ERROR_STATUS);
             expect(data.ok).toBe(false);
@@ -2009,13 +2011,13 @@ describe('API', () => {
                 '0x1000000000000000000000000000000000000000000000000000000000000101',
             });
             jest.clearAllMocks();
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             const { data, status } = await request
               .post(buildQuery('/workerpoolorders', {}))
               .send({
                 order,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             expect(status).toBe(VALIDATION_ERROR_STATUS);
             expect(data.ok).toBe(false);
@@ -2037,7 +2039,7 @@ describe('API', () => {
               .send({
                 order,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             expect(status).toBe(AUTH_ERROR_STATUS);
             expect(data.ok).toBe(false);
@@ -2050,7 +2052,7 @@ describe('API', () => {
             const order = await iexec.order.signWorkerpoolorder(
               workerpoolorderTemplate,
             );
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             const { data, status } = await request
               .post(
                 buildQuery('/workerpoolorders', {
@@ -2072,7 +2074,7 @@ describe('API', () => {
             const order = await iexec.order.signWorkerpoolorder(
               workerpoolorderTemplate,
             );
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             const { data, status } = await request
               .post(
                 buildQuery('/workerpoolorders', {
@@ -2082,7 +2084,7 @@ describe('API', () => {
               .send({
                 order: { ...order, sign: workerpoolorderTemplate.sign },
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             expect(status).toBe(BUSINESS_ERROR_STATUS);
             expect(data.ok).toBe(false);
@@ -2109,7 +2111,7 @@ describe('API', () => {
               },
               { checkRequest: false },
             );
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             const { data, status } = await request
               .post(
                 buildQuery('/workerpoolorders', {
@@ -2119,7 +2121,7 @@ describe('API', () => {
               .send({
                 order,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             expect(status).toBe(BUSINESS_ERROR_STATUS);
             expect(data.ok).toBe(false);
@@ -2133,7 +2135,7 @@ describe('API', () => {
           //     ...workerpoolorderTemplate,
           //     apprestrict: apporderTemplate.app,
           //   });
-          //   await setChallenge(chainId);
+          //   await setChallenge(chainId, WALLETS.DEFAULT.challenge);
           //   const { data, status } = await request
           //     .post(
           //       buildQuery('/workerpoolorders', {
@@ -2143,7 +2145,7 @@ describe('API', () => {
           //     .send({
           //       order,
           //     })
-          //     .set('authorization', authorization)
+          //     .set('authorization', WALLETS.DEFAULT.authorization)
           //     .then(parseResult);
           //   expect(status).toBe(BUSINESS_ERROR_STATUS);
           //   expect(data.ok).toBe(false);
@@ -2159,7 +2161,7 @@ describe('API', () => {
           //     ...workerpoolorderTemplate,
           //     datasetrestrict: datasetorderTemplate.dataset,
           //   });
-          //   await setChallenge(chainId);
+          //   await setChallenge(chainId, WALLETS.DEFAULT.challenge);
           //   const { data, status } = await request
           //     .post(
           //       buildQuery('/workerpoolorders', {
@@ -2169,7 +2171,7 @@ describe('API', () => {
           //     .send({
           //       order,
           //     })
-          //     .set('authorization', authorization)
+          //     .set('authorization', WALLETS.DEFAULT.authorization)
           //     .then(parseResult);
           //   expect(status).toBe(BUSINESS_ERROR_STATUS);
           //   expect(data.ok).toBe(false);
@@ -2185,7 +2187,7 @@ describe('API', () => {
           //     ...workerpoolorderTemplate,
           //     requesterrestrict: '0xA1162f07afC3e45Ae89D2252706eB355F6349641',
           //   });
-          //   await setChallenge(chainId);
+          //   await setChallenge(chainId, WALLETS.DEFAULT.challenge);
           //   const { data, status } = await request
           //     .post(
           //       buildQuery('/workerpoolorders', {
@@ -2195,7 +2197,7 @@ describe('API', () => {
           //     .send({
           //       order,
           //     })
-          //     .set('authorization', authorization)
+          //     .set('authorization', WALLETS.DEFAULT.authorization)
           //     .then(parseResult);
           //   expect(status).toBe(BUSINESS_ERROR_STATUS);
           //   expect(data.ok).toBe(false);
@@ -2222,7 +2224,7 @@ describe('API', () => {
               volume: 10,
             });
             jest.clearAllMocks();
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             const resKO = await request
               .post(
                 buildQuery('/workerpoolorders', {
@@ -2232,9 +2234,9 @@ describe('API', () => {
               .send({
                 order: order11nRlc,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             const resOK = await request
               .post(
                 buildQuery('/workerpoolorders', {
@@ -2244,7 +2246,7 @@ describe('API', () => {
               .send({
                 order: order10nRlc,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             expect(resOK.status).toBe(OK_STATUS);
             expect(resOK.data.ok).toBe(true);
@@ -2268,7 +2270,7 @@ describe('API', () => {
           /** ---- ALLOW BID/ASK OVERLAP ----
           test('POST /workerpoolorders (best requestorder in same category is not allowed)', async () => {
             await iexec.account.deposit(100);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             const order11nRlc = await iexec.order.signWorkerpoolorder({
               ...workerpoolorderTemplate,
               workerpoolprice: 11,
@@ -2289,7 +2291,7 @@ describe('API', () => {
               },
               { checkRequest: false },
             );
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .post(
                 buildQuery('/apporders', {
@@ -2299,9 +2301,9 @@ describe('API', () => {
               .send({
                 order: apporder,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .post(
                 buildQuery('/requestorders', {
@@ -2311,10 +2313,10 @@ describe('API', () => {
               .send({
                 order: requestOrder10nRlc,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             jest.clearAllMocks();
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             const resOK = await request
               .post(
                 buildQuery('/workerpoolorders', {
@@ -2325,9 +2327,9 @@ describe('API', () => {
                 chainId,
                 order: order11nRlc,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             const resKO = await request
               .post(
                 buildQuery('/workerpoolorders', {
@@ -2338,7 +2340,7 @@ describe('API', () => {
                 chainId,
                 order: order10nRlc,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             expect(resOK.status).toBe(OK_STATUS);
             expect(resOK.data.ok).toBe(true);
@@ -2361,7 +2363,7 @@ describe('API', () => {
 
           test('POST /workerpoolorders (best requestorder in other category is allowed)', async () => {
             await iexec.account.deposit(100);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             const order = await iexec.order.signWorkerpoolorder({
               ...workerpoolorderTemplate,
               workerpoolprice: 10,
@@ -2378,7 +2380,7 @@ describe('API', () => {
               },
               { checkRequest: false },
             );
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .post(
                 buildQuery('/apporders', {
@@ -2388,9 +2390,9 @@ describe('API', () => {
               .send({
                 order: apporder,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .post(
                 buildQuery('/requestorders', {
@@ -2400,10 +2402,10 @@ describe('API', () => {
               .send({
                 order: requestOrder10nRlc,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             jest.clearAllMocks();
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             const { data, status } = await request
               .post(
                 buildQuery('/workerpoolorders', {
@@ -2413,7 +2415,7 @@ describe('API', () => {
               .send({
                 order,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             expect(status).toBe(OK_STATUS);
             expect(data.ok).toBe(true);
@@ -2436,7 +2438,7 @@ describe('API', () => {
               workerpoolorderTemplate,
             );
             const hash = await iexec.order.hashWorkerpoolorder(order);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .post(
                 buildQuery('/workerpoolorders', {
@@ -2446,10 +2448,10 @@ describe('API', () => {
               .send({
                 order,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             jest.clearAllMocks();
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             const { data, status } = await request
               .put(
                 buildQuery('/workerpoolorders', {
@@ -2459,7 +2461,7 @@ describe('API', () => {
               .send({
                 orderHash: hash,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             expect(status).toBe(OK_STATUS);
             expect(data.ok).toBe(true);
@@ -2478,7 +2480,7 @@ describe('API', () => {
               workerpoolorderTemplate,
             );
             const hash = await iexec.order.hashWorkerpoolorder(order);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             const { data, status } = await request
               .put(
                 buildQuery('/workerpoolorders', {
@@ -2488,7 +2490,7 @@ describe('API', () => {
               .send({
                 orderHash: hash,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             expect(status).toBe(BUSINESS_ERROR_STATUS);
             expect(data.ok).toBe(false);
@@ -2503,7 +2505,7 @@ describe('API', () => {
             const order1 = await iexec.order.signWorkerpoolorder(
               workerpoolorderTemplate,
             );
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .post(
                 buildQuery('/workerpoolorders', {
@@ -2513,13 +2515,13 @@ describe('API', () => {
               .send({
                 order: order1,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             const order2 = await iexec.order.signWorkerpoolorder(
               workerpoolorderTemplate,
             );
             const hash2 = await iexec.order.hashWorkerpoolorder(order2);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .post(
                 buildQuery('/workerpoolorders', {
@@ -2529,10 +2531,10 @@ describe('API', () => {
               .send({
                 order: order2,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             jest.clearAllMocks();
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             const { data, status } = await request
               .put(
                 buildQuery('/workerpoolorders', {
@@ -2543,7 +2545,7 @@ describe('API', () => {
                 target: UNPUBLISH_TARGET_LAST_ORDER,
                 workerpool: order2.workerpool,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             expect(status).toBe(OK_STATUS);
             expect(data.ok).toBe(true);
@@ -2562,7 +2564,7 @@ describe('API', () => {
               workerpoolorderTemplate,
             );
             const hash1 = await iexec.order.hashWorkerpoolorder(order1);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .post(
                 buildQuery('/workerpoolorders', {
@@ -2572,13 +2574,13 @@ describe('API', () => {
               .send({
                 order: order1,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             const order2 = await iexec.order.signWorkerpoolorder(
               workerpoolorderTemplate,
             );
             const hash2 = await iexec.order.hashWorkerpoolorder(order2);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .post(
                 buildQuery('/workerpoolorders', {
@@ -2588,10 +2590,10 @@ describe('API', () => {
               .send({
                 order: order2,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             jest.clearAllMocks();
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             const { data, status } = await request
               .put(
                 buildQuery('/workerpoolorders', {
@@ -2602,7 +2604,7 @@ describe('API', () => {
                 target: UNPUBLISH_TARGET_ALL_ORDERS,
                 workerpool: order2.workerpool,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             expect(status).toBe(OK_STATUS);
             expect(data.ok).toBe(true);
@@ -2630,7 +2632,7 @@ describe('API', () => {
               workerpoolorderTemplate,
             );
             const hash = await iexec.order.hashWorkerpoolorder(order);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .post(
                 buildQuery('/workerpoolorders', {
@@ -2640,16 +2642,16 @@ describe('API', () => {
               .send({
                 order,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             jest.clearAllMocks();
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             const { data, status } = await request
               .put(buildQuery('/workerpoolorders', {}))
               .send({
                 orderHash: hash,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             expect(status).toBe(VALIDATION_ERROR_STATUS);
             expect(data.ok).toBe(false);
@@ -2672,7 +2674,7 @@ describe('API', () => {
               .send({
                 orderHash: hash,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             expect(status).toBe(AUTH_ERROR_STATUS);
             expect(data.ok).toBe(false);
@@ -2686,7 +2688,7 @@ describe('API', () => {
               workerpoolorderTemplate,
             );
             const hash = await iexec.order.hashWorkerpoolorder(order);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             const { data, status } = await request
               .put(
                 buildQuery('/workerpoolorders', {
@@ -2716,7 +2718,7 @@ describe('API', () => {
               },
               { checkRequest: false },
             );
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             const { data, status } = await request
               .post(
                 buildQuery('/requestorders', {
@@ -2726,7 +2728,7 @@ describe('API', () => {
               .send({
                 order,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             expect(status).toBe(BUSINESS_ERROR_STATUS);
             expect(data.ok).toBe(false);
@@ -2748,7 +2750,7 @@ describe('API', () => {
               { checkRequest: false },
             );
             const apporder = await iexec.order.signApporder(apporderTemplate);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .post(
                 buildQuery('/apporders', {
@@ -2758,10 +2760,10 @@ describe('API', () => {
               .send({
                 order: apporder,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             jest.clearAllMocks();
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             const { data, status } = await request
               .post(
                 buildQuery('/requestorders', {
@@ -2771,7 +2773,7 @@ describe('API', () => {
               .send({
                 order,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             expect(status).toBe(BUSINESS_ERROR_STATUS);
             expect(data.ok).toBe(false);
@@ -2798,7 +2800,7 @@ describe('API', () => {
               tag:
                 '0x0000000000000000000000000000000000000000000000000000000000000001',
             });
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .post(
                 buildQuery('/apporders', {
@@ -2808,10 +2810,10 @@ describe('API', () => {
               .send({
                 order: apporder,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             jest.clearAllMocks();
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             const { data, status } = await request
               .post(
                 buildQuery('/requestorders', {
@@ -2821,7 +2823,7 @@ describe('API', () => {
               .send({
                 order,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             expect(status).toBe(OK_STATUS);
             expect(data.ok).toBe(true);
@@ -2849,7 +2851,7 @@ describe('API', () => {
               { checkRequest: false },
             );
             const apporder = await iexec.order.signApporder(apporderTemplate);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .post(
                 buildQuery('/apporders', {
@@ -2859,9 +2861,9 @@ describe('API', () => {
               .send({
                 order: apporder,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .post(
                 buildQuery('/requestorders', {
@@ -2871,10 +2873,10 @@ describe('API', () => {
               .send({
                 order,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             jest.clearAllMocks();
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             const { data, status } = await request
               .post(
                 buildQuery('/requestorders', {
@@ -2885,7 +2887,7 @@ describe('API', () => {
                 chainId,
                 order,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             expect(status).toBe(BUSINESS_ERROR_STATUS);
             expect(data.ok).toBe(false);
@@ -2905,13 +2907,13 @@ describe('API', () => {
               { checkRequest: false },
             );
             jest.clearAllMocks();
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             const { data, status } = await request
               .post(buildQuery('/requestorders', {}))
               .send({
                 order,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             expect(status).toBe(VALIDATION_ERROR_STATUS);
             expect(data.ok).toBe(false);
@@ -2937,7 +2939,7 @@ describe('API', () => {
               .send({
                 order,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             expect(status).toBe(AUTH_ERROR_STATUS);
             expect(data.ok).toBe(false);
@@ -2954,7 +2956,7 @@ describe('API', () => {
               },
               { checkRequest: false },
             );
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             const { data, status } = await request
               .post(
                 buildQuery('/requestorders', {
@@ -2981,7 +2983,7 @@ describe('API', () => {
               { checkRequest: false },
             );
             const apporder = await iexec.order.signApporder(apporderTemplate);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .post(
                 buildQuery('/apporders', {
@@ -2991,10 +2993,10 @@ describe('API', () => {
               .send({
                 order: apporder,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             jest.clearAllMocks();
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             const { data, status } = await request
               .post(
                 buildQuery('/requestorders', {
@@ -3005,7 +3007,7 @@ describe('API', () => {
                 chainId,
                 order: { ...order, sign: requestorderTemplate.sign },
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             expect(status).toBe(BUSINESS_ERROR_STATUS);
             expect(data.ok).toBe(false);
@@ -3034,7 +3036,7 @@ describe('API', () => {
               },
               { checkRequest: false },
             );
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             const { data, status } = await request
               .post(
                 buildQuery('/requestorders', {
@@ -3044,7 +3046,7 @@ describe('API', () => {
               .send({
                 order,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             expect(status).toBe(BUSINESS_ERROR_STATUS);
             expect(data.ok).toBe(false);
@@ -3063,7 +3065,7 @@ describe('API', () => {
               { checkRequest: false },
             );
             const apporder = await iexec.order.signApporder(apporderTemplate);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .post(
                 buildQuery('/apporders', {
@@ -3073,10 +3075,10 @@ describe('API', () => {
               .send({
                 order: apporder,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             jest.clearAllMocks();
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             const { data, status } = await request
               .post(
                 buildQuery('/requestorders', {
@@ -3086,7 +3088,7 @@ describe('API', () => {
               .send({
                 order,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             expect(status).toBe(BUSINESS_ERROR_STATUS);
             expect(data.ok).toBe(false);
@@ -3111,7 +3113,7 @@ describe('API', () => {
             const datasetorder = await iexec.order.signDatasetorder(
               datasetorderTemplate,
             );
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .post(
                 buildQuery('/apporders', {
@@ -3121,9 +3123,9 @@ describe('API', () => {
               .send({
                 order: apporder,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .post(
                 buildQuery('/datasetorders', {
@@ -3133,10 +3135,10 @@ describe('API', () => {
               .send({
                 order: datasetorder,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             jest.clearAllMocks();
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             const { data, status } = await request
               .post(
                 buildQuery('/requestorders', {
@@ -3146,7 +3148,7 @@ describe('API', () => {
               .send({
                 order,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             expect(status).toBe(OK_STATUS);
             expect(data.ok).toBe(true);
@@ -3167,7 +3169,7 @@ describe('API', () => {
           //     { checkRequest: false },
           //   );
           //   const apporder = await iexec.order.signApporder(apporderTemplate);
-          //   await setChallenge(chainId);
+          //   await setChallenge(chainId, WALLETS.DEFAULT.challenge);
           //   await request
           //     .post(
           //       buildQuery('/apporders', {
@@ -3177,10 +3179,10 @@ describe('API', () => {
           //     .send({
           //       order: apporder,
           //     })
-          //     .set('authorization', authorization)
+          //     .set('authorization', WALLETS.DEFAULT.authorization)
           //     .then(parseResult);
           //   jest.clearAllMocks();
-          //   await setChallenge(chainId);
+          //   await setChallenge(chainId, WALLETS.DEFAULT.challenge);
           //   const { data, status } = await request
           //     .post(
           //       buildQuery('/requestorders', {
@@ -3190,7 +3192,7 @@ describe('API', () => {
           //     .send({
           //       order,
           //     })
-          //     .set('authorization', authorization)
+          //     .set('authorization', WALLETS.DEFAULT.authorization)
           //     .then(parseResult);
           //   expect(status).toBe(BUSINESS_ERROR_STATUS);
           //   expect(data.ok).toBe(false);
@@ -3225,7 +3227,7 @@ describe('API', () => {
               { checkRequest: false },
             );
             const apporder = await iexec.order.signApporder(apporderTemplate);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .post(
                 buildQuery('/apporders', {
@@ -3235,10 +3237,10 @@ describe('API', () => {
               .send({
                 order: apporder,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             jest.clearAllMocks();
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             const resKO = await request
               .post(
                 buildQuery('/requestorders', {
@@ -3248,9 +3250,9 @@ describe('API', () => {
               .send({
                 order: order11nRlc,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             const resOK = await request
               .post(
                 buildQuery('/requestorders', {
@@ -3260,7 +3262,7 @@ describe('API', () => {
               .send({
                 order: order10nRlc,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             expect(resOK.status).toBe(OK_STATUS);
             expect(resOK.data.ok).toBe(true);
@@ -3313,7 +3315,7 @@ describe('API', () => {
               },
             );
             const apporder = await iexec.order.signApporder(apporderTemplate);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .post(
                 buildQuery('/apporders', {
@@ -3323,9 +3325,9 @@ describe('API', () => {
               .send({
                 order: apporder,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .post(
                 buildQuery('/workerpoolorders', {
@@ -3335,10 +3337,10 @@ describe('API', () => {
               .send({
                 order: workerpoolorder10nRlc,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             jest.clearAllMocks();
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             const resOK = await request
               .post(
                 buildQuery('/requestorders', {
@@ -3348,9 +3350,9 @@ describe('API', () => {
               .send({
                 order: order9nRlc,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             const resKO = await request
               .post(
                 buildQuery('/requestorders', {
@@ -3360,7 +3362,7 @@ describe('API', () => {
               .send({
                 order: order10nRlc,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             expect(resOK.status).toBe(OK_STATUS);
             expect(resOK.data.ok).toBe(true);
@@ -3402,7 +3404,7 @@ describe('API', () => {
               },
             );
             const apporder = await iexec.order.signApporder(apporderTemplate);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .post(
                 buildQuery('/apporders', {
@@ -3412,9 +3414,9 @@ describe('API', () => {
               .send({
                 order: apporder,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .post(
                 buildQuery('/workerpoolorders', {
@@ -3424,10 +3426,10 @@ describe('API', () => {
               .send({
                 order: workerpoolorder10nRlc,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             jest.clearAllMocks();
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             const { data, status } = await request
               .post(
                 buildQuery('/requestorders', {
@@ -3437,7 +3439,7 @@ describe('API', () => {
               .send({
                 order: order10nRlc,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             expect(status).toBe(OK_STATUS);
             expect(data.ok).toBe(true);
@@ -3464,7 +3466,7 @@ describe('API', () => {
             );
             const hash = await iexec.order.hashRequestorder(order);
             const apporder = await iexec.order.signApporder(apporderTemplate);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .post(
                 buildQuery('/apporders', {
@@ -3474,9 +3476,9 @@ describe('API', () => {
               .send({
                 order: apporder,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .post(
                 buildQuery('/requestorders', {
@@ -3486,10 +3488,10 @@ describe('API', () => {
               .send({
                 order,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             jest.clearAllMocks();
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             const { data, status } = await request
               .put(
                 buildQuery('/requestorders', {
@@ -3499,7 +3501,7 @@ describe('API', () => {
               .send({
                 orderHash: hash,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             expect(status).toBe(OK_STATUS);
             expect(data.ok).toBe(true);
@@ -3522,7 +3524,7 @@ describe('API', () => {
               { checkRequest: false },
             );
             const hash = await iexec.order.hashRequestorder(order);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             const { data, status } = await request
               .put(
                 buildQuery('/requestorders', {
@@ -3532,7 +3534,7 @@ describe('API', () => {
               .send({
                 orderHash: hash,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             expect(status).toBe(BUSINESS_ERROR_STATUS);
             expect(data.ok).toBe(false);
@@ -3545,7 +3547,7 @@ describe('API', () => {
 
           test('PUT /requestorders (last)', async () => {
             const apporder = await iexec.order.signApporder(apporderTemplate);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .post(
                 buildQuery('/apporders', {
@@ -3555,7 +3557,7 @@ describe('API', () => {
               .send({
                 order: apporder,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             const order1 = await iexec.order.signRequestorder(
               {
@@ -3564,7 +3566,7 @@ describe('API', () => {
               },
               { checkRequest: false },
             );
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .post(
                 buildQuery('/requestorders', {
@@ -3574,7 +3576,7 @@ describe('API', () => {
               .send({
                 order: order1,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             const order2 = await iexec.order.signRequestorder(
               {
@@ -3584,7 +3586,7 @@ describe('API', () => {
               { checkRequest: false },
             );
             const hash2 = await iexec.order.hashRequestorder(order2);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .post(
                 buildQuery('/requestorders', {
@@ -3594,10 +3596,10 @@ describe('API', () => {
               .send({
                 order: order2,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             jest.clearAllMocks();
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             const { data, status } = await request
               .put(
                 buildQuery('/requestorders', {
@@ -3608,7 +3610,7 @@ describe('API', () => {
                 target: UNPUBLISH_TARGET_LAST_ORDER,
                 requester: order2.requester,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             expect(status).toBe(OK_STATUS);
             expect(data.ok).toBe(true);
@@ -3624,7 +3626,7 @@ describe('API', () => {
 
           test('PUT /requestorders (all)', async () => {
             const apporder = await iexec.order.signApporder(apporderTemplate);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .post(
                 buildQuery('/apporders', {
@@ -3634,7 +3636,7 @@ describe('API', () => {
               .send({
                 order: apporder,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             const order1 = await iexec.order.signRequestorder(
               {
@@ -3644,7 +3646,7 @@ describe('API', () => {
               { checkRequest: false },
             );
             const hash1 = await iexec.order.hashRequestorder(order1);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .post(
                 buildQuery('/requestorders', {
@@ -3654,7 +3656,7 @@ describe('API', () => {
               .send({
                 order: order1,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             const order2 = await iexec.order.signRequestorder(
               {
@@ -3664,7 +3666,7 @@ describe('API', () => {
               { checkRequest: false },
             );
             const hash2 = await iexec.order.hashRequestorder(order2);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .post(
                 buildQuery('/requestorders', {
@@ -3674,10 +3676,10 @@ describe('API', () => {
               .send({
                 order: order2,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             jest.clearAllMocks();
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             const { data, status } = await request
               .put(
                 buildQuery('/requestorders', {
@@ -3688,7 +3690,7 @@ describe('API', () => {
                 target: UNPUBLISH_TARGET_ALL_ORDERS,
                 requester: order2.requester,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             expect(status).toBe(OK_STATUS);
             expect(data.ok).toBe(true);
@@ -3721,7 +3723,7 @@ describe('API', () => {
             );
             const hash = await iexec.order.hashRequestorder(order);
             const apporder = await iexec.order.signApporder(apporderTemplate);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .post(
                 buildQuery('/apporders', {
@@ -3731,9 +3733,9 @@ describe('API', () => {
               .send({
                 order: apporder,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
               .post(
                 buildQuery('/requestorders', {
@@ -3743,16 +3745,16 @@ describe('API', () => {
               .send({
                 order,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             jest.clearAllMocks();
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             const { data, status } = await request
               .put(buildQuery('/requestorders', {}))
               .send({
                 orderHash: hash,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             expect(status).toBe(VALIDATION_ERROR_STATUS);
             expect(data.ok).toBe(false);
@@ -3779,7 +3781,7 @@ describe('API', () => {
               .send({
                 orderHash: hash,
               })
-              .set('authorization', authorization)
+              .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             expect(status).toBe(AUTH_ERROR_STATUS);
             expect(data.ok).toBe(false);
@@ -3797,7 +3799,7 @@ describe('API', () => {
               { checkRequest: false },
             );
             const hash = await iexec.order.hashRequestorder(order);
-            await setChallenge(chainId);
+            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             const { data, status } = await request
               .put(
                 buildQuery('/requestorders', {
