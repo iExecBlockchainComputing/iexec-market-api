@@ -19,6 +19,9 @@ const throwIfTimeout = (promise, timeout = 30 * 1000) => Promise.race([
 ]);
 
 const cleanRPC = (res) => {
+  if (typeof res === 'boolean') {
+    return res;
+  }
   if (typeof res === 'string') {
     return res;
   }

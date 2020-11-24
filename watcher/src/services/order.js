@@ -2,7 +2,12 @@ const BN = require('bn.js');
 const config = require('../config');
 const { eventEmitter } = require('../loaders/eventEmitter');
 const {
+  getProvider,
   getHub,
+  getERlc,
+  getAppRegistry,
+  getDatasetRegistry,
+  getWorkerpoolRegistry,
   getApp,
   getDataset,
   getWorkerpool,
@@ -14,13 +19,123 @@ const requestorderModel = require('../models/requestorderModel');
 const { logger } = require('../utils/logger');
 const { throwIfMissing } = require('../utils/error');
 const { STATUS_MAP, TAG_MAP, tagToArray } = require('../utils/order-utils');
-const { callAtBlock, cleanRPC, NULL_ADDRESS } = require('../utils/eth-utils');
+const {
+  callAtBlock,
+  cleanRPC,
+  getBlockNumber,
+  NULL_ADDRESS,
+} = require('../utils/eth-utils');
+const { tokenIdToAddress, KYC_MEMBER_ROLE } = require('../utils/iexec-utils');
 
 const { chainId } = config.chain;
 
 const log = logger.extend('services:order');
 
 log('instanciating service');
+
+const cleanApporders = async ({
+  orders = throwIfMissing(),
+  reason = throwIfMissing(),
+}) => {
+  const ApporderModel = await apporderModel.getModel(chainId);
+  const cleanedOrders = await Promise.all(
+    orders.map(async (e) => {
+      const updated = await ApporderModel.findOneAndUpdate(
+        { orderHash: e.orderHash, status: STATUS_MAP.OPEN },
+        {
+          status: STATUS_MAP.DEAD,
+        },
+        { returnOriginal: false },
+      );
+      return updated;
+    }),
+  );
+  cleanedOrders
+    .filter(e => !!e)
+    .map(e => e.toJSON())
+    .forEach((e) => {
+      log('apporder cleaned', e.orderHash, reason);
+      eventEmitter.emit('apporder_cleaned', e);
+    });
+};
+
+const cleanDatasetorders = async ({
+  orders = throwIfMissing(),
+  reason = throwIfMissing(),
+}) => {
+  const DatasetorderModel = await datasetorderModel.getModel(chainId);
+  const cleanedOrders = await Promise.all(
+    orders.map(async (e) => {
+      const updated = await DatasetorderModel.findOneAndUpdate(
+        { orderHash: e.orderHash, status: STATUS_MAP.OPEN },
+        {
+          status: STATUS_MAP.DEAD,
+        },
+        { returnOriginal: false },
+      );
+      return updated;
+    }),
+  );
+  cleanedOrders
+    .filter(e => !!e)
+    .map(e => e.toJSON())
+    .forEach((e) => {
+      log('datasetorder cleaned', e.orderHash, reason);
+      eventEmitter.emit('datasetorder_cleaned', e);
+    });
+};
+
+const cleanWorkerpoolorders = async ({
+  orders = throwIfMissing(),
+  reason = throwIfMissing(),
+}) => {
+  const WorkerpoolorderModel = await workerpoolorderModel.getModel(chainId);
+  const cleanedOrders = await Promise.all(
+    orders.map(async (e) => {
+      const updated = await WorkerpoolorderModel.findOneAndUpdate(
+        { orderHash: e.orderHash, status: STATUS_MAP.OPEN },
+        {
+          status: STATUS_MAP.DEAD,
+        },
+        { returnOriginal: false },
+      );
+      return updated;
+    }),
+  );
+  cleanedOrders
+    .filter(e => !!e)
+    .map(e => e.toJSON())
+    .forEach((e) => {
+      log('workerpoolorder cleaned', e.orderHash, reason);
+      eventEmitter.emit('workerpoolorder_cleaned', e);
+    });
+};
+
+const cleanRequestorders = async ({
+  orders = throwIfMissing(),
+  reason = throwIfMissing(),
+}) => {
+  const RequestorderModel = await requestorderModel.getModel(chainId);
+  const cleanedOrders = await Promise.all(
+    orders.map(async (e) => {
+      const updated = await RequestorderModel.findOneAndUpdate(
+        { orderHash: e.orderHash, status: STATUS_MAP.OPEN },
+        {
+          status: STATUS_MAP.DEAD,
+        },
+        { returnOriginal: false },
+      );
+      return updated;
+    }),
+  );
+  cleanedOrders
+    .filter(e => !!e)
+    .map(e => e.toJSON())
+    .forEach((e) => {
+      log('requestorder cleaned', e.orderHash, reason);
+      eventEmitter.emit('requestorder_cleaned', e);
+    });
+};
 
 const checkMatchableApporder = async ({ order = throwIfMissing() } = {}) => {
   const ApporderModel = await apporderModel.getModel(chainId);
@@ -166,25 +281,10 @@ const cleanApporderDependantOrders = async ({
       toCheckOrders.map(requestorder => checkMatchableApporder({ order: requestorder.order })),
     ).then(matchResults => toCheckOrders.filter((requestorder, index) => !matchResults[index]));
 
-    const cleanedOrders = await Promise.all(
-      dependantOrders.map(async (e) => {
-        const updated = await RequestorderModel.findOneAndUpdate(
-          { orderHash: e.orderHash, status: STATUS_MAP.OPEN },
-          {
-            status: STATUS_MAP.DEAD,
-          },
-          { returnOriginal: false },
-        );
-        return updated;
-      }),
-    );
-    cleanedOrders
-      .filter(e => !!e)
-      .map(e => e.toJSON())
-      .forEach((e) => {
-        log('apporder dependant requestorder cleaned', e.orderHash);
-        eventEmitter.emit('requestorder_cleaned', e);
-      });
+    await cleanRequestorders({
+      orders: dependantOrders,
+      reason: 'apporder dependant requestorder',
+    });
   } catch (e) {
     log('cleanApporderDependantOrders() error', e);
     throw e;
@@ -233,25 +333,10 @@ const cleanDatasetorderDependantOrders = async ({
       toCheckOrders.map(requestorder => checkMatchableDatasetorder({ order: requestorder.order })),
     ).then(matchResults => toCheckOrders.filter((requestorder, index) => !matchResults[index]));
 
-    const cleanedOrders = await Promise.all(
-      dependantOrders.map(async (e) => {
-        const updated = await RequestorderModel.findOneAndUpdate(
-          { orderHash: e.orderHash, status: STATUS_MAP.OPEN },
-          {
-            status: STATUS_MAP.DEAD,
-          },
-          { returnOriginal: false },
-        );
-        return updated;
-      }),
-    );
-    cleanedOrders
-      .filter(e => !!e)
-      .map(e => e.toJSON())
-      .forEach((e) => {
-        log('datasetorder dependant requestorder cleaned', e.orderHash);
-        eventEmitter.emit('requestorder_cleaned', e);
-      });
+    await cleanRequestorders({
+      orders: dependantOrders,
+      reason: 'datasetorder dependant requestorder',
+    });
   } catch (e) {
     log('cleanDatasetorderDependantOrders() error', e);
     throw e;
@@ -310,44 +395,16 @@ const cleanBalanceDependantOrders = async ({
       getDeadWorkerpoolOrders(),
     ]);
 
-    const cleanedRequestOrders = await Promise.all(
-      deadRequestOrders.map(async (e) => {
-        const updated = await RequestorderModel.findOneAndUpdate(
-          { orderHash: e.orderHash, status: STATUS_MAP.OPEN },
-          {
-            status: STATUS_MAP.DEAD,
-          },
-          { returnOriginal: false },
-        );
-        return updated;
+    await Promise.all([
+      cleanRequestorders({
+        orders: deadRequestOrders,
+        reason: 'balance dependant requestorder',
       }),
-    );
-    cleanedRequestOrders
-      .filter(e => !!e)
-      .map(e => e.toJSON())
-      .forEach((e) => {
-        log('balance dependant requestorder cleaned', e.orderHash);
-        eventEmitter.emit('requestorder_cleaned', e);
-      });
-    const cleanedWorkerpoolOrders = await Promise.all(
-      deadWorkerpoolOrders.map(async (e) => {
-        const updated = await WorkerpoolorderModel.findOneAndUpdate(
-          { orderHash: e.orderHash, status: STATUS_MAP.OPEN },
-          {
-            status: STATUS_MAP.DEAD,
-          },
-          { returnOriginal: false },
-        );
-        return updated;
+      cleanWorkerpoolorders({
+        orders: deadWorkerpoolOrders,
+        reason: 'balance dependant workerpoolorder',
       }),
-    );
-    cleanedWorkerpoolOrders
-      .filter(e => !!e)
-      .map(e => e.toJSON())
-      .forEach((e) => {
-        log('balance dependant workerpoolorder cleaned', e.orderHash);
-        eventEmitter.emit('workerpoolorder_cleaned', e);
-      });
+    ]);
   } catch (e) {
     log('cleanBalanceDependantOrders()', e);
     throw e;
@@ -374,25 +431,11 @@ const cleanTransferedAppOrders = async ({
         status: STATUS_MAP.OPEN,
         remaining: { $gt: 0 },
       });
-      const cleanedOrders = await Promise.all(
-        deadOrders.map(async (e) => {
-          const updated = await ApporderModel.findOneAndUpdate(
-            { orderHash: e.orderHash, status: STATUS_MAP.OPEN },
-            {
-              status: STATUS_MAP.DEAD,
-            },
-            { returnOriginal: false },
-          );
-          return updated;
-        }),
-      );
-      cleanedOrders
-        .filter(e => !!e)
-        .map(e => e.toJSON())
-        .forEach((e) => {
-          log('owner dependant apporder cleaned', e.orderHash);
-          eventEmitter.emit('apporder_cleaned', e);
-        });
+
+      await cleanApporders({
+        orders: deadOrders,
+        reason: 'owner dependant apporder',
+      });
     }
   } catch (e) {
     log('cleanTransferedAppOrders()', e);
@@ -420,25 +463,10 @@ const cleanTransferedDatasetOrders = async ({
         status: STATUS_MAP.OPEN,
         remaining: { $gt: 0 },
       });
-      const cleanedOrders = await Promise.all(
-        deadOrders.map(async (e) => {
-          const updated = await DatasetorderModel.findOneAndUpdate(
-            { orderHash: e.orderHash, status: STATUS_MAP.OPEN },
-            {
-              status: STATUS_MAP.DEAD,
-            },
-            { returnOriginal: false },
-          );
-          return updated;
-        }),
-      );
-      cleanedOrders
-        .filter(e => !!e)
-        .map(e => e.toJSON())
-        .forEach((e) => {
-          log('owner dependant datasetorder cleaned', e.orderHash);
-          eventEmitter.emit('datasetorder_cleaned', e);
-        });
+      await cleanDatasetorders({
+        orders: deadOrders,
+        reason: 'owner dependant datasetorder',
+      });
     }
   } catch (e) {
     log('cleanTransferedDatasetOrders()', e);
@@ -466,30 +494,343 @@ const cleanTransferedWorkerpoolOrders = async ({
         status: STATUS_MAP.OPEN,
         remaining: { $gt: 0 },
       });
-      const cleanedOrders = await Promise.all(
-        deadOrders.map(async (e) => {
-          const updated = await WorkerpoolorderModel.findOneAndUpdate(
-            { orderHash: e.orderHash, status: STATUS_MAP.OPEN },
-            {
-              status: STATUS_MAP.DEAD,
-            },
-            { returnOriginal: false },
-          );
-          return updated;
-        }),
-      );
-      cleanedOrders
-        .filter(e => !!e)
-        .map(e => e.toJSON())
-        .forEach((e) => {
-          log('owner dependant workerpoolorder cleaned', e.orderHash);
-          eventEmitter.emit('workerpoolorder_cleaned', e);
-        });
+
+      await cleanWorkerpoolorders({
+        orders: deadOrders,
+        reason: 'owner dependant workerpoolorder',
+      });
     }
   } catch (e) {
     log('cleanTransferedWorkerpoolOrders()', e);
     throw e;
   }
+};
+
+const cleanRevokedUserOrders = async ({
+  address = throwIfMissing(),
+  role = throwIfMissing(),
+  blockNumber,
+}) => {
+  if (role !== KYC_MEMBER_ROLE) {
+    log(`user ${address} revoked role is not KYC`);
+    return;
+  }
+  // check user  isKYC
+  const eRlcContract = getERlc();
+  const isKYC = await callAtBlock(
+    eRlcContract.functions.isKYC,
+    [address],
+    blockNumber,
+  );
+  if (isKYC) {
+    log(`user ${address} is KYC`);
+    return;
+  }
+  log(`user ${address} KYC revoked`);
+
+  // fix block height to prevent the risk of moving indexes in registries
+  const blockNumberOverride = blockNumber || (await getBlockNumber(getProvider()));
+  const ApporderModel = await apporderModel.getModel(chainId);
+  const DatasetorderModel = await datasetorderModel.getModel(chainId);
+  const WorkerpoolorderModel = await workerpoolorderModel.getModel(chainId);
+  const RequestorderModel = await requestorderModel.getModel(chainId);
+
+  // clean orders signed by user
+  const [
+    userApporders,
+    userDatasetorders,
+    userWorkerpoolorders,
+    userRequestorders,
+  ] = await Promise.all([
+    ApporderModel.find({
+      signer: address,
+      status: STATUS_MAP.OPEN,
+      remaining: { $gt: 0 },
+    }),
+    DatasetorderModel.find({
+      signer: address,
+      status: STATUS_MAP.OPEN,
+      remaining: { $gt: 0 },
+    }),
+    WorkerpoolorderModel.find({
+      signer: address,
+      status: STATUS_MAP.OPEN,
+      remaining: { $gt: 0 },
+    }),
+    RequestorderModel.find({
+      signer: address,
+      status: STATUS_MAP.OPEN,
+      remaining: { $gt: 0 },
+    }),
+  ]);
+
+  await Promise.all([
+    cleanApporders({ orders: userApporders, reason: 'signer KYC revoked' }),
+    cleanDatasetorders({
+      orders: userDatasetorders,
+      reason: 'signer KYC revoked',
+    }),
+    cleanWorkerpoolorders({
+      orders: userWorkerpoolorders,
+      reason: 'signer KYC revoked',
+    }),
+    cleanRequestorders({
+      orders: userRequestorders,
+      reason: 'signer KYC revoked',
+    }),
+  ]);
+
+  // list user apps
+  const appRegistryContract = getAppRegistry();
+  const appsCount = await callAtBlock(
+    appRegistryContract.functions.balanceOf,
+    [address],
+    blockNumberOverride,
+  );
+  const deadApps = await Promise.all(
+    new Array(Number(appsCount))
+      .fill(null)
+      .map(async (e, i) => {
+        // protect from fork, index may be out of bound and cause VM execution error
+        try {
+          const resourceId = await callAtBlock(
+            appRegistryContract.functions.tokenOfOwnerByIndex,
+            [address, i],
+            blockNumberOverride,
+          );
+          const resourceAddress = tokenIdToAddress(resourceId);
+          return resourceAddress;
+        } catch (err) {
+          log(
+            `failed to get app ${i} for owner ${address}${blockNumberOverride
+              && ` at block ${blockNumberOverride}`} : ${err}`,
+          );
+          return null;
+        }
+      })
+      .filter(e => e !== null),
+  );
+  log('deadApps (owner KYC revoked)', deadApps);
+  // list orders depending on user apps
+  const [
+    userAppDependantDatasetorders,
+    userAppDependantWorkerpoolorders,
+    userAppDependantRequestorders,
+  ] = await Promise.all([
+    Promise.all(
+      deadApps.map(async (app) => {
+        const dependantOrders = await DatasetorderModel.find({
+          'order.apprestrict': app,
+          status: STATUS_MAP.OPEN,
+          remaining: { $gt: 0 },
+        });
+        return dependantOrders;
+      }),
+    ).then(res => res.reduce((acc, curr) => [...acc, ...curr], [])),
+    Promise.all(
+      deadApps.map(async (app) => {
+        const dependantOrders = await WorkerpoolorderModel.find({
+          'order.apprestrict': app,
+          status: STATUS_MAP.OPEN,
+          remaining: { $gt: 0 },
+        });
+        return dependantOrders;
+      }),
+    ).then(res => res.reduce((acc, curr) => [...acc, ...curr], [])),
+    Promise.all(
+      deadApps.map(async (app) => {
+        const dependantOrders = await RequestorderModel.find({
+          'order.app': app,
+          status: STATUS_MAP.OPEN,
+          remaining: { $gt: 0 },
+        });
+        return dependantOrders;
+      }),
+    ).then(res => res.reduce((acc, curr) => [...acc, ...curr], [])),
+  ]);
+
+  await Promise.all([
+    cleanDatasetorders({
+      orders: userAppDependantDatasetorders,
+      reason: 'KYC revoked app owner dependant',
+    }),
+    cleanWorkerpoolorders({
+      orders: userAppDependantWorkerpoolorders,
+      reason: 'KYC revoked app owner dependant',
+    }),
+    cleanRequestorders({
+      orders: userAppDependantRequestorders,
+      reason: 'KYC revoked app owner dependant',
+    }),
+  ]);
+
+  // list user datasets
+  const datasetRegistryContract = getDatasetRegistry();
+  const datasetsCount = await callAtBlock(
+    datasetRegistryContract.functions.balanceOf,
+    [address],
+    blockNumberOverride,
+  );
+  const deadDatasets = await Promise.all(
+    new Array(Number(datasetsCount))
+      .fill(null)
+      .map(async (e, i) => {
+        // protect from fork, index may be out of bound and cause VM execution error
+        try {
+          const resourceId = await callAtBlock(
+            datasetRegistryContract.functions.tokenOfOwnerByIndex,
+            [address, i],
+            blockNumberOverride,
+          );
+          const resourceAddress = tokenIdToAddress(resourceId);
+          return resourceAddress;
+        } catch (err) {
+          log(
+            `failed to get dataset ${i} for owner ${address}${blockNumberOverride
+              && ` at block ${blockNumberOverride}`} : ${err}`,
+          );
+          return null;
+        }
+      })
+      .filter(e => e !== null),
+  );
+  log('deadDatasets (owner KYC revoked)', deadDatasets);
+  // list orders depending on user datasets
+  const [
+    userDatasetDependantApporders,
+    userDatasetDependantWorkerpoolorders,
+    userDatasetDependantRequestorders,
+  ] = await Promise.all([
+    Promise.all(
+      deadDatasets.map(async (dataset) => {
+        const dependantOrders = await ApporderModel.find({
+          'order.datasetrestrict': dataset,
+          status: STATUS_MAP.OPEN,
+          remaining: { $gt: 0 },
+        });
+        return dependantOrders;
+      }),
+    ).then(res => res.reduce((acc, curr) => [...acc, ...curr], [])),
+    Promise.all(
+      deadDatasets.map(async (dataset) => {
+        const dependantOrders = await WorkerpoolorderModel.find({
+          'order.datasetrestrict': dataset,
+          status: STATUS_MAP.OPEN,
+          remaining: { $gt: 0 },
+        });
+        return dependantOrders;
+      }),
+    ).then(res => res.reduce((acc, curr) => [...acc, ...curr], [])),
+    Promise.all(
+      deadDatasets.map(async (dataset) => {
+        const dependantOrders = await RequestorderModel.find({
+          'order.dataset': dataset,
+          status: STATUS_MAP.OPEN,
+          remaining: { $gt: 0 },
+        });
+        return dependantOrders;
+      }),
+    ).then(res => res.reduce((acc, curr) => [...acc, ...curr], [])),
+  ]);
+
+  await Promise.all([
+    cleanApporders({
+      orders: userDatasetDependantApporders,
+      reason: 'KYC revoked dataset owner dependant',
+    }),
+    cleanWorkerpoolorders({
+      orders: userDatasetDependantWorkerpoolorders,
+      reason: 'KYC revoked dataset owner dependant',
+    }),
+    cleanRequestorders({
+      orders: userDatasetDependantRequestorders,
+      reason: 'KYC revoked dataset owner dependant',
+    }),
+  ]);
+
+  // list user workerpools
+  const workerpoolRegistryContract = getWorkerpoolRegistry();
+  const workerpoolsCount = await callAtBlock(
+    workerpoolRegistryContract.functions.balanceOf,
+    [address],
+    blockNumberOverride,
+  );
+  const deadWorkerpools = await Promise.all(
+    new Array(Number(workerpoolsCount))
+      .fill(null)
+      .map(async (e, i) => {
+        // protect from fork, index may be out of bound and cause VM execution error
+        try {
+          const resourceId = await callAtBlock(
+            workerpoolRegistryContract.functions.tokenOfOwnerByIndex,
+            [address, i],
+            blockNumberOverride,
+          );
+          const resourceAddress = tokenIdToAddress(resourceId);
+          return resourceAddress;
+        } catch (err) {
+          log(
+            `failed to get workerpool ${i} for owner ${address}${blockNumberOverride
+              && ` at block ${blockNumberOverride}`} : ${err}`,
+          );
+          return null;
+        }
+      })
+      .filter(e => e !== null),
+  );
+  log('deadWorkerpools (owner KYC revoked)', deadWorkerpools);
+  // list orders depending on user workerpools
+  const [
+    userWorkerpoolDependantApporders,
+    userWorkerpoolDependantDatasetorders,
+    userWorkerpoolDependantRequestorders,
+  ] = await Promise.all([
+    Promise.all(
+      deadWorkerpools.map(async (workerpool) => {
+        const dependantOrders = await ApporderModel.find({
+          'order.workerpoolrestrict': workerpool,
+          status: STATUS_MAP.OPEN,
+          remaining: { $gt: 0 },
+        });
+        return dependantOrders;
+      }),
+    ).then(res => res.reduce((acc, curr) => [...acc, ...curr], [])),
+    Promise.all(
+      deadWorkerpools.map(async (workerpool) => {
+        const dependantOrders = await DatasetorderModel.find({
+          'order.workerpoolrestrict': workerpool,
+          status: STATUS_MAP.OPEN,
+          remaining: { $gt: 0 },
+        });
+        return dependantOrders;
+      }),
+    ).then(res => res.reduce((acc, curr) => [...acc, ...curr], [])),
+    Promise.all(
+      deadWorkerpools.map(async (workerpool) => {
+        const dependantOrders = await RequestorderModel.find({
+          'order.workerpool': workerpool,
+          status: STATUS_MAP.OPEN,
+          remaining: { $gt: 0 },
+        });
+        return dependantOrders;
+      }),
+    ).then(res => res.reduce((acc, curr) => [...acc, ...curr], [])),
+  ]);
+
+  await Promise.all([
+    cleanApporders({
+      orders: userWorkerpoolDependantApporders,
+      reason: 'KYC revoked workerpool owner dependant',
+    }),
+    cleanDatasetorders({
+      orders: userWorkerpoolDependantDatasetorders,
+      reason: 'KYC revoked workerpool owner dependant',
+    }),
+    cleanRequestorders({
+      orders: userWorkerpoolDependantRequestorders,
+      reason: 'KYC revoked workerpool owner dependant',
+    }),
+  ]);
 };
 
 const updateApporder = async ({
@@ -783,6 +1124,7 @@ module.exports = {
   cleanTransferedAppOrders,
   cleanTransferedDatasetOrders,
   cleanTransferedWorkerpoolOrders,
+  cleanRevokedUserOrders,
   updateApporder,
   updateDatasetorder,
   updateWorkerpoolorder,

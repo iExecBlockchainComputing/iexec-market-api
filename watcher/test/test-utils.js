@@ -287,10 +287,9 @@ const find = async (dbName, collection, findObject) => {
   return docs;
 };
 
-const dropDB = async (dbName) => {
-  const { db } = await getMongoose({ db: dbName });
-  // await db.dropDatabase();
-  const collections = [
+const dropDB = async (
+  dbName,
+  collectionsToDelete = [
     APPORDERS_COLLECTION,
     DATASETORDERS_COLLECTION,
     WORKERPOOLORDERS_COLLECTION,
@@ -298,9 +297,11 @@ const dropDB = async (dbName) => {
     DEALS_COLLECTION,
     CATEGORIES_COLLECTION,
     COUNTERS_COLLECTION,
-  ];
+  ],
+) => {
+  const { db } = await getMongoose({ db: dbName });
   await Promise.all(
-    collections.map(e => db
+    collectionsToDelete.map(e => db
       .collection(e)
       .deleteMany()
       .catch(err => console.log(`${e}.deleteMany()`, err))),

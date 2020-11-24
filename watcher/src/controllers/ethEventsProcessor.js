@@ -14,6 +14,7 @@ const {
   cleanTransferedAppOrders,
   cleanTransferedDatasetOrders,
   cleanTransferedWorkerpoolOrders,
+  cleanRevokedUserOrders,
 } = require('../services/order');
 const { tokenIdToAddress } = require('../utils/iexec-utils');
 const { NULL_ADDRESS, cleanRPC } = require('../utils/eth-utils');
@@ -270,6 +271,25 @@ const processTransferWorkerpool = async (event, { isReplay = false } = {}) => {
   }
 };
 
+const processRoleRevoked = async (event, { isReplay = false } = {}) => {
+  try {
+    log('processRoleRevoked', isReplay ? 'replay' : '', event.transactionHash);
+    const { account, role } = cleanRPC(event.args);
+    await cleanRevokedUserOrders({
+      address: account,
+      role,
+      blockNumber: isReplay ? undefined : event.blockNumber,
+    });
+  } catch (error) {
+    errorHandler(error, {
+      type: 'process-event',
+      function: 'processRoleRevoked',
+      event,
+      isReplay,
+    });
+  }
+};
+
 const processNewBlock = async (blockNumber) => {
   try {
     log('Block', blockNumber);
@@ -294,5 +314,6 @@ module.exports = {
   processClosedDatasetOrder,
   processClosedWorkerpoolOrder,
   processClosedRequestOrder,
+  processRoleRevoked,
   processNewBlock,
 };
