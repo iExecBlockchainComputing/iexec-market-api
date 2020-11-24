@@ -18,6 +18,7 @@ pipeline:
       - cd watcher/
       - npm i
       - npm run ci-test-token
+      - npm run ci-test-token-enterprise
       - npm run ci-test-native
 
   api-publish:
