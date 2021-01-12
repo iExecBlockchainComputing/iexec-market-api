@@ -34,28 +34,28 @@
     "kcors": "2.2.2",
     "koa": "^2.11.0",
     "koa-bodyparser": "^4.3.0",
-    "koa-ratelimit": "^4.2.1",
-    "koa-router": "^9.4.0",
+    "koa-ratelimit": "^5.0.0",
+    "koa-router": "^10.0.0",
     "mongoose": "^5.10.9",
     "query-string": "^6.13.5",
     "randomstring": "1.1.5",
     "redis": "^3.0.2",
     "socket.io": "^2.3.0",
     "socket.io-redis": "^5.2.0",
-    "yup": "^0.29.3"
+    "yup": "^0.32.8"
   },
   "devDependencies": {
     "@babel/cli": "^7.8.4",
     "@babel/core": "^7.10.2",
     "@babel/preset-env": "^7.10.2",
-    "eslint": "6.8.0",
-    "eslint-config-airbnb-base": "13.2.0",
+    "eslint": "^7.17.0",
+    "eslint-config-airbnb-base": "^14.2.1",
     "eslint-plugin-import": "^2.20.1",
     "iexec": "^5.1.0",
     "jest": "^26.5.3",
-    "prettier": "1.19.1",
-    "prettier-eslint": "9.0.1",
-    "supertest": "^5.0.0"
+    "prettier": "^2.2.1",
+    "prettier-eslint": "^12.0.0",
+    "supertest": "^6.0.1"
   },
   "babel": {
     "presets": [
