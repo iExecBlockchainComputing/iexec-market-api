@@ -1,5 +1,5 @@
 const ethers = require('ethers');
-const erlcDesc = require('@iexec/erlc/build/contracts-min/ERLCSwap.json');
+const erlcDesc = require('@iexec/erlc/build/contracts-min/ERLCTokenSwap.json');
 const { utils, IExec } = require('iexec');
 const socket = require('../src/loaders/socket');
 // jest spies

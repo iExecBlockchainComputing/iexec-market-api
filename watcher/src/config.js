@@ -6,7 +6,7 @@ const datasetRegistryDesc = require('@iexec/poco/build/contracts-min/DatasetRegi
 const appDesc = require('@iexec/poco/build/contracts-min/App.json');
 const workerpoolDesc = require('@iexec/poco/build/contracts-min/Workerpool.json');
 const datasetDesc = require('@iexec/poco/build/contracts-min/Dataset.json');
-const eRlcDesc = require('@iexec/erlc/build/contracts-min/ERLCSwap.json');
+const eRlcDesc = require('@iexec/erlc/build/contracts-min/ERLCTokenSwap.json');
 const { FLAVOURS, STANDARD_FLAVOUR } = require('./utils/iexec-utils');
 const { logger } = require('./utils/logger');
 
