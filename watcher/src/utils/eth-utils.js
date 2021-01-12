@@ -9,7 +9,7 @@ const NULL_ADDRESS = '0x0000000000000000000000000000000000000000';
 const CALL_AT_BLOCK_MAX_TRY = 10;
 const RATE_LIMIT_MAX_TRY = 20;
 
-const getRandomInt = max => Math.floor(Math.random() * max);
+const getRandomInt = (max) => Math.floor(Math.random() * max);
 
 const throwIfTimeout = (promise, timeout = 30 * 1000) => Promise.race([
   promise,
@@ -29,7 +29,7 @@ const cleanRPC = (res) => {
     return res.toString();
   }
   if (Array.isArray(res) && res.length === Object.keys(res).length) {
-    return res.map(e => cleanRPC(e));
+    return res.map((e) => cleanRPC(e));
   }
   if (typeof res === 'object' && res._isBigNumber) {
     return res.toString();
@@ -122,7 +122,7 @@ const callAtBlock = async (method, args = [], blockNumber) => {
   return cleanRPC(res[0]);
 };
 
-const getBlockNumber = provider => retryableCall(provider, 'getBlockNumber', []);
+const getBlockNumber = (provider) => retryableCall(provider, 'getBlockNumber', []);
 
 const queryFilter = (contract, args) => retryableCall(contract, 'queryFilter', args);
 

@@ -21,10 +21,8 @@ const getOhlc = async ({
       dealid: 'asc', // make sort deterministic
     };
     const limit = 100;
-    const deals = await DealModel.find(request)
-      .sort(sort)
-      .limit(limit);
-    return deals.map(e => [e.blockTimestamp, e.workerpool.price, e.volume]);
+    const deals = await DealModel.find(request).sort(sort).limit(limit);
+    return deals.map((e) => [e.blockTimestamp, e.workerpool.price, e.volume]);
   } catch (e) {
     log('getOhlc() error', e);
     throw e;
@@ -125,7 +123,7 @@ const getDeals = async ({
     const nextPage = deals.length === limit ? skip + limit : undefined;
 
     return {
-      deals: deals.map(e => e.toJSON()),
+      deals: deals.map((e) => e.toJSON()),
       count,
       nextPage,
     };

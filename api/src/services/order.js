@@ -49,10 +49,10 @@ const log = logger.extend('services:order');
 
 log('instanciating service');
 
-const minTagClause = minTag => minTag
+const minTagClause = (minTag) => minTag
   && minTag !== NULL_BYTES32 && { tagArray: { $all: tagToArray(minTag) } };
 
-const maxTagClause = maxTag => maxTag && { tagArray: { $nin: excludeTagArray(tagToArray(maxTag)) } };
+const maxTagClause = (maxTag) => maxTag && { tagArray: { $nin: excludeTagArray(tagToArray(maxTag)) } };
 
 const tagClause = ({ minTag, maxTag }) => {
   if (!minTag && !maxTag) {
@@ -74,11 +74,11 @@ const tagClause = ({ minTag, maxTag }) => {
   return {};
 };
 
-const minVolumeClause = minVolume => minVolume && { remaining: { $gte: minVolume } };
+const minVolumeClause = (minVolume) => minVolume && { remaining: { $gte: minVolume } };
 
-const minTrustClause = minTrust => minTrust && minTrust > 1 && { 'order.trust': { $gte: minTrust } };
+const minTrustClause = (minTrust) => minTrust && minTrust > 1 && { 'order.trust': { $gte: minTrust } };
 
-const maxTrustClause = maxTrust => (maxTrust || maxTrust === 0) && { 'order.trust': { $lte: maxTrust } };
+const maxTrustClause = (maxTrust) => (maxTrust || maxTrust === 0) && { 'order.trust': { $lte: maxTrust } };
 
 const fetchContractOwner = async ({
   chainId = throwIfMissing(),
@@ -395,8 +395,8 @@ const cleanApporderDependantOrders = async ({
     }
 
     const dependantOrders = await Promise.all(
-      toCheckOrders.map(requestorder => checkMatchableApporder({ chainId, order: requestorder.order })),
-    ).then(matchResults => toCheckOrders.filter((requestorder, index) => !matchResults[index]));
+      toCheckOrders.map((requestorder) => checkMatchableApporder({ chainId, order: requestorder.order })),
+    ).then((matchResults) => toCheckOrders.filter((requestorder, index) => !matchResults[index]));
 
     const cleanedOrders = await Promise.all(
       dependantOrders.map(async (e) => {
@@ -411,8 +411,8 @@ const cleanApporderDependantOrders = async ({
       }),
     );
     cleanedOrders
-      .filter(e => !!e)
-      .map(e => e.toJSON())
+      .filter((e) => !!e)
+      .map((e) => e.toJSON())
       .forEach((e) => {
         log('apporder dependant requestorder cleaned', e.orderHash);
         eventEmitter.emit('requestorder_cleaned', e);
@@ -463,8 +463,8 @@ const cleanDatasetorderDependantOrders = async ({
     });
 
     const dependantOrders = await Promise.all(
-      toCheckOrders.map(requestorder => checkMatchableDatasetorder({ chainId, order: requestorder.order })),
-    ).then(matchResults => toCheckOrders.filter((requestorder, index) => !matchResults[index]));
+      toCheckOrders.map((requestorder) => checkMatchableDatasetorder({ chainId, order: requestorder.order })),
+    ).then((matchResults) => toCheckOrders.filter((requestorder, index) => !matchResults[index]));
 
     const cleanedOrders = await Promise.all(
       dependantOrders.map(async (e) => {
@@ -479,8 +479,8 @@ const cleanDatasetorderDependantOrders = async ({
       }),
     );
     cleanedOrders
-      .filter(e => !!e)
-      .map(e => e.toJSON())
+      .filter((e) => !!e)
+      .map((e) => e.toJSON())
       .forEach((e) => {
         log('datasetorder dependant requestorder cleaned', e.orderHash);
         eventEmitter.emit('requestorder_cleaned', e);
@@ -608,7 +608,7 @@ const getApporders = async ({
     const nextPage = orders.length === limit ? skip + limit : undefined;
 
     return {
-      orders: orders.map(e => e.toJSON()),
+      orders: orders.map((e) => e.toJSON()),
       count,
       nextPage,
     };
@@ -681,7 +681,7 @@ const getDatasetorders = async ({
     const nextPage = orders.length === limit ? skip + limit : undefined;
 
     return {
-      orders: orders.map(e => e.toJSON()),
+      orders: orders.map((e) => e.toJSON()),
       count,
       nextPage,
     };
@@ -758,7 +758,7 @@ const getWorkerpoolorders = async ({
     const nextPage = orders.length === limit ? skip + limit : undefined;
 
     return {
-      orders: orders.map(e => e.toJSON()),
+      orders: orders.map((e) => e.toJSON()),
       count,
       nextPage,
     };
@@ -833,7 +833,7 @@ const getRequestorders = async ({
     const nextPage = orders.length === limit ? skip + limit : undefined;
 
     return {
-      orders: orders.map(e => e.toJSON()),
+      orders: orders.map((e) => e.toJSON()),
       count,
       nextPage,
     };
@@ -1507,8 +1507,8 @@ const unpublishOrders = async ({
     default:
       throw new InternalError('unsupported target');
   }
-  await Promise.all(ordersToUnpublish.map(e => e.delete()));
-  return ordersToUnpublish.map(e => e.toJSON());
+  await Promise.all(ordersToUnpublish.map((e) => e.delete()));
+  return ordersToUnpublish.map((e) => e.toJSON());
 };
 
 const unpublishApporders = async ({
@@ -1531,8 +1531,8 @@ const unpublishApporders = async ({
       resourceId,
       signer: authorizedAddress,
     });
-    unpublishedOrders.forEach(e => eventEmitter.emit('apporder_unpublished', e));
-    return unpublishedOrders.map(e => e.orderHash);
+    unpublishedOrders.forEach((e) => eventEmitter.emit('apporder_unpublished', e));
+    return unpublishedOrders.map((e) => e.orderHash);
   } catch (e) {
     log('unpublishApporders() error', e);
     throw e;
@@ -1559,8 +1559,8 @@ const unpublishDatasetorders = async ({
       resourceId,
       signer: authorizedAddress,
     });
-    unpublishedOrders.forEach(e => eventEmitter.emit('datasetorder_unpublished', e));
-    return unpublishedOrders.map(e => e.orderHash);
+    unpublishedOrders.forEach((e) => eventEmitter.emit('datasetorder_unpublished', e));
+    return unpublishedOrders.map((e) => e.orderHash);
   } catch (e) {
     log('unpublishDatasetorders() error', e);
     throw e;
@@ -1587,8 +1587,8 @@ const unpublishWorkerpoolorders = async ({
       resourceId,
       signer: authorizedAddress,
     });
-    unpublishedOrders.forEach(e => eventEmitter.emit('workerpoolorder_unpublished', e));
-    return unpublishedOrders.map(e => e.orderHash);
+    unpublishedOrders.forEach((e) => eventEmitter.emit('workerpoolorder_unpublished', e));
+    return unpublishedOrders.map((e) => e.orderHash);
   } catch (e) {
     log('unpublishWorkerpoolorders() error', e);
     throw e;
@@ -1615,8 +1615,8 @@ const unpublishRequestorders = async ({
       resourceId,
       signer: authorizedAddress,
     });
-    unpublishedOrders.forEach(e => eventEmitter.emit('requestorder_unpublished', e));
-    return unpublishedOrders.map(e => e.orderHash);
+    unpublishedOrders.forEach((e) => eventEmitter.emit('requestorder_unpublished', e));
+    return unpublishedOrders.map((e) => e.orderHash);
   } catch (e) {
     log('unpublishRequestorders() error', e);
     throw e;

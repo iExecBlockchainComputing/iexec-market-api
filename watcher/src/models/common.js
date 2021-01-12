@@ -14,19 +14,19 @@ const addressValidator = {
 };
 
 const bytes32validator = {
-  validator: str => /^(0x)([0-9a-f]{2}){32}$/.test(str),
+  validator: (str) => /^(0x)([0-9a-f]{2}){32}$/.test(str),
   message: '{PATH} is not a valid bytes32',
 };
 
 const timestampValidator = {
-  validator: str => /^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])T(2[0-3]|[01][0-9]):[0-5][0-9]:[0-5][0-9].[0-9][0-9][0-9]Z$/.test(
+  validator: (str) => /^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])T(2[0-3]|[01][0-9]):[0-5][0-9]:[0-5][0-9].[0-9][0-9][0-9]Z$/.test(
     str,
   ),
   message: '{PATH} is not a valid timestamp',
 };
 
 const orderSignValidator = {
-  validator: str => /^(0x)([0-9a-f]{2})*/.test(str),
+  validator: (str) => /^(0x)([0-9a-f]{2})*/.test(str),
   message: '{PATH} is not a valid sign',
 };
 

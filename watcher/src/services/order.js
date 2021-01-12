@@ -51,8 +51,8 @@ const cleanApporders = async ({
     }),
   );
   cleanedOrders
-    .filter(e => !!e)
-    .map(e => e.toJSON())
+    .filter((e) => !!e)
+    .map((e) => e.toJSON())
     .forEach((e) => {
       log('apporder cleaned', e.orderHash, reason);
       eventEmitter.emit('apporder_cleaned', e);
@@ -77,8 +77,8 @@ const cleanDatasetorders = async ({
     }),
   );
   cleanedOrders
-    .filter(e => !!e)
-    .map(e => e.toJSON())
+    .filter((e) => !!e)
+    .map((e) => e.toJSON())
     .forEach((e) => {
       log('datasetorder cleaned', e.orderHash, reason);
       eventEmitter.emit('datasetorder_cleaned', e);
@@ -103,8 +103,8 @@ const cleanWorkerpoolorders = async ({
     }),
   );
   cleanedOrders
-    .filter(e => !!e)
-    .map(e => e.toJSON())
+    .filter((e) => !!e)
+    .map((e) => e.toJSON())
     .forEach((e) => {
       log('workerpoolorder cleaned', e.orderHash, reason);
       eventEmitter.emit('workerpoolorder_cleaned', e);
@@ -129,8 +129,8 @@ const cleanRequestorders = async ({
     }),
   );
   cleanedOrders
-    .filter(e => !!e)
-    .map(e => e.toJSON())
+    .filter((e) => !!e)
+    .map((e) => e.toJSON())
     .forEach((e) => {
       log('requestorder cleaned', e.orderHash, reason);
       eventEmitter.emit('requestorder_cleaned', e);
@@ -278,8 +278,8 @@ const cleanApporderDependantOrders = async ({
     }
 
     const dependantOrders = await Promise.all(
-      toCheckOrders.map(requestorder => checkMatchableApporder({ order: requestorder.order })),
-    ).then(matchResults => toCheckOrders.filter((requestorder, index) => !matchResults[index]));
+      toCheckOrders.map((requestorder) => checkMatchableApporder({ order: requestorder.order })),
+    ).then((matchResults) => toCheckOrders.filter((requestorder, index) => !matchResults[index]));
 
     await cleanRequestorders({
       orders: dependantOrders,
@@ -330,8 +330,8 @@ const cleanDatasetorderDependantOrders = async ({
     });
 
     const dependantOrders = await Promise.all(
-      toCheckOrders.map(requestorder => checkMatchableDatasetorder({ order: requestorder.order })),
-    ).then(matchResults => toCheckOrders.filter((requestorder, index) => !matchResults[index]));
+      toCheckOrders.map((requestorder) => checkMatchableDatasetorder({ order: requestorder.order })),
+    ).then((matchResults) => toCheckOrders.filter((requestorder, index) => !matchResults[index]));
 
     await cleanRequestorders({
       orders: dependantOrders,
@@ -366,7 +366,7 @@ const cleanBalanceDependantOrders = async ({
         'order.workerpoolprice': { $gt: 0 },
         remaining: { $gt: 0 },
       });
-      return workerpoolorders.filter(e => userStake.lt(
+      return workerpoolorders.filter((e) => userStake.lt(
         new BN(e.order.workerpoolprice)
           .mul(new BN(30))
           .div(new BN(100))
@@ -380,7 +380,7 @@ const cleanBalanceDependantOrders = async ({
         status: STATUS_MAP.OPEN,
         remaining: { $gt: 0 },
       });
-      return requestorders.filter(e => userStake.lt(
+      return requestorders.filter((e) => userStake.lt(
         new BN(e.order.appmaxprice)
           .add(
             new BN(e.order.datasetmaxprice).add(
@@ -602,13 +602,14 @@ const cleanRevokedUserOrders = async ({
           return resourceAddress;
         } catch (err) {
           log(
-            `failed to get app ${i} for owner ${address}${blockNumberOverride
-              && ` at block ${blockNumberOverride}`} : ${err}`,
+            `failed to get app ${i} for owner ${address}${
+              blockNumberOverride && ` at block ${blockNumberOverride}`
+            } : ${err}`,
           );
           return null;
         }
       })
-      .filter(e => e !== null),
+      .filter((e) => e !== null),
   );
   log('deadApps (owner KYC revoked)', deadApps);
   // list orders depending on user apps
@@ -626,7 +627,7 @@ const cleanRevokedUserOrders = async ({
         });
         return dependantOrders;
       }),
-    ).then(res => res.reduce((acc, curr) => [...acc, ...curr], [])),
+    ).then((res) => res.reduce((acc, curr) => [...acc, ...curr], [])),
     Promise.all(
       deadApps.map(async (app) => {
         const dependantOrders = await WorkerpoolorderModel.find({
@@ -636,7 +637,7 @@ const cleanRevokedUserOrders = async ({
         });
         return dependantOrders;
       }),
-    ).then(res => res.reduce((acc, curr) => [...acc, ...curr], [])),
+    ).then((res) => res.reduce((acc, curr) => [...acc, ...curr], [])),
     Promise.all(
       deadApps.map(async (app) => {
         const dependantOrders = await RequestorderModel.find({
@@ -646,7 +647,7 @@ const cleanRevokedUserOrders = async ({
         });
         return dependantOrders;
       }),
-    ).then(res => res.reduce((acc, curr) => [...acc, ...curr], [])),
+    ).then((res) => res.reduce((acc, curr) => [...acc, ...curr], [])),
   ]);
 
   await Promise.all([
@@ -686,13 +687,14 @@ const cleanRevokedUserOrders = async ({
           return resourceAddress;
         } catch (err) {
           log(
-            `failed to get dataset ${i} for owner ${address}${blockNumberOverride
-              && ` at block ${blockNumberOverride}`} : ${err}`,
+            `failed to get dataset ${i} for owner ${address}${
+              blockNumberOverride && ` at block ${blockNumberOverride}`
+            } : ${err}`,
           );
           return null;
         }
       })
-      .filter(e => e !== null),
+      .filter((e) => e !== null),
   );
   log('deadDatasets (owner KYC revoked)', deadDatasets);
   // list orders depending on user datasets
@@ -710,7 +712,7 @@ const cleanRevokedUserOrders = async ({
         });
         return dependantOrders;
       }),
-    ).then(res => res.reduce((acc, curr) => [...acc, ...curr], [])),
+    ).then((res) => res.reduce((acc, curr) => [...acc, ...curr], [])),
     Promise.all(
       deadDatasets.map(async (dataset) => {
         const dependantOrders = await WorkerpoolorderModel.find({
@@ -720,7 +722,7 @@ const cleanRevokedUserOrders = async ({
         });
         return dependantOrders;
       }),
-    ).then(res => res.reduce((acc, curr) => [...acc, ...curr], [])),
+    ).then((res) => res.reduce((acc, curr) => [...acc, ...curr], [])),
     Promise.all(
       deadDatasets.map(async (dataset) => {
         const dependantOrders = await RequestorderModel.find({
@@ -730,7 +732,7 @@ const cleanRevokedUserOrders = async ({
         });
         return dependantOrders;
       }),
-    ).then(res => res.reduce((acc, curr) => [...acc, ...curr], [])),
+    ).then((res) => res.reduce((acc, curr) => [...acc, ...curr], [])),
   ]);
 
   await Promise.all([
@@ -770,13 +772,14 @@ const cleanRevokedUserOrders = async ({
           return resourceAddress;
         } catch (err) {
           log(
-            `failed to get workerpool ${i} for owner ${address}${blockNumberOverride
-              && ` at block ${blockNumberOverride}`} : ${err}`,
+            `failed to get workerpool ${i} for owner ${address}${
+              blockNumberOverride && ` at block ${blockNumberOverride}`
+            } : ${err}`,
           );
           return null;
         }
       })
-      .filter(e => e !== null),
+      .filter((e) => e !== null),
   );
   log('deadWorkerpools (owner KYC revoked)', deadWorkerpools);
   // list orders depending on user workerpools
@@ -794,7 +797,7 @@ const cleanRevokedUserOrders = async ({
         });
         return dependantOrders;
       }),
-    ).then(res => res.reduce((acc, curr) => [...acc, ...curr], [])),
+    ).then((res) => res.reduce((acc, curr) => [...acc, ...curr], [])),
     Promise.all(
       deadWorkerpools.map(async (workerpool) => {
         const dependantOrders = await DatasetorderModel.find({
@@ -804,7 +807,7 @@ const cleanRevokedUserOrders = async ({
         });
         return dependantOrders;
       }),
-    ).then(res => res.reduce((acc, curr) => [...acc, ...curr], [])),
+    ).then((res) => res.reduce((acc, curr) => [...acc, ...curr], [])),
     Promise.all(
       deadWorkerpools.map(async (workerpool) => {
         const dependantOrders = await RequestorderModel.find({
@@ -814,7 +817,7 @@ const cleanRevokedUserOrders = async ({
         });
         return dependantOrders;
       }),
-    ).then(res => res.reduce((acc, curr) => [...acc, ...curr], [])),
+    ).then((res) => res.reduce((acc, curr) => [...acc, ...curr], [])),
   ]);
 
   await Promise.all([

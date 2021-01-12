@@ -10,7 +10,7 @@ const {
 const { toJsonOption } = require('./common').option;
 
 // fix mongoose String required (https://github.com/Automattic/mongoose/issues/7150)
-Schema.Types.String.checkRequired(v => v != null);
+Schema.Types.String.checkRequired((v) => v != null);
 
 const log = logger.extend('models:categoryModel');
 

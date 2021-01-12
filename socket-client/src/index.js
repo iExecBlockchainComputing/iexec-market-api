@@ -10,7 +10,9 @@ ws.on("connect_error", error => console.log("connect_error: ", error));
 ws.on("connect_timeout", () => console.log("connect_timeout"));
 ws.on("error", error => console.log("error: ", error));
 ws.on("reconnect", attempt => console.log("reconnect: ", attempt));
-ws.on("reconnect_attempt", attempt => console.log("reconnect_attempt: ", attempt));
+ws.on("reconnect_attempt", attempt =>
+  console.log("reconnect_attempt: ", attempt)
+);
 ws.on("reconnecting", attempt => console.log("reconnecting: ", attempt));
 ws.on("reconnect_error", error => console.log("reconnect_error: ", error));
 ws.on("reconnect_failed", () => console.log("reconnect_failed"));

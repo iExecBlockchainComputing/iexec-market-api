@@ -147,7 +147,7 @@ const getMatchableRequestorder = async (
       volume: volume || workerpoolorder.volume,
       tag: apporder.tag,
     })
-    .then(o => iexec.order.signRequestorder(o, { checkRequest: false }));
+    .then((o) => iexec.order.signRequestorder(o, { checkRequest: false }));
   return requestorder;
 };
 
@@ -280,10 +280,7 @@ const addRequestorders = async (dbName, orders) => {
 
 const find = async (dbName, collection, findObject) => {
   const { db } = await getMongoose({ db: dbName });
-  const docs = await db
-    .collection(collection)
-    .find(findObject)
-    .toArray();
+  const docs = await db.collection(collection).find(findObject).toArray();
   return docs;
 };
 
@@ -301,10 +298,10 @@ const dropDB = async (
 ) => {
   const { db } = await getMongoose({ db: dbName });
   await Promise.all(
-    collectionsToDelete.map(e => db
+    collectionsToDelete.map((e) => db
       .collection(e)
       .deleteMany()
-      .catch(err => console.log(`${e}.deleteMany()`, err))),
+      .catch((err) => console.log(`${e}.deleteMany()`, err))),
   );
 };
 

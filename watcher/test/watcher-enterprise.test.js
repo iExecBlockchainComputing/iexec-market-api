@@ -283,26 +283,26 @@ describe('Watcher enterprise specific', () => {
     expect(socketEmitSpy).toHaveBeenCalledTimes(4);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'apporder_unpublished',
+        (args) => args[1] === 'apporder_unpublished',
       ),
     ).toMatchObject([[`${chainId}:orders`, 'apporder_unpublished', appHash]]);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'datasetorder_unpublished',
+        (args) => args[1] === 'datasetorder_unpublished',
       ),
     ).toMatchObject([
       [`${chainId}:orders`, 'datasetorder_unpublished', datasetHash],
     ]);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'workerpoolorder_unpublished',
+        (args) => args[1] === 'workerpoolorder_unpublished',
       ),
     ).toMatchObject([
       [`${chainId}:orders`, 'workerpoolorder_unpublished', workerpoolHash],
     ]);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'requestorder_unpublished',
+        (args) => args[1] === 'requestorder_unpublished',
       ),
     ).toMatchObject([
       [`${chainId}:orders`, 'requestorder_unpublished', requestHash],
@@ -465,7 +465,7 @@ describe('Watcher enterprise specific', () => {
     expect(socketEmitSpy).toHaveBeenCalledTimes(6);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'datasetorder_unpublished',
+        (args) => args[1] === 'datasetorder_unpublished',
       ),
     ).toMatchObject([
       [
@@ -481,7 +481,7 @@ describe('Watcher enterprise specific', () => {
     ]);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'workerpoolorder_unpublished',
+        (args) => args[1] === 'workerpoolorder_unpublished',
       ),
     ).toMatchObject([
       [
@@ -497,7 +497,7 @@ describe('Watcher enterprise specific', () => {
     ]);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'requestorder_unpublished',
+        (args) => args[1] === 'requestorder_unpublished',
       ),
     ).toMatchObject([
       [
@@ -672,7 +672,7 @@ describe('Watcher enterprise specific', () => {
     expect(socketEmitSpy).toHaveBeenCalledTimes(6);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'apporder_unpublished',
+        (args) => args[1] === 'apporder_unpublished',
       ),
     ).toMatchObject([
       [`${chainId}:orders`, 'apporder_unpublished', appDatasetDependantHash],
@@ -680,7 +680,7 @@ describe('Watcher enterprise specific', () => {
     ]);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'workerpoolorder_unpublished',
+        (args) => args[1] === 'workerpoolorder_unpublished',
       ),
     ).toMatchObject([
       [
@@ -696,7 +696,7 @@ describe('Watcher enterprise specific', () => {
     ]);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'requestorder_unpublished',
+        (args) => args[1] === 'requestorder_unpublished',
       ),
     ).toMatchObject([
       [
@@ -878,7 +878,7 @@ describe('Watcher enterprise specific', () => {
     expect(socketEmitSpy).toHaveBeenCalledTimes(6);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'apporder_unpublished',
+        (args) => args[1] === 'apporder_unpublished',
       ),
     ).toMatchObject([
       [`${chainId}:orders`, 'apporder_unpublished', appWorkerpoolDependantHash],
@@ -890,7 +890,7 @@ describe('Watcher enterprise specific', () => {
     ]);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'datasetorder_unpublished',
+        (args) => args[1] === 'datasetorder_unpublished',
       ),
     ).toMatchObject([
       [
@@ -906,7 +906,7 @@ describe('Watcher enterprise specific', () => {
     ]);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'requestorder_unpublished',
+        (args) => args[1] === 'requestorder_unpublished',
       ),
     ).toMatchObject([
       [
@@ -1084,26 +1084,26 @@ describe('Recover on start enterprise specific', () => {
     expect(socketEmitSpy).toHaveBeenCalledTimes(4);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'apporder_unpublished',
+        (args) => args[1] === 'apporder_unpublished',
       ),
     ).toMatchObject([[`${chainId}:orders`, 'apporder_unpublished', appHash]]);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'datasetorder_unpublished',
+        (args) => args[1] === 'datasetorder_unpublished',
       ),
     ).toMatchObject([
       [`${chainId}:orders`, 'datasetorder_unpublished', datasetHash],
     ]);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'workerpoolorder_unpublished',
+        (args) => args[1] === 'workerpoolorder_unpublished',
       ),
     ).toMatchObject([
       [`${chainId}:orders`, 'workerpoolorder_unpublished', workerpoolHash],
     ]);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'requestorder_unpublished',
+        (args) => args[1] === 'requestorder_unpublished',
       ),
     ).toMatchObject([
       [`${chainId}:orders`, 'requestorder_unpublished', requestHash],
@@ -1269,7 +1269,7 @@ describe('Recover on start enterprise specific', () => {
     expect(socketEmitSpy).toHaveBeenCalledTimes(6);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'datasetorder_unpublished',
+        (args) => args[1] === 'datasetorder_unpublished',
       ),
     ).toMatchObject([
       [
@@ -1285,7 +1285,7 @@ describe('Recover on start enterprise specific', () => {
     ]);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'workerpoolorder_unpublished',
+        (args) => args[1] === 'workerpoolorder_unpublished',
       ),
     ).toMatchObject([
       [
@@ -1301,7 +1301,7 @@ describe('Recover on start enterprise specific', () => {
     ]);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'requestorder_unpublished',
+        (args) => args[1] === 'requestorder_unpublished',
       ),
     ).toMatchObject([
       [
@@ -1479,7 +1479,7 @@ describe('Recover on start enterprise specific', () => {
     expect(socketEmitSpy).toHaveBeenCalledTimes(6);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'apporder_unpublished',
+        (args) => args[1] === 'apporder_unpublished',
       ),
     ).toMatchObject([
       [`${chainId}:orders`, 'apporder_unpublished', appDatasetDependantHash],
@@ -1487,7 +1487,7 @@ describe('Recover on start enterprise specific', () => {
     ]);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'workerpoolorder_unpublished',
+        (args) => args[1] === 'workerpoolorder_unpublished',
       ),
     ).toMatchObject([
       [
@@ -1503,7 +1503,7 @@ describe('Recover on start enterprise specific', () => {
     ]);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'requestorder_unpublished',
+        (args) => args[1] === 'requestorder_unpublished',
       ),
     ).toMatchObject([
       [
@@ -1688,7 +1688,7 @@ describe('Recover on start enterprise specific', () => {
     expect(socketEmitSpy).toHaveBeenCalledTimes(6);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'apporder_unpublished',
+        (args) => args[1] === 'apporder_unpublished',
       ),
     ).toMatchObject([
       [`${chainId}:orders`, 'apporder_unpublished', appWorkerpoolDependantHash],
@@ -1700,7 +1700,7 @@ describe('Recover on start enterprise specific', () => {
     ]);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'datasetorder_unpublished',
+        (args) => args[1] === 'datasetorder_unpublished',
       ),
     ).toMatchObject([
       [
@@ -1716,7 +1716,7 @@ describe('Recover on start enterprise specific', () => {
     ]);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'requestorder_unpublished',
+        (args) => args[1] === 'requestorder_unpublished',
       ),
     ).toMatchObject([
       [
@@ -2031,26 +2031,26 @@ describe('Replay Past enterprise specific', () => {
     expect(socketEmitSpy).toHaveBeenCalledTimes(4);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'apporder_unpublished',
+        (args) => args[1] === 'apporder_unpublished',
       ),
     ).toMatchObject([[`${chainId}:orders`, 'apporder_unpublished', appHash]]);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'datasetorder_unpublished',
+        (args) => args[1] === 'datasetorder_unpublished',
       ),
     ).toMatchObject([
       [`${chainId}:orders`, 'datasetorder_unpublished', datasetHash],
     ]);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'workerpoolorder_unpublished',
+        (args) => args[1] === 'workerpoolorder_unpublished',
       ),
     ).toMatchObject([
       [`${chainId}:orders`, 'workerpoolorder_unpublished', workerpoolHash],
     ]);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'requestorder_unpublished',
+        (args) => args[1] === 'requestorder_unpublished',
       ),
     ).toMatchObject([
       [`${chainId}:orders`, 'requestorder_unpublished', requestHash],
@@ -2216,7 +2216,7 @@ describe('Replay Past enterprise specific', () => {
     expect(socketEmitSpy).toHaveBeenCalledTimes(6);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'datasetorder_unpublished',
+        (args) => args[1] === 'datasetorder_unpublished',
       ),
     ).toMatchObject([
       [
@@ -2232,7 +2232,7 @@ describe('Replay Past enterprise specific', () => {
     ]);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'workerpoolorder_unpublished',
+        (args) => args[1] === 'workerpoolorder_unpublished',
       ),
     ).toMatchObject([
       [
@@ -2248,7 +2248,7 @@ describe('Replay Past enterprise specific', () => {
     ]);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'requestorder_unpublished',
+        (args) => args[1] === 'requestorder_unpublished',
       ),
     ).toMatchObject([
       [
@@ -2426,7 +2426,7 @@ describe('Replay Past enterprise specific', () => {
     expect(socketEmitSpy).toHaveBeenCalledTimes(6);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'apporder_unpublished',
+        (args) => args[1] === 'apporder_unpublished',
       ),
     ).toMatchObject([
       [`${chainId}:orders`, 'apporder_unpublished', appDatasetDependantHash],
@@ -2434,7 +2434,7 @@ describe('Replay Past enterprise specific', () => {
     ]);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'workerpoolorder_unpublished',
+        (args) => args[1] === 'workerpoolorder_unpublished',
       ),
     ).toMatchObject([
       [
@@ -2450,7 +2450,7 @@ describe('Replay Past enterprise specific', () => {
     ]);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'requestorder_unpublished',
+        (args) => args[1] === 'requestorder_unpublished',
       ),
     ).toMatchObject([
       [
@@ -2635,7 +2635,7 @@ describe('Replay Past enterprise specific', () => {
     expect(socketEmitSpy).toHaveBeenCalledTimes(6);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'apporder_unpublished',
+        (args) => args[1] === 'apporder_unpublished',
       ),
     ).toMatchObject([
       [`${chainId}:orders`, 'apporder_unpublished', appWorkerpoolDependantHash],
@@ -2647,7 +2647,7 @@ describe('Replay Past enterprise specific', () => {
     ]);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'datasetorder_unpublished',
+        (args) => args[1] === 'datasetorder_unpublished',
       ),
     ).toMatchObject([
       [
@@ -2663,7 +2663,7 @@ describe('Replay Past enterprise specific', () => {
     ]);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'requestorder_unpublished',
+        (args) => args[1] === 'requestorder_unpublished',
       ),
     ).toMatchObject([
       [

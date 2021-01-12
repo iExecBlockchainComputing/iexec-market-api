@@ -10,7 +10,7 @@ const datasetorderModel = require('../src/models/datasetorderModel');
 const workerpoolorderModel = require('../src/models/workerpoolorderModel');
 const requestorderModel = require('../src/models/requestorderModel');
 
-const sleep = ms => new Promise(res => setTimeout(res, ms));
+const sleep = (ms) => new Promise((res) => setTimeout(res, ms));
 
 const WALLETS = {
   DEFAULT: {
@@ -56,7 +56,7 @@ const getRandomAddress = () => ethers.utils.getAddress(
   ethers.utils.hexZeroPad(ethers.BigNumber.from(getId()), 20),
 );
 
-const getBytes32 = hexString => ethers.utils.hexZeroPad(hexString, 32);
+const getBytes32 = (hexString) => ethers.utils.hexZeroPad(hexString, 32);
 
 const deployAppFor = async (iexec, owner) => {
   const { address } = await iexec.app.deployApp({
@@ -195,11 +195,11 @@ const getMatchableRequestorder = async (
       trust: workerpoolorder.trust,
       volume: volume || workerpoolorder.volume,
     })
-    .then(o => iexec.order.signRequestorder(o, { checkRequest: false }));
+    .then((o) => iexec.order.signRequestorder(o, { checkRequest: false }));
   return requestorder;
 };
 
-const castOrderPrices = order => ({
+const castOrderPrices = (order) => ({
   ...order,
   ...(order.appmaxprice !== undefined && {
     appmaxprice: parseInt(order.appmaxprice, 10),
@@ -261,10 +261,7 @@ const addressRegex = /^(0x)([0-9a-fA-F]{2}){20}$/;
 
 const find = async (dbName, collection, findObject) => {
   const { db } = await getMongoose({ db: dbName });
-  const docs = await db
-    .collection(collection)
-    .find(findObject)
-    .toArray();
+  const docs = await db.collection(collection).find(findObject).toArray();
   return docs;
 };
 
@@ -281,10 +278,10 @@ const dropDB = async (dbName) => {
     'categories',
   ];
   await Promise.all(
-    collections.map(e => db
+    collections.map((e) => db
       .collection(e)
       .deleteMany()
-      .catch(err => console.log(`${e}.deleteMany()`, err))),
+      .catch((err) => console.log(`${e}.deleteMany()`, err))),
   );
 };
 
@@ -423,7 +420,7 @@ const addRequestorders = async (dbName, orders) => {
   );
 };
 
-const parseResult = res => Object.assign({}, res, { data: JSON.parse(res.text) });
+const parseResult = (res) => ({ ...res, data: JSON.parse(res.text) });
 
 const buildQuery = (endpoint, params) => {
   const stringifiedParams = queryString.stringify(params, {

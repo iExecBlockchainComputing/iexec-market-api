@@ -27,7 +27,7 @@ const STANDARD_FLAVOUR = 'standard';
 const ENTERPRISE_FLAVOUR = 'enterprise';
 const FLAVOURS = [STANDARD_FLAVOUR, ENTERPRISE_FLAVOUR];
 
-const isEnterpriseFlavour = flavour => flavour === ENTERPRISE_FLAVOUR;
+const isEnterpriseFlavour = (flavour) => flavour === ENTERPRISE_FLAVOUR;
 
 const KYC_MEMBER_ROLE = '0xce55f595624c86c7e93aa4cf15cb4a958406550ae728a9b7ffda71a7d62eca73';
 

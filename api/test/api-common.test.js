@@ -6155,8 +6155,8 @@ describe('API', () => {
           // prepare documents
 
           const filterOrders = (orders, ordersToRemove) => {
-            const hashsToRemove = ordersToRemove.map(o => o.orderHash);
-            return orders.filter(o => !hashsToRemove.includes(o.orderHash));
+            const hashsToRemove = ordersToRemove.map((o) => o.orderHash);
+            return orders.filter((o) => !hashsToRemove.includes(o.orderHash));
           };
 
           otherAddress = await iexecUser1.wallet.getAddress();
@@ -6172,7 +6172,7 @@ describe('API', () => {
                     workerpoolmaxprice: 0,
                     category: 0,
                   })
-                  .then(o => iexecUser1.order.signRequestorder(o, {
+                  .then((o) => iexecUser1.order.signRequestorder(o, {
                     checkRequest: false,
                   }));
                 const orderHash = await iexecUser1.order.hashRequestorder(
@@ -6197,7 +6197,7 @@ describe('API', () => {
                     workerpoolmaxprice: 20,
                     category: 0,
                   })
-                  .then(o => iexecUser1.order.signRequestorder(o, {
+                  .then((o) => iexecUser1.order.signRequestorder(o, {
                     checkRequest: false,
                   }));
                 const orderHash = await iexecUser1.order.hashRequestorder(
@@ -6222,7 +6222,7 @@ describe('API', () => {
                     workerpoolmaxprice: 10,
                     category: 0,
                   })
-                  .then(o => iexecUser1.order.signRequestorder(o, {
+                  .then((o) => iexecUser1.order.signRequestorder(o, {
                     checkRequest: false,
                   }));
                 const orderHash = await iexecUser1.order.hashRequestorder(
@@ -6247,7 +6247,7 @@ describe('API', () => {
                     volume: 1234,
                     category: 0,
                   })
-                  .then(o => iexecUser1.order.signRequestorder(o, {
+                  .then((o) => iexecUser1.order.signRequestorder(o, {
                     checkRequest: false,
                   }));
                 const orderHash = await iexecUser1.order.hashRequestorder(
@@ -6272,7 +6272,7 @@ describe('API', () => {
                     workerpoolmaxprice: 0,
                     category: 1,
                   })
-                  .then(o => iexecUser1.order.signRequestorder(o, {
+                  .then((o) => iexecUser1.order.signRequestorder(o, {
                     checkRequest: false,
                   }));
                 const orderHash = await iexecUser1.order.hashRequestorder(
@@ -6297,7 +6297,7 @@ describe('API', () => {
                     workerpoolmaxprice: 0,
                     category: 0,
                   })
-                  .then(o => iexecUser2.order.signRequestorder(o, {
+                  .then((o) => iexecUser2.order.signRequestorder(o, {
                     checkRequest: false,
                   }));
                 const orderHash = await iexecUser1.order.hashRequestorder(
@@ -6323,7 +6323,7 @@ describe('API', () => {
                     category: 0,
                     beneficiary: beneficiaryAddress,
                   })
-                  .then(o => iexecUser1.order.signRequestorder(o, {
+                  .then((o) => iexecUser1.order.signRequestorder(o, {
                     checkRequest: false,
                   }));
                 const orderHash = await iexecUser1.order.hashRequestorder(
@@ -6348,7 +6348,7 @@ describe('API', () => {
                     workerpoolmaxprice: 0,
                     category: 0,
                   })
-                  .then(o => iexecUser1.order.signRequestorder(o, {
+                  .then((o) => iexecUser1.order.signRequestorder(o, {
                     checkRequest: false,
                   }));
                 const orderHash = await iexecUser1.order.hashRequestorder(
@@ -6374,7 +6374,7 @@ describe('API', () => {
                     dataset: datasetAddress,
                     category: 0,
                   })
-                  .then(o => iexecUser1.order.signRequestorder(o, {
+                  .then((o) => iexecUser1.order.signRequestorder(o, {
                     checkRequest: false,
                   }));
                 const orderHash = await iexecUser1.order.hashRequestorder(
@@ -6400,7 +6400,7 @@ describe('API', () => {
                     tag: ['tee'],
                     category: 0,
                   })
-                  .then(o => iexecUser1.order.signRequestorder(o, {
+                  .then((o) => iexecUser1.order.signRequestorder(o, {
                     checkRequest: false,
                   }));
                 const orderHash = await iexecUser1.order.hashRequestorder(
@@ -6426,7 +6426,7 @@ describe('API', () => {
                     tag: ['gpu'],
                     category: 0,
                   })
-                  .then(o => iexecUser1.order.signRequestorder(o, {
+                  .then((o) => iexecUser1.order.signRequestorder(o, {
                     checkRequest: false,
                   }));
                 const orderHash = await iexecUser1.order.hashRequestorder(
@@ -6452,7 +6452,7 @@ describe('API', () => {
                     tag: ['tee', 'gpu'],
                     category: 0,
                   })
-                  .then(o => iexecUser1.order.signRequestorder(o, {
+                  .then((o) => iexecUser1.order.signRequestorder(o, {
                     checkRequest: false,
                   }));
                 const orderHash = await iexecUser1.order.hashRequestorder(
@@ -6478,7 +6478,7 @@ describe('API', () => {
                     workerpoolmaxprice: 0,
                     category: 0,
                   })
-                  .then(o => iexecUser1.order.signRequestorder(o, {
+                  .then((o) => iexecUser1.order.signRequestorder(o, {
                     checkRequest: false,
                   }));
                 const orderHash = await iexecUser1.order.hashRequestorder(
@@ -6504,7 +6504,7 @@ describe('API', () => {
                     trust: 5,
                     category: 0,
                   })
-                  .then(o => iexecUser1.order.signRequestorder(o, {
+                  .then((o) => iexecUser1.order.signRequestorder(o, {
                     checkRequest: false,
                   }));
                 const orderHash = await iexecUser1.order.hashRequestorder(
@@ -6530,7 +6530,7 @@ describe('API', () => {
                     trust: 6,
                     category: 0,
                   })
-                  .then(o => iexecUser1.order.signRequestorder(o, {
+                  .then((o) => iexecUser1.order.signRequestorder(o, {
                     checkRequest: false,
                   }));
                 const orderHash = await iexecUser1.order.hashRequestorder(
@@ -6555,7 +6555,7 @@ describe('API', () => {
                     workerpoolmaxprice: 0,
                     category: 0,
                   })
-                  .then(o => iexecUser1.order.signRequestorder(o, {
+                  .then((o) => iexecUser1.order.signRequestorder(o, {
                     checkRequest: false,
                   }));
                 const orderHash = await iexecUser1.order.hashRequestorder(
@@ -6581,7 +6581,7 @@ describe('API', () => {
                     workerpoolmaxprice: 0,
                     category: 0,
                   })
-                  .then(o => iexecUser1.order.signRequestorder(o, {
+                  .then((o) => iexecUser1.order.signRequestorder(o, {
                     checkRequest: false,
                   }));
                 const orderHash = await iexecUser1.order.hashRequestorder(

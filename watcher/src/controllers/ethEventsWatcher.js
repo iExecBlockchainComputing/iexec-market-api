@@ -20,7 +20,7 @@ const {
   processStakeLoss,
   processRoleRevoked,
   processNewBlock,
-} = require('../controllers/ethEventsProcessor');
+} = require('./ethEventsProcessor');
 const {
   getBlockNumber,
   queryFilter,
@@ -32,7 +32,7 @@ const config = require('../config');
 
 const log = logger.extend('controllers:ethEventsWatcher');
 
-const extractEvent = processCallback => (...args) => {
+const extractEvent = (processCallback) => (...args) => {
   const event = args[args.length - 1];
   return processCallback(event);
 };
@@ -235,21 +235,21 @@ const replayPastEventBatch = async (
   ]);
 
   const eventsArray = transferAppEvents
-    .map(e => ({ event: e, process: processTransferApp }))
+    .map((e) => ({ event: e, process: processTransferApp }))
     .concat(
-      transferDatasetEvents.map(e => ({
+      transferDatasetEvents.map((e) => ({
         event: e,
         process: processTransferDataset,
       })),
     )
     .concat(
-      transferWorkerpoolEvents.map(e => ({
+      transferWorkerpoolEvents.map((e) => ({
         event: e,
         process: processTransferWorkerpool,
       })),
     )
     .concat(
-      createCategoryEvents.map(e => ({
+      createCategoryEvents.map((e) => ({
         event: e,
         process: processCreateCategory,
       })),
@@ -264,47 +264,47 @@ const replayPastEventBatch = async (
         .reduce((acc, curr) => {
           // filter unique addresses
           const { from } = curr.args;
-          const collectedEvent = acc.find(e => e.args.from === from);
+          const collectedEvent = acc.find((e) => e.args.from === from);
           if (!collectedEvent) acc.push(curr);
           return acc;
         }, [])
-        .map(e => ({
+        .map((e) => ({
           event: e,
           process: processStakeLoss,
         })),
     )
     .concat(
-      ordersMatchedEvents.map(e => ({
+      ordersMatchedEvents.map((e) => ({
         event: e,
         process: processOrdersMatched,
       })),
     )
     .concat(
-      closedAppOrderEvents.map(e => ({
+      closedAppOrderEvents.map((e) => ({
         event: e,
         process: processClosedAppOrder,
       })),
     )
     .concat(
-      closedDatasetOrderEvents.map(e => ({
+      closedDatasetOrderEvents.map((e) => ({
         event: e,
         process: processClosedDatasetOrder,
       })),
     )
     .concat(
-      closedWorkerpoolOrderEvents.map(e => ({
+      closedWorkerpoolOrderEvents.map((e) => ({
         event: e,
         process: processClosedWorkerpoolOrder,
       })),
     )
     .concat(
-      closedRequestOrderEvents.map(e => ({
+      closedRequestOrderEvents.map((e) => ({
         event: e,
         process: processClosedRequestOrder,
       })),
     )
     .concat(
-      roleRevokedEvents.map(e => ({
+      roleRevokedEvents.map((e) => ({
         event: e,
         process: processRoleRevoked,
       })),
@@ -318,7 +318,7 @@ const replayPastEventBatch = async (
     await Promise.all(
       eventsToProcess
         .slice(0, EVENTS_BATCH_SIZE - 1)
-        .map(e => e.process(e.event, { isReplay: true })),
+        .map((e) => e.process(e.event, { isReplay: true })),
     );
     const remainingEvents = eventsToProcess.slice(EVENTS_BATCH_SIZE - 1);
     return remainingEvents.length > 0 && processEvents(remainingEvents, i + 1);

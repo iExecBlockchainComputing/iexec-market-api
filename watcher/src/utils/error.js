@@ -1,5 +1,5 @@
-const { logError } = require('../utils/logger');
-const { sleep } = require('../utils/utils');
+const { logError } = require('./logger');
+const { sleep } = require('./utils');
 
 const getPropsToCopy = (error) => {
   const {

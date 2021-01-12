@@ -37,7 +37,7 @@ const {
   CREATE_INDEX,
 } = process.env;
 
-const chainsNames = CHAINS.split(',').map(e => e.toUpperCase());
+const chainsNames = CHAINS.split(',').map((e) => e.toUpperCase());
 
 const flavour = FLAVOUR !== undefined ? FLAVOUR : STANDARD_FLAVOUR;
 if (!FLAVOURS.includes(flavour)) {
@@ -154,7 +154,7 @@ chainsNames.forEach((name) => {
 
 Object.entries(chains).forEach(([name, chain], index) => {
   const firstOccurence = Object.values(chains)
-    .map(e => e.id)
+    .map((e) => e.id)
     .indexOf(chain.id);
   if (firstOccurence !== index) {
     throw Error(
@@ -187,7 +187,7 @@ Object.entries(chains).forEach(([key, val]) => {
   chains[key].abi = val.isNative ? nativeAbis : tokenAbis;
 });
 
-const supportedChainsIds = Object.values(chains).map(e => e.id);
+const supportedChainsIds = Object.values(chains).map((e) => e.id);
 
 Object.values(chains).forEach((item) => {
   chains[item.id] = item;

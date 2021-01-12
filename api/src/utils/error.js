@@ -1,5 +1,5 @@
 const { ValidationError } = require('yup');
-const { logError } = require('../utils/logger');
+const { logError } = require('./logger');
 
 const getPropsToCopy = (error) => {
   const {

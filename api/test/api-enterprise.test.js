@@ -81,9 +81,6 @@ afterAll(async () => {
 describe('API enterprise specific', () => {
   describe('Offchain marketplace', () => {
     describe('Order Management', () => {
-      let appWhitelisted;
-      let datasetWhitelisted;
-      let workerpoolWhitelisted;
       let appNotWhitelisted;
       let datasetNotWhitelisted;
       let workerpoolNotWhitelisted;
@@ -98,11 +95,8 @@ describe('API enterprise specific', () => {
 
       beforeAll(async () => {
         apporderTemplate = await deployAndGetApporder(iexec);
-        appWhitelisted = apporderTemplate.app;
         datasetorderTemplate = await deployAndGetDatasetorder(iexec);
-        datasetWhitelisted = datasetorderTemplate.dataset;
         workerpoolorderTemplate = await deployAndGetWorkerpoolorder(iexec);
-        workerpoolWhitelisted = workerpoolorderTemplate.workerpool;
         requestorderTemplate = await getMatchableRequestorder(iexec, {
           apporder: apporderTemplate,
           workerpoolorder: workerpoolorderTemplate,

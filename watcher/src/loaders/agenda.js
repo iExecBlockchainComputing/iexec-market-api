@@ -1,6 +1,6 @@
 const Agenda = require('agenda');
 const config = require('../config');
-const { getMongoose } = require('../loaders/mongoose');
+const { getMongoose } = require('./mongoose');
 const { logger } = require('../utils/logger');
 
 const { chainId } = config.chain;

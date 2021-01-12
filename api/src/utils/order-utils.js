@@ -129,7 +129,7 @@ const excludeTagArray = (tagArray) => {
       if (!tagArray.includes(i + 1)) return i + 1;
       return null;
     })
-    .filter(e => e !== null);
+    .filter((e) => e !== null);
   return excluded;
 };
 

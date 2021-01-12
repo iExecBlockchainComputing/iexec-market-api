@@ -4,10 +4,7 @@ const {
   countWorkerpoolorders,
   countRequestorders,
 } = require('./order');
-const {
-  getLastBlock,
-  getCheckpointBlock,
-} = require('./counter');
+const { getLastBlock, getCheckpointBlock } = require('./counter');
 const { logger } = require('../utils/logger');
 const { throwIfMissing } = require('../utils/error');
 

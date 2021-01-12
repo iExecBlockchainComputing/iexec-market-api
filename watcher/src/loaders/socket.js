@@ -22,8 +22,8 @@ const init = () => {
   const redisConfig = { host: config.redis.host };
   const pubClient = redis(redisConfig);
   const subClient = redis(redisConfig);
-  pubClient.on('error', err => log('pubClient', 'Error', err));
-  subClient.on('error', err => log('subClient', 'Error', err));
+  pubClient.on('error', (err) => log('pubClient', 'Error', err));
+  subClient.on('error', (err) => log('subClient', 'Error', err));
   const redisAdapter = adapter({
     pubClient,
     subClient,
@@ -37,9 +37,7 @@ const emit = (
   object = throwIfMissing(),
   message = throwIfMissing(),
 ) => {
-  getWs()
-    .to(channel)
-    .emit(object, message);
+  getWs().to(channel).emit(object, message);
   log(`emitted to ${channel}`, object, message);
 };
 

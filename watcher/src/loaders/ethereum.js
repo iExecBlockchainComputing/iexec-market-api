@@ -114,10 +114,10 @@ const getAppRegistry = () => thowIfNotReady() || appRegistryContract;
 const getDatasetRegistry = () => thowIfNotReady() || datasetRegistryContract;
 const getWorkerpoolRegistry = () => thowIfNotReady() || workerpoolRegistryContract;
 const getERlc = () => thowIfNotReady() || eRlcContract;
-const getApp = address => thowIfNotReady() || new ethers.Contract(address, config.abi.app, wsProvider);
-const getDataset = address => thowIfNotReady()
+const getApp = (address) => thowIfNotReady() || new ethers.Contract(address, config.abi.app, wsProvider);
+const getDataset = (address) => thowIfNotReady()
   || new ethers.Contract(address, config.abi.dataset, wsProvider);
-const getWorkerpool = address => thowIfNotReady()
+const getWorkerpool = (address) => thowIfNotReady()
   || new ethers.Contract(address, config.abi.workerpool, wsProvider);
 
 module.exports = {

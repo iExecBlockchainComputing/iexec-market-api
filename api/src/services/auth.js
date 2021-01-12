@@ -32,7 +32,7 @@ const getEIP712 = (chainId, challengeValue) => {
   return typedData;
 };
 
-const getChallengeText = value => 'Sign this message to log into iExec Gateway: '.concat(value);
+const getChallengeText = (value) => 'Sign this message to log into iExec Gateway: '.concat(value);
 
 const getChallenge = async ({
   chainId = throwIfMissing(),
