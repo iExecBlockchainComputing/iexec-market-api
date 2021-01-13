@@ -1,6 +1,6 @@
 const Agenda = require('agenda');
 const config = require('../config');
-const { getMongoose } = require('../loaders/mongoose');
+const { getMongoose } = require('./mongoose');
 const { logger } = require('../utils/logger');
 
 const { chainId } = config.chain;
@@ -13,19 +13,25 @@ const getAgenda = async () => {
   if (agendaPromise) {
     return agendaPromise;
   }
-  agendaPromise = new Promise(async (resolve, reject) => {
-    try {
-      log('connecting');
-      const connection = await getMongoose({ db: `${chainId}_jobs` });
-      const { db } = connection;
-      const agenda = new Agenda({ mongo: db });
-      log('starting worker');
-      await agenda.start();
-      log('running');
-      resolve(agenda);
-    } catch (e) {
-      reject(e);
-    }
+  agendaPromise = new Promise((resolve, reject) => {
+    log('connecting');
+    getMongoose({ db: `${chainId}_jobs` })
+      .then(async (mongooseConnection) => {
+        const { db } = mongooseConnection;
+        const agenda = new Agenda({ mongo: db });
+        log('starting worker');
+        agenda
+          .start()
+          .then(() => {
+            log('running');
+            resolve(agenda);
+          })
+          .catch((e) => {
+            log('start failled', e);
+            reject(e);
+          });
+      })
+      .catch((e) => reject(e));
   });
   return agendaPromise;
 };

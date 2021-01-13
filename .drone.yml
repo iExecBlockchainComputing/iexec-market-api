@@ -7,6 +7,7 @@ pipeline:
       - cd api/
       - npm i
       - npm run ci-test-token
+      - npm run ci-test-token-enterprise
       - npm run ci-test-native
 
   watcher-test:
@@ -17,6 +18,7 @@ pipeline:
       - cd watcher/
       - npm i
       - npm run ci-test-token
+      - npm run ci-test-token-enterprise
       - npm run ci-test-native
 
   api-publish:
@@ -39,10 +41,10 @@ pipeline:
 
 services:
   chain-token:
-    image: iexechub/poco-chaintest:v5.1.0-token-parity
+    image: iexechub/poco-chaintest:5.3.0-token-parity
     pull: true
   chain-native:
-    image: iexechub/poco-chaintest:v5.1.0-native-parity
+    image: iexechub/poco-chaintest:5.3.0-native-parity
     pull: true
   mongo:
     image: mongo:latest

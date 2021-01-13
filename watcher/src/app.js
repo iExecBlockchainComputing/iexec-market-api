@@ -7,6 +7,7 @@ const {
   registerAppRegistryEvents,
   registerDatasetRegistryEvents,
   registerWorkerpoolRegistryEvents,
+  registerERlcEvents,
   registerNewBlock,
   unsubscribeAllEvents,
   replayPastEvents,
@@ -55,6 +56,7 @@ const start = async ({ replayer = true, syncWatcher = true } = {}) => {
 
     log('starting listening to new events...');
     registerHubEvents();
+    registerERlcEvents();
     registerAppRegistryEvents();
     registerDatasetRegistryEvents();
     registerWorkerpoolRegistryEvents();

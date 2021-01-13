@@ -5,6 +5,7 @@ const {
   getAppRegistry,
   getDatasetRegistry,
   getWorkerpoolRegistry,
+  getERlc,
 } = require('../loaders/ethereum');
 const {
   processClosedAppOrder,
@@ -17,19 +18,21 @@ const {
   processTransferDataset,
   processTransferWorkerpool,
   processStakeLoss,
+  processRoleRevoked,
   processNewBlock,
-} = require('../controllers/ethEventsProcessor');
+} = require('./ethEventsProcessor');
 const {
   getBlockNumber,
   queryFilter,
   cleanRPC,
   NULL_ADDRESS,
 } = require('../utils/eth-utils');
+const { isEnterpriseFlavour } = require('../utils/iexec-utils');
 const config = require('../config');
 
 const log = logger.extend('controllers:ethEventsWatcher');
 
-const extractEvent = processCallback => (...args) => {
+const extractEvent = (processCallback) => (...args) => {
   const event = args[args.length - 1];
   return processCallback(event);
 };
@@ -40,7 +43,7 @@ const registerNewBlock = () => {
   provider.on('block', processNewBlock);
 };
 
-const registerHubEvents = async () => {
+const registerHubEvents = () => {
   log('registering Hub events');
   const hubContract = getHub();
   hubContract.on('CreateCategory', extractEvent(processCreateCategory));
@@ -53,6 +56,16 @@ const registerHubEvents = async () => {
   );
   hubContract.on('ClosedRequestOrder', extractEvent(processClosedRequestOrder));
   hubContract.on('Transfer', extractEvent(processStakeLoss));
+};
+
+const registerERlcEvents = async () => {
+  if (isEnterpriseFlavour(config.flavour)) {
+    log('registering ERlc events');
+    const eRlcContract = getERlc();
+    eRlcContract.on('RoleRevoked', extractEvent(processRoleRevoked));
+  } else {
+    log('skipping register ERlc events');
+  }
 };
 
 const registerAppRegistryEvents = () => {
@@ -76,9 +89,18 @@ const registerWorkerpoolRegistryEvents = () => {
   );
 };
 
-const unsubscribeHubEvents = async () => {
+const unsubscribeHubEvents = () => {
   log('unsubscribe Hub events');
   getHub().removeAllListeners();
+};
+
+const unsubscribeERlcEvents = async () => {
+  if (isEnterpriseFlavour(config.flavour)) {
+    log('unsubscribe ERlc events');
+    getERlc().removeAllListeners();
+  } else {
+    log('skipping unsubscribe ERlc events');
+  }
 };
 
 const unsubscribeAppRegistryEvents = () => {
@@ -101,6 +123,7 @@ const unsubscribeAllEvents = () => {
   unsubscribeAppRegistryEvents();
   unsubscribeDatasetRegistryEvents();
   unsubscribeWorkerpoolRegistryEvents();
+  unsubscribeERlcEvents();
   getProvider().removeAllListeners();
 };
 
@@ -161,6 +184,7 @@ const replayPastEventBatch = async (
     closedDatasetOrderEvents,
     closedWorkerpoolOrderEvents,
     closedRequestOrderEvents,
+    roleRevokedEvents,
   ] = await Promise.all([
     getContractPastEvent(appRegistryContract, 'Transfer', {
       fromBlock,
@@ -202,24 +226,30 @@ const replayPastEventBatch = async (
       fromBlock,
       toBlock,
     }),
+    isEnterpriseFlavour(config.flavour)
+      ? getContractPastEvent(getERlc(), 'RoleRevoked', {
+        fromBlock,
+        toBlock,
+      })
+      : [],
   ]);
 
   const eventsArray = transferAppEvents
-    .map(e => ({ event: e, process: processTransferApp }))
+    .map((e) => ({ event: e, process: processTransferApp }))
     .concat(
-      transferDatasetEvents.map(e => ({
+      transferDatasetEvents.map((e) => ({
         event: e,
         process: processTransferDataset,
       })),
     )
     .concat(
-      transferWorkerpoolEvents.map(e => ({
+      transferWorkerpoolEvents.map((e) => ({
         event: e,
         process: processTransferWorkerpool,
       })),
     )
     .concat(
-      createCategoryEvents.map(e => ({
+      createCategoryEvents.map((e) => ({
         event: e,
         process: processCreateCategory,
       })),
@@ -234,43 +264,49 @@ const replayPastEventBatch = async (
         .reduce((acc, curr) => {
           // filter unique addresses
           const { from } = curr.args;
-          const collectedEvent = acc.find(e => e.args.from === from);
+          const collectedEvent = acc.find((e) => e.args.from === from);
           if (!collectedEvent) acc.push(curr);
           return acc;
         }, [])
-        .map(e => ({
+        .map((e) => ({
           event: e,
           process: processStakeLoss,
         })),
     )
     .concat(
-      ordersMatchedEvents.map(e => ({
+      ordersMatchedEvents.map((e) => ({
         event: e,
         process: processOrdersMatched,
       })),
     )
     .concat(
-      closedAppOrderEvents.map(e => ({
+      closedAppOrderEvents.map((e) => ({
         event: e,
         process: processClosedAppOrder,
       })),
     )
     .concat(
-      closedDatasetOrderEvents.map(e => ({
+      closedDatasetOrderEvents.map((e) => ({
         event: e,
         process: processClosedDatasetOrder,
       })),
     )
     .concat(
-      closedWorkerpoolOrderEvents.map(e => ({
+      closedWorkerpoolOrderEvents.map((e) => ({
         event: e,
         process: processClosedWorkerpoolOrder,
       })),
     )
     .concat(
-      closedRequestOrderEvents.map(e => ({
+      closedRequestOrderEvents.map((e) => ({
         event: e,
         process: processClosedRequestOrder,
+      })),
+    )
+    .concat(
+      roleRevokedEvents.map((e) => ({
+        event: e,
+        process: processRoleRevoked,
       })),
     );
 
@@ -282,7 +318,7 @@ const replayPastEventBatch = async (
     await Promise.all(
       eventsToProcess
         .slice(0, EVENTS_BATCH_SIZE - 1)
-        .map(e => e.process(e.event, { isReplay: true })),
+        .map((e) => e.process(e.event, { isReplay: true })),
     );
     const remainingEvents = eventsToProcess.slice(EVENTS_BATCH_SIZE - 1);
     return remainingEvents.length > 0 && processEvents(remainingEvents, i + 1);
@@ -339,6 +375,7 @@ const replayPastEvents = async (
 module.exports = {
   registerNewBlock,
   registerHubEvents,
+  registerERlcEvents,
   registerAppRegistryEvents,
   registerDatasetRegistryEvents,
   registerWorkerpoolRegistryEvents,

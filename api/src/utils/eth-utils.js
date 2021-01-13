@@ -25,7 +25,7 @@ const getContract = (contractName, chainId, { at } = {}) => {
   return contract;
 };
 
-const ethersBnToBn = ethersBn => new BN(ethersBn.toString());
+const ethersBnToBn = (ethersBn) => new BN(ethersBn.toString());
 
 module.exports = {
   NULL_ADDRESS,

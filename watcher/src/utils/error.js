@@ -1,5 +1,7 @@
-const { logError } = require('../utils/logger');
-const { sleep } = require('../utils/utils');
+/* eslint max-classes-per-file: ["error", 6] */
+
+const { logError } = require('./logger');
+const { sleep } = require('./utils');
 
 const getPropsToCopy = (error) => {
   const {

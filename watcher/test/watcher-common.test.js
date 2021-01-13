@@ -36,7 +36,7 @@ const PROCESS_TRIGGERED_EVENT_TIMEOUT = 500;
 
 let chainId;
 const chainUrl = chain.httpHost;
-const hubAddress = '0xC08e9Be37286B7Bbf04875369cf28C21b3F06FCB';
+const { hubAddress } = chain;
 const PRIVATE_KEY = '0x564a9db84969c8159f7aa3d5393c5ecd014fce6a375842a45b12af6677b12407';
 const rpc = new ethers.providers.JsonRpcProvider(chainUrl);
 const wallet = new ethers.Wallet(PRIVATE_KEY, rpc);
@@ -263,32 +263,32 @@ describe('Watcher', () => {
     expect(socketEmitSpy).toHaveBeenCalledTimes(5);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'apporder_unpublished',
+        (args) => args[1] === 'apporder_unpublished',
       ),
     ).toMatchObject([[`${chainId}:orders`, 'apporder_unpublished', appHash]]);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'datasetorder_unpublished',
+        (args) => args[1] === 'datasetorder_unpublished',
       ),
     ).toMatchObject([
       [`${chainId}:orders`, 'datasetorder_unpublished', datasetHash],
     ]);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'workerpoolorder_unpublished',
+        (args) => args[1] === 'workerpoolorder_unpublished',
       ),
     ).toMatchObject([
       [`${chainId}:orders`, 'workerpoolorder_unpublished', workerpoolHash],
     ]);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'requestorder_unpublished',
+        (args) => args[1] === 'requestorder_unpublished',
       ),
     ).toMatchObject([
       [`${chainId}:orders`, 'requestorder_unpublished', requestHash],
     ]);
     expect(
-      socketEmitSpy.mock.calls.filter(args => args[1] === 'deal_created'),
+      socketEmitSpy.mock.calls.filter((args) => args[1] === 'deal_created'),
     ).toMatchObject([
       [`${chainId}:deals`, 'deal_created', expect.objectContaining({ dealid })],
     ]);
@@ -400,7 +400,7 @@ describe('Watcher', () => {
 
     expect(socketEmitSpy).toHaveBeenCalledTimes(5);
     expect(
-      socketEmitSpy.mock.calls.filter(args => args[1] === 'apporder_updated'),
+      socketEmitSpy.mock.calls.filter((args) => args[1] === 'apporder_updated'),
     ).toMatchObject([
       [
         `${chainId}:orders`,
@@ -410,7 +410,7 @@ describe('Watcher', () => {
     ]);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'datasetorder_updated',
+        (args) => args[1] === 'datasetorder_updated',
       ),
     ).toMatchObject([
       [
@@ -421,7 +421,7 @@ describe('Watcher', () => {
     ]);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'workerpoolorder_updated',
+        (args) => args[1] === 'workerpoolorder_updated',
       ),
     ).toMatchObject([
       [
@@ -432,7 +432,7 @@ describe('Watcher', () => {
     ]);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'requestorder_updated',
+        (args) => args[1] === 'requestorder_updated',
       ),
     ).toMatchObject([]);
 
@@ -460,7 +460,7 @@ describe('Watcher', () => {
     expect(socketEmitSpy).toHaveBeenCalledTimes(5);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'requestorder_updated',
+        (args) => args[1] === 'requestorder_updated',
       ),
     ).toMatchObject([
       [
@@ -616,18 +616,18 @@ describe('Watcher', () => {
     expect(socketEmitSpy).toHaveBeenCalledTimes(3);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'requestorder_unpublished',
+        (args) => args[1] === 'requestorder_unpublished',
       ),
     ).toMatchObject([
       [`${chainId}:orders`, 'requestorder_unpublished', requestAppHash],
     ]);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'apporder_unpublished',
+        (args) => args[1] === 'apporder_unpublished',
       ),
     ).toMatchObject([[`${chainId}:orders`, 'apporder_unpublished', appHash]]);
     expect(
-      socketEmitSpy.mock.calls.filter(args => args[1] === 'deal_created'),
+      socketEmitSpy.mock.calls.filter((args) => args[1] === 'deal_created'),
     ).toMatchObject([
       [`${chainId}:deals`, 'deal_created', expect.objectContaining({ dealid })],
     ]);
@@ -739,20 +739,20 @@ describe('Watcher', () => {
     expect(socketEmitSpy).toHaveBeenCalledTimes(3);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'requestorder_unpublished',
+        (args) => args[1] === 'requestorder_unpublished',
       ),
     ).toMatchObject([
       [`${chainId}:orders`, 'requestorder_unpublished', requestAppTeeHash],
     ]);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'apporder_unpublished',
+        (args) => args[1] === 'apporder_unpublished',
       ),
     ).toMatchObject([
       [`${chainId}:orders`, 'apporder_unpublished', appTeeHash],
     ]);
     expect(
-      socketEmitSpy.mock.calls.filter(args => args[1] === 'deal_created'),
+      socketEmitSpy.mock.calls.filter((args) => args[1] === 'deal_created'),
     ).toMatchObject([
       [`${chainId}:deals`, 'deal_created', expect.objectContaining({ dealid })],
     ]);
@@ -910,13 +910,13 @@ describe('Watcher', () => {
     expect(socketEmitSpy).toHaveBeenCalledTimes(4);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'requestorder_unpublished',
+        (args) => args[1] === 'requestorder_unpublished',
       ),
     ).toMatchObject([
       [`${chainId}:orders`, 'requestorder_unpublished', requestDatasetHash],
     ]);
     expect(
-      socketEmitSpy.mock.calls.filter(args => args[1] === 'apporder_updated'),
+      socketEmitSpy.mock.calls.filter((args) => args[1] === 'apporder_updated'),
     ).toMatchObject([
       [
         `${chainId}:orders`,
@@ -926,13 +926,13 @@ describe('Watcher', () => {
     ]);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'datasetorder_unpublished',
+        (args) => args[1] === 'datasetorder_unpublished',
       ),
     ).toMatchObject([
       [`${chainId}:orders`, 'datasetorder_unpublished', datasetHash],
     ]);
     expect(
-      socketEmitSpy.mock.calls.filter(args => args[1] === 'deal_created'),
+      socketEmitSpy.mock.calls.filter((args) => args[1] === 'deal_created'),
     ).toMatchObject([
       [`${chainId}:deals`, 'deal_created', expect.objectContaining({ dealid })],
     ]);
@@ -961,7 +961,7 @@ describe('Watcher', () => {
     expect(socketEmitSpy).toHaveBeenCalledTimes(1);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'apporder_unpublished',
+        (args) => args[1] === 'apporder_unpublished',
       ),
     ).toMatchObject([[`${chainId}:orders`, 'apporder_unpublished', appHash]]);
   });
@@ -1003,7 +1003,7 @@ describe('Watcher', () => {
         category: 0,
         volume: 10,
       })
-      .then(o => iexec.order.signRequestorder(o, { checkRequest: false }));
+      .then((o) => iexec.order.signRequestorder(o, { checkRequest: false }));
     const independantRequestorder = await iexec.order.signRequestorder(
       {
         ...requestorder,
@@ -1092,14 +1092,14 @@ describe('Watcher', () => {
     expect(socketEmitSpy).toHaveBeenCalledTimes(2);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'requestorder_unpublished',
+        (args) => args[1] === 'requestorder_unpublished',
       ),
     ).toMatchObject([
       [`${chainId}:orders`, 'requestorder_unpublished', requestHash],
     ]);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'apporder_unpublished',
+        (args) => args[1] === 'apporder_unpublished',
       ),
     ).toMatchObject([[`${chainId}:orders`, 'apporder_unpublished', appHash]]);
   });
@@ -1125,7 +1125,7 @@ describe('Watcher', () => {
         category: 0,
         volume: 10,
       })
-      .then(o => iexec.order.signRequestorder(o, { checkRequest: false }));
+      .then((o) => iexec.order.signRequestorder(o, { checkRequest: false }));
     const requestorderTee = await iexec.order.signRequestorder(
       {
         ...independantRequestorder,
@@ -1215,14 +1215,14 @@ describe('Watcher', () => {
     expect(socketEmitSpy).toHaveBeenCalledTimes(2);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'requestorder_unpublished',
+        (args) => args[1] === 'requestorder_unpublished',
       ),
     ).toMatchObject([
       [`${chainId}:orders`, 'requestorder_unpublished', requestTeeHash],
     ]);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'apporder_unpublished',
+        (args) => args[1] === 'apporder_unpublished',
       ),
     ).toMatchObject([
       [`${chainId}:orders`, 'apporder_unpublished', appTeeHash],
@@ -1254,7 +1254,7 @@ describe('Watcher', () => {
     expect(socketEmitSpy).toHaveBeenCalledTimes(1);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'datasetorder_unpublished',
+        (args) => args[1] === 'datasetorder_unpublished',
       ),
     ).toMatchObject([
       [`${chainId}:orders`, 'datasetorder_unpublished', datasetHash],
@@ -1305,7 +1305,7 @@ describe('Watcher', () => {
         category: 0,
         volume: 10,
       })
-      .then(o => iexec.order.signRequestorder(o, { checkRequest: false }));
+      .then((o) => iexec.order.signRequestorder(o, { checkRequest: false }));
     const independantRequestorder = await iexec.order.signRequestorder(
       {
         ...requestorder,
@@ -1412,14 +1412,14 @@ describe('Watcher', () => {
     expect(socketEmitSpy).toHaveBeenCalledTimes(2);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'requestorder_unpublished',
+        (args) => args[1] === 'requestorder_unpublished',
       ),
     ).toMatchObject([
       [`${chainId}:orders`, 'requestorder_unpublished', requestHash],
     ]);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'datasetorder_unpublished',
+        (args) => args[1] === 'datasetorder_unpublished',
       ),
     ).toMatchObject([
       [`${chainId}:orders`, 'datasetorder_unpublished', datasetHash],
@@ -1451,7 +1451,7 @@ describe('Watcher', () => {
     expect(socketEmitSpy).toHaveBeenCalledTimes(1);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'workerpoolorder_unpublished',
+        (args) => args[1] === 'workerpoolorder_unpublished',
       ),
     ).toMatchObject([
       [`${chainId}:orders`, 'workerpoolorder_unpublished', workerpoolHash],
@@ -1464,7 +1464,7 @@ describe('Watcher', () => {
         app: utils.NULL_ADDRESS,
         category: 0,
       })
-      .then(o => iexec.order.signRequestorder(o, { checkRequest: false }));
+      .then((o) => iexec.order.signRequestorder(o, { checkRequest: false }));
 
     const [requestHash] = await Promise.all([
       iexec.order.hashRequestorder(requestorder),
@@ -1489,7 +1489,7 @@ describe('Watcher', () => {
     expect(socketEmitSpy).toHaveBeenCalledTimes(1);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'requestorder_unpublished',
+        (args) => args[1] === 'requestorder_unpublished',
       ),
     ).toMatchObject([
       [`${chainId}:orders`, 'requestorder_unpublished', requestHash],
@@ -1572,7 +1572,7 @@ describe('Watcher', () => {
     expect(socketEmitSpy).toHaveBeenCalledTimes(2);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'workerpoolorder_unpublished'
+        (args) => args[1] === 'workerpoolorder_unpublished'
           && args[2] === workerpoolorderTooExpensiveHash,
       ),
     ).toMatchObject([
@@ -1584,7 +1584,7 @@ describe('Watcher', () => {
     ]);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'workerpoolorder_unpublished'
+        (args) => args[1] === 'workerpoolorder_unpublished'
           && args[2] === workerpoolorderCumulativeTooExpensiveHash,
       ),
     ).toMatchObject([
@@ -1609,7 +1609,7 @@ describe('Watcher', () => {
         category: 0,
         volume: 3,
       })
-      .then(o => iexec.order.signRequestorder(o, { checkRequest: false }));
+      .then((o) => iexec.order.signRequestorder(o, { checkRequest: false }));
     const requestorderAppTooExpensive = await iexec.order.signRequestorder(
       {
         ...independantRequestorder,
@@ -1726,7 +1726,7 @@ describe('Watcher', () => {
     expect(socketEmitSpy).toHaveBeenCalledTimes(4);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'requestorder_unpublished'
+        (args) => args[1] === 'requestorder_unpublished'
           && args[2] === requestorderAppTooExpensiveHash,
       ),
     ).toMatchObject([
@@ -1738,7 +1738,7 @@ describe('Watcher', () => {
     ]);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'requestorder_unpublished'
+        (args) => args[1] === 'requestorder_unpublished'
           && args[2] === requestorderDatasetTooExpensiveHash,
       ),
     ).toMatchObject([
@@ -1750,7 +1750,7 @@ describe('Watcher', () => {
     ]);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'requestorder_unpublished'
+        (args) => args[1] === 'requestorder_unpublished'
           && args[2] === requestorderWorkerpoolTooExpensiveHash,
       ),
     ).toMatchObject([
@@ -1762,7 +1762,7 @@ describe('Watcher', () => {
     ]);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'requestorder_unpublished'
+        (args) => args[1] === 'requestorder_unpublished'
           && args[2] === requestorderCumulativeTooExpensiveHash,
       ),
     ).toMatchObject([
@@ -1797,7 +1797,7 @@ describe('Watcher', () => {
     expect(socketEmitSpy).toHaveBeenCalledTimes(1);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'apporder_unpublished',
+        (args) => args[1] === 'apporder_unpublished',
       ),
     ).toMatchObject([[`${chainId}:orders`, 'apporder_unpublished', orderHash]]);
   });
@@ -1825,7 +1825,7 @@ describe('Watcher', () => {
     expect(socketEmitSpy).toHaveBeenCalledTimes(1);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'datasetorder_unpublished',
+        (args) => args[1] === 'datasetorder_unpublished',
       ),
     ).toMatchObject([
       [`${chainId}:orders`, 'datasetorder_unpublished', orderHash],
@@ -1855,7 +1855,7 @@ describe('Watcher', () => {
     expect(socketEmitSpy).toHaveBeenCalledTimes(1);
     expect(
       socketEmitSpy.mock.calls.filter(
-        args => args[1] === 'workerpoolorder_unpublished',
+        (args) => args[1] === 'workerpoolorder_unpublished',
       ),
     ).toMatchObject([
       [`${chainId}:orders`, 'workerpoolorder_unpublished', orderHash],
@@ -2535,7 +2535,7 @@ describe('Recover on start', () => {
         category: 0,
         volume: 10,
       })
-      .then(o => iexec.order.signRequestorder(o, { checkRequest: false }));
+      .then((o) => iexec.order.signRequestorder(o, { checkRequest: false }));
     const independantRequestorder = await iexec.order.signRequestorder(
       {
         ...requestorder,
@@ -2656,7 +2656,7 @@ describe('Recover on start', () => {
         category: 0,
         volume: 10,
       })
-      .then(o => iexec.order.signRequestorder(o, { checkRequest: false }));
+      .then((o) => iexec.order.signRequestorder(o, { checkRequest: false }));
     const requestorderTee = await iexec.order.signRequestorder(
       {
         ...independantRequestorder,
@@ -2794,7 +2794,7 @@ describe('Recover on start', () => {
         category: 0,
         volume: 10,
       })
-      .then(o => iexec.order.signRequestorder(o, { checkRequest: false }));
+      .then((o) => iexec.order.signRequestorder(o, { checkRequest: false }));
     const independantRequestorder = await iexec.order.signRequestorder(
       {
         ...requestorder,
@@ -2936,7 +2936,7 @@ describe('Recover on start', () => {
         app: utils.NULL_ADDRESS,
         category: 0,
       })
-      .then(o => iexec.order.signRequestorder(o, { checkRequest: false }));
+      .then((o) => iexec.order.signRequestorder(o, { checkRequest: false }));
 
     const [requestHash] = await Promise.all([
       iexec.order.hashRequestorder(requestorder),
@@ -3093,7 +3093,7 @@ describe('Recover on start', () => {
         category: 0,
         volume: 3,
       })
-      .then(o => iexec.order.signRequestorder(o, { checkRequest: false }));
+      .then((o) => iexec.order.signRequestorder(o, { checkRequest: false }));
     const finallyGoodRequestorder = await iexec.order.signRequestorder(
       {
         ...independantRequestorder,
@@ -4050,7 +4050,7 @@ describe('Replay Past', () => {
         category: 0,
         volume: 10,
       })
-      .then(o => iexec.order.signRequestorder(o, { checkRequest: false }));
+      .then((o) => iexec.order.signRequestorder(o, { checkRequest: false }));
     const independantRequestorder = await iexec.order.signRequestorder(
       {
         ...requestorder,
@@ -4172,7 +4172,7 @@ describe('Replay Past', () => {
         category: 0,
         volume: 10,
       })
-      .then(o => iexec.order.signRequestorder(o, { checkRequest: false }));
+      .then((o) => iexec.order.signRequestorder(o, { checkRequest: false }));
     const requestorderTee = await iexec.order.signRequestorder(
       {
         ...independantRequestorder,
@@ -4307,7 +4307,7 @@ describe('Replay Past', () => {
         category: 0,
         volume: 10,
       })
-      .then(o => iexec.order.signRequestorder(o, { checkRequest: false }));
+      .then((o) => iexec.order.signRequestorder(o, { checkRequest: false }));
     const independantRequestorder = await iexec.order.signRequestorder(
       {
         ...requestorder,
@@ -4448,7 +4448,7 @@ describe('Replay Past', () => {
         app: utils.NULL_ADDRESS,
         category: 0,
       })
-      .then(o => iexec.order.signRequestorder(o, { checkRequest: false }));
+      .then((o) => iexec.order.signRequestorder(o, { checkRequest: false }));
 
     const [requestHash] = await Promise.all([
       iexec.order.hashRequestorder(requestorder),
@@ -4608,7 +4608,7 @@ describe('Replay Past', () => {
         category: 0,
         volume: 3,
       })
-      .then(o => iexec.order.signRequestorder(o, { checkRequest: false }));
+      .then((o) => iexec.order.signRequestorder(o, { checkRequest: false }));
 
     const finallyGoodRequestorder = await iexec.order.signRequestorder(
       {

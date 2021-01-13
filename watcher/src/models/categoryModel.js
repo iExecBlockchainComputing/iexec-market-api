@@ -10,7 +10,7 @@ const {
 const { toJsonOption } = require('./common').option;
 
 // fix mongoose String required (https://github.com/Automattic/mongoose/issues/7150)
-Schema.Types.String.checkRequired(v => v != null);
+Schema.Types.String.checkRequired((v) => v != null);
 
 const log = logger.extend('models:categoryModel');
 
@@ -36,23 +36,22 @@ const getModel = async (db) => {
       const model = await connectedModels[db];
       return model;
     }
-    connectedModels[db] = new Promise(async (resolve, reject) => {
-      try {
-        log('getting connection');
-        const mongoose = await getMongoose({ db });
-        log('instanciating model');
-        const CategoryModel = mongoose.model('Category', categorySchema);
-        CategoryModel.on('index', (err) => {
-          if (err) {
-            log(`error creating index: ${err}`);
-          } else {
-            log('index created');
-          }
-        });
-        resolve(CategoryModel);
-      } catch (e) {
-        reject(e);
-      }
+    connectedModels[db] = new Promise((resolve, reject) => {
+      log('getting connection');
+      getMongoose({ db })
+        .then((mongoose) => {
+          log('instanciating model');
+          const CategoryModel = mongoose.model('Category', categorySchema);
+          CategoryModel.on('index', (err) => {
+            if (err) {
+              log(`error creating index: ${err}`);
+            } else {
+              log('index created');
+            }
+          });
+          resolve(CategoryModel);
+        })
+        .catch((e) => reject(e));
     });
     const model = await connectedModels[db];
     return model;

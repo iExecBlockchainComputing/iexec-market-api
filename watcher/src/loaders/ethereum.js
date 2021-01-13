@@ -3,6 +3,7 @@ const config = require('../config');
 const { logger } = require('../utils/logger');
 const { sleep } = require('../utils/utils');
 const { errorHandler } = require('../utils/error');
+const { isEnterpriseFlavour } = require('../utils/iexec-utils');
 
 const log = logger.extend('ethereum');
 
@@ -21,6 +22,7 @@ let hubContract;
 let appRegistryContract;
 let datasetRegistryContract;
 let workerpoolRegistryContract;
+let eRlcContract;
 
 const init = async (wsClosedCallback) => {
   try {
@@ -57,14 +59,17 @@ const init = async (wsClosedCallback) => {
       [appRegistryAddress],
       [datasetRegistryAddress],
       [workerpoolRegistryAddress],
+      [tokenAddress],
     ] = await Promise.all([
       hubContract.functions.appregistry(),
       hubContract.functions.datasetregistry(),
       hubContract.functions.workerpoolregistry(),
+      hubContract.functions.token(),
     ]);
     log('appRegistryAddress', appRegistryAddress);
     log('datasetRegistryAddress', datasetRegistryAddress);
     log('workerpoolRegistryAddress', workerpoolRegistryAddress);
+    log('tokenAddress', tokenAddress);
 
     appRegistryContract = new ethers.Contract(
       appRegistryAddress,
@@ -81,6 +86,13 @@ const init = async (wsClosedCallback) => {
       config.abi.workerpoolRegistry,
       wsProvider,
     );
+    if (isEnterpriseFlavour(config.flavour)) {
+      eRlcContract = new ethers.Contract(
+        tokenAddress,
+        config.abi.erlc,
+        wsProvider,
+      );
+    }
     initialized = true;
   } catch (e) {
     log('init()', e);
@@ -101,10 +113,11 @@ const getHub = () => thowIfNotReady() || hubContract;
 const getAppRegistry = () => thowIfNotReady() || appRegistryContract;
 const getDatasetRegistry = () => thowIfNotReady() || datasetRegistryContract;
 const getWorkerpoolRegistry = () => thowIfNotReady() || workerpoolRegistryContract;
-const getApp = address => thowIfNotReady() || new ethers.Contract(address, config.abi.app, wsProvider);
-const getDataset = address => thowIfNotReady()
+const getERlc = () => thowIfNotReady() || eRlcContract;
+const getApp = (address) => thowIfNotReady() || new ethers.Contract(address, config.abi.app, wsProvider);
+const getDataset = (address) => thowIfNotReady()
   || new ethers.Contract(address, config.abi.dataset, wsProvider);
-const getWorkerpool = address => thowIfNotReady()
+const getWorkerpool = (address) => thowIfNotReady()
   || new ethers.Contract(address, config.abi.workerpool, wsProvider);
 
 module.exports = {
@@ -115,6 +128,7 @@ module.exports = {
   getAppRegistry,
   getDatasetRegistry,
   getWorkerpoolRegistry,
+  getERlc,
   getApp,
   getDataset,
   getWorkerpool,

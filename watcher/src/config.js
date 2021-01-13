@@ -6,6 +6,8 @@ const datasetRegistryDesc = require('@iexec/poco/build/contracts-min/DatasetRegi
 const appDesc = require('@iexec/poco/build/contracts-min/App.json');
 const workerpoolDesc = require('@iexec/poco/build/contracts-min/Workerpool.json');
 const datasetDesc = require('@iexec/poco/build/contracts-min/Dataset.json');
+const eRlcDesc = require('@iexec/erlc/build/contracts-min/ERLCTokenSwap.json');
+const { FLAVOURS, STANDARD_FLAVOUR } = require('./utils/iexec-utils');
 const { logger } = require('./utils/logger');
 
 const log = logger.extend('config');
@@ -13,6 +15,7 @@ const log = logger.extend('config');
 const {
   MONGO_HOST,
   REDIS_HOST,
+  FLAVOUR,
   INFURA_PROJECT_ID,
   ALCHEMY_API_KEY,
   ETH_WS_HOST,
@@ -31,6 +34,11 @@ const {
 } = process.env;
 
 if (!CHAIN) throw Error('missing env CHAIN');
+
+const flavour = FLAVOUR !== undefined ? FLAVOUR : STANDARD_FLAVOUR;
+if (!FLAVOURS.includes(flavour)) {
+  throw Error(`invalid FLAVOUR ${flavour} must be one of ${FLAVOURS}`);
+}
 
 const name = CHAIN.toUpperCase();
 
@@ -109,6 +117,7 @@ const abi = {
   app: appDesc.abi,
   dataset: datasetDesc.abi,
   workerpool: workerpoolDesc.abi,
+  erlc: eRlcDesc.abi,
 };
 
 const runtime = {
@@ -142,6 +151,7 @@ if (!chain.httpHost) {
 }
 
 log('chain', chain);
+log('flavour', flavour);
 log('mongo', mongo);
 log('redis', redis);
 log('runtime', runtime);
@@ -149,6 +159,7 @@ log('runtime', runtime);
 module.exports = {
   abi,
   chain,
+  flavour,
   mongo,
   redis,
   runtime,

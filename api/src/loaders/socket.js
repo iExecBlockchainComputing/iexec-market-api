@@ -19,8 +19,8 @@ const init = (server = throwIfMissing()) => {
   const redisConfig = { host: config.redis.host };
   const pubClient = redis(redisConfig);
   const subClient = redis(redisConfig);
-  pubClient.on('error', err => log('pubClient', 'Error', err));
-  subClient.on('error', err => log('subClient', 'Error', err));
+  pubClient.on('error', (err) => log('pubClient', 'Error', err));
+  subClient.on('error', (err) => log('subClient', 'Error', err));
   const redisAdapter = adapter({
     pubClient,
     subClient,
@@ -52,8 +52,8 @@ const init = (server = throwIfMissing()) => {
     socket.on('leaveAll', (data, fn) => {
       try {
         log('on.leaveAll', socket.id, `${data.chainId}:${data.category}`);
-        const rooms = Object.keys(socket.rooms).filter(e => e !== socket.id);
-        rooms.forEach(room => socket.leave(room));
+        const rooms = Object.keys(socket.rooms).filter((e) => e !== socket.id);
+        rooms.forEach((room) => socket.leave(room));
         fn(true);
       } catch (error) {
         log('ws.on(leaveAll)', error);
@@ -67,9 +67,7 @@ const emit = (
   object = throwIfMissing(),
   message = throwIfMissing(),
 ) => {
-  getWs()
-    .to(channel)
-    .emit(object, message);
+  getWs().to(channel).emit(object, message);
   log(`emitted to ${channel}`, object, message);
 };
 

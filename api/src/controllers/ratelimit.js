@@ -26,10 +26,7 @@ const getRatelimitMiddleware = ({ maxRequest, period }) => {
       if (
         ctx.header
         && ctx.header.origin
-        && ctx.header.origin
-          .split('.')
-          .slice(-2)
-          .join('.') === 'iex.ec'
+        && ctx.header.origin.split('.').slice(-2).join('.') === 'iex.ec'
       ) return true;
       // allow localhost
       if (ctx.ip === '::ffff:127.0.0.1') return true;

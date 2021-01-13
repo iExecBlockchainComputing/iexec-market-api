@@ -58,7 +58,7 @@ const getCategories = async ({
     const nextPage = categories.length === limit ? skip + limit : undefined;
 
     return {
-      categories: categories.map(e => e.toJSON()),
+      categories: categories.map((e) => e.toJSON()),
       count,
       nextPage,
     };

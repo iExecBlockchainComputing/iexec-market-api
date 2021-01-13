@@ -1,7 +1,7 @@
 const config = require('../config');
 const { getAgenda } = require('../loaders/agenda');
 const ethereum = require('../loaders/ethereum');
-const { replayPastEvents } = require('../controllers/ethEventsWatcher');
+const { replayPastEvents } = require('./ethEventsWatcher');
 const {
   getCheckpointBlock,
   setCheckpointBlock,
