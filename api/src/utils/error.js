@@ -1,3 +1,5 @@
+/* eslint max-classes-per-file: ["error", 6] */
+
 const { ValidationError } = require('yup');
 const { logError } = require('./logger');
 

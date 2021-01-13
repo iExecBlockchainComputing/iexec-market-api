@@ -20,23 +20,22 @@ const getModel = async (db) => {
       const model = await connectedModels[db];
       return model;
     }
-    connectedModels[db] = new Promise(async (resolve, reject) => {
-      try {
-        log('getting connection');
-        const mongoose = await getMongoose({ db });
-        log('instanciating model');
-        const ChallengeModel = mongoose.model('Challenge', challengeSchema);
-        ChallengeModel.on('index', (err) => {
-          if (err) {
-            log(`error creating index: ${err}`);
-          } else {
-            log('index created');
-          }
-        });
-        resolve(ChallengeModel);
-      } catch (e) {
-        reject(e);
-      }
+    connectedModels[db] = new Promise((resolve, reject) => {
+      log('getting connection');
+      getMongoose({ db })
+        .then((mongoose) => {
+          log('instanciating model');
+          const ChallengeModel = mongoose.model('Challenge', challengeSchema);
+          ChallengeModel.on('index', (err) => {
+            if (err) {
+              log(`error creating index: ${err}`);
+            } else {
+              log('index created');
+            }
+          });
+          resolve(ChallengeModel);
+        })
+        .catch((e) => reject(e));
     });
     const model = await connectedModels[db];
     return model;
