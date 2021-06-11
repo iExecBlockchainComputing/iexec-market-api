@@ -1,5 +1,3 @@
-/* eslint max-classes-per-file: ["error", 6] */
-
 const { logError } = require('./logger');
 const { sleep } = require('./utils');
 

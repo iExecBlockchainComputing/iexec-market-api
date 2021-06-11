@@ -6,13 +6,14 @@
       "error",
       { "props": true, "ignorePropertyModificationsFor": ["ctx", "ret"] }
     ],
+    "no-template-curly-in-string": "off",
     "no-underscore-dangle": [
       "error",
       {
         "allow": ["_id"]
       }
     ],
-    "no-template-curly-in-string": "off",
+    "max-classes-per-file": "off",
     "max-len": "off"
   }
 }
