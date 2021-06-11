@@ -1,6 +1,6 @@
 pipeline:
   api-test:
-    image: node:14.6-alpine
+    image: node:14.17-alpine
     commands:
       - apk update && apk upgrade
       - node -v
@@ -11,7 +11,7 @@ pipeline:
       - npm run ci-test-native
 
   watcher-test:
-    image: node:14.6-alpine
+    image: node:14.17-alpine
     commands:
       - apk update && apk upgrade
       - node -v
