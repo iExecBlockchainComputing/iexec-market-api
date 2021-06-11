@@ -1,3 +1,7 @@
+# v5.2.1
+
+- dependencies update
+
 # v5.2.0
 
 - added enterprise flavour with eRlc withelist checks
