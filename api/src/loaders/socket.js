@@ -25,7 +25,7 @@ const init = (server = throwIfMissing()) => {
     pubClient,
     subClient,
   });
-  ws = socketio(server, { path: '/ws' });
+  ws = socketio(server, { path: '/ws', cors: { origin: '*' } });
   ws.adapter(redisAdapter);
   ws.sockets.on('connection', (socket) => {
     log('connection');
