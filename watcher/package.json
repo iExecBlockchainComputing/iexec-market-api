@@ -1,6 +1,6 @@
 {
   "name": "iexec-market-watcher",
-  "version": "5.2.1",
+  "version": "5.2.2",
   "description": "watch iexec contract to keep offchain ordebook up to date",
   "main": "src/index.js",
   "scripts": {
