@@ -6,7 +6,8 @@ WORKDIR /app
 RUN apk update && apk upgrade
 
 COPY watcher/package.json package.json
-RUN npm install --production
+COPY watcher/package-lock.json package-lock.json
+RUN npm ci --only=production
 
 COPY watcher/src ./src
 
