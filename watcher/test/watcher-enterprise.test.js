@@ -27,9 +27,9 @@ const {
   REQUESTORDERS_COLLECTION,
 } = require('./test-utils');
 
-jest.setTimeout(60000);
+jest.setTimeout(120000);
 
-const PROCESS_TRIGGERED_EVENT_TIMEOUT = 500;
+const PROCESS_TRIGGERED_EVENT_TIMEOUT = 1000;
 
 let chainId;
 const chainUrl = chain.httpHost;
