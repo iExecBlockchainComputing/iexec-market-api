@@ -2,7 +2,9 @@
   "env": {
     "jest": true
   },
+  "extends": ["airbnb-base", "prettier"],
   "rules": {
+    "no-console": "off",
     "import/no-extraneous-dependencies": [
       "error",
       {
