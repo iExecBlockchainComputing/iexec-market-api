@@ -1,12 +1,8 @@
 const { Schema } = require('mongoose');
 const { getMongoose } = require('../loaders/mongoose');
 const { logger } = require('../utils/logger');
-const {
-  Bytes32Schema,
-  SafeUintSchema,
-  TimestampSchema,
-  ChainIdSchema,
-} = require('./common').schema;
+const { Bytes32Schema, SafeUintSchema, TimestampSchema, ChainIdSchema } =
+  require('./common').schema;
 const { toJsonOption } = require('./common').option;
 
 // fix mongoose String required (https://github.com/Automattic/mongoose/issues/7150)

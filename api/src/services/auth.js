@@ -32,7 +32,8 @@ const getEIP712 = (chainId, challengeValue) => {
   return typedData;
 };
 
-const getChallengeText = (value) => 'Sign this message to log into iExec Gateway: '.concat(value);
+const getChallengeText = (value) =>
+  'Sign this message to log into iExec Gateway: '.concat(value);
 
 const getChallenge = async ({
   chainId = throwIfMissing(),
@@ -84,7 +85,8 @@ const checkAuthorization = async ({
     const signerAddress = recoverAddressEIP712(typedData, signature);
     if (signerAddress === NULL_ADDRESS) throw Error('Null signerAddress');
     log('signerAddress', signerAddress);
-    if (signerAddress.toLowerCase() !== address.toLowerCase()) throw new AuthError('Failed to verify signer, addresses mismatch.');
+    if (signerAddress.toLowerCase() !== address.toLowerCase())
+      throw new AuthError('Failed to verify signer, addresses mismatch.');
     await current.remove();
     return {
       address,

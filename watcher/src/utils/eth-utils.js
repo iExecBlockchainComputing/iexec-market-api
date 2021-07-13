@@ -11,12 +11,13 @@ const RATE_LIMIT_MAX_TRY = 20;
 
 const getRandomInt = (max) => Math.floor(Math.random() * max);
 
-const throwIfTimeout = (promise, timeout = 30 * 1000) => Promise.race([
-  promise,
-  sleep(timeout).then(() => {
-    throw Error(`Ethereum call timeout after ${timeout} ms`);
-  }),
-]);
+const throwIfTimeout = (promise, timeout = 30 * 1000) =>
+  Promise.race([
+    promise,
+    sleep(timeout).then(() => {
+      throw Error(`Ethereum call timeout after ${timeout} ms`);
+    }),
+  ]);
 
 const cleanRPC = (res) => {
   if (typeof res === 'boolean') {
@@ -86,9 +87,10 @@ const retryableFunctionCall = async (
 };
 
 const callAtBlock = async (method, args = [], blockNumber) => {
-  const makeCall = async () => (blockNumber !== undefined
-    ? retryableFunctionCall(method, args)
-    : retryableFunctionCall(method, [...args, { blockTag: blockNumber }]));
+  const makeCall = async () =>
+    blockNumber !== undefined
+      ? retryableFunctionCall(method, args)
+      : retryableFunctionCall(method, [...args, { blockTag: blockNumber }]);
   let currentTry = 0;
   let res;
   while (res === null || res === undefined) {
@@ -105,8 +107,8 @@ const callAtBlock = async (method, args = [], blockNumber) => {
       }
     } catch (error) {
       if (
-        error.code === -32000
-        || (error.message && error.message.indexOf('-32000') !== -1)
+        error.code === -32000 ||
+        (error.message && error.message.indexOf('-32000') !== -1)
       ) {
         log('callAtBlock()', blockNumber, '-32000 error, waiting for block');
         if (currentTry <= CALL_AT_BLOCK_MAX_TRY) {
@@ -122,9 +124,11 @@ const callAtBlock = async (method, args = [], blockNumber) => {
   return cleanRPC(res[0]);
 };
 
-const getBlockNumber = (provider) => retryableCall(provider, 'getBlockNumber', []);
+const getBlockNumber = (provider) =>
+  retryableCall(provider, 'getBlockNumber', []);
 
-const queryFilter = (contract, args) => retryableCall(contract, 'queryFilter', args);
+const queryFilter = (contract, args) =>
+  retryableCall(contract, 'queryFilter', args);
 
 const waitForGetBlock = async (provider, blockNumber) => {
   let block;

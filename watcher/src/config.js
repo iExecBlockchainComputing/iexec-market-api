@@ -57,29 +57,29 @@ const stringToBoolean = (string) => {
 const chains = {
   MAINNET: {
     httpHost:
-      (INFURA_PROJECT_ID
-        && `https://mainnet.infura.io/v3/${INFURA_PROJECT_ID}`)
-      || (ALCHEMY_API_KEY
-        && `https://eth-mainnet.alchemyapi.io/v2/${ALCHEMY_API_KEY}`),
+      (INFURA_PROJECT_ID &&
+        `https://mainnet.infura.io/v3/${INFURA_PROJECT_ID}`) ||
+      (ALCHEMY_API_KEY &&
+        `https://eth-mainnet.alchemyapi.io/v2/${ALCHEMY_API_KEY}`),
     wsHost:
-      (INFURA_PROJECT_ID
-        && `wss://mainnet.infura.io/ws/v3/${INFURA_PROJECT_ID}`)
-      || (ALCHEMY_API_KEY
-        && `wss://eth-mainnet.ws.alchemyapi.io/v2/${ALCHEMY_API_KEY}`),
+      (INFURA_PROJECT_ID &&
+        `wss://mainnet.infura.io/ws/v3/${INFURA_PROJECT_ID}`) ||
+      (ALCHEMY_API_KEY &&
+        `wss://eth-mainnet.ws.alchemyapi.io/v2/${ALCHEMY_API_KEY}`),
     chainId: '1',
     hubAddress: '0x3eca1B216A7DF1C7689aEb259fFB83ADFB894E7f',
   },
   GOERLI: {
     httpHost:
-      (INFURA_PROJECT_ID
-        && `https://goerli.infura.io/v3/${INFURA_PROJECT_ID}`)
-      || (ALCHEMY_API_KEY
-        && `https://eth-goerli.alchemyapi.io/v2/${ALCHEMY_API_KEY}`),
+      (INFURA_PROJECT_ID &&
+        `https://goerli.infura.io/v3/${INFURA_PROJECT_ID}`) ||
+      (ALCHEMY_API_KEY &&
+        `https://eth-goerli.alchemyapi.io/v2/${ALCHEMY_API_KEY}`),
     wsHost:
-      (INFURA_PROJECT_ID
-        && `wss://goerli.infura.io/ws/v3/${INFURA_PROJECT_ID}`)
-      || (ALCHEMY_API_KEY
-        && `wss://eth-goerli.ws.alchemyapi.io/v2/${ALCHEMY_API_KEY}`),
+      (INFURA_PROJECT_ID &&
+        `wss://goerli.infura.io/ws/v3/${INFURA_PROJECT_ID}`) ||
+      (ALCHEMY_API_KEY &&
+        `wss://eth-goerli.ws.alchemyapi.io/v2/${ALCHEMY_API_KEY}`),
     chainId: '5',
     hubAddress: '0x3eca1B216A7DF1C7689aEb259fFB83ADFB894E7f',
   },

@@ -97,19 +97,14 @@ router.get('/categories/:catid', bodyParser(), async (ctx) => {
 
 router.get('/categories', bodyParser(), async (ctx) => {
   log('GET /categories');
-  const {
-    chainId,
-    catid,
-    minWorkClockTimeRef,
-    maxWorkClockTimeRef,
-    page,
-  } = await object({
-    chainId: chainIdSchema().required(),
-    catid: positiveIntSchema(),
-    minWorkClockTimeRef: positiveIntSchema(),
-    maxWorkClockTimeRef: positiveIntSchema(),
-    page: positiveIntSchema(),
-  }).validate(ctx.query);
+  const { chainId, catid, minWorkClockTimeRef, maxWorkClockTimeRef, page } =
+    await object({
+      chainId: chainIdSchema().required(),
+      catid: positiveIntSchema(),
+      minWorkClockTimeRef: positiveIntSchema(),
+      maxWorkClockTimeRef: positiveIntSchema(),
+      page: positiveIntSchema(),
+    }).validate(ctx.query);
   const { categories, count, nextPage } = await getCategories({
     chainId,
     catid,
@@ -225,17 +220,11 @@ router.get('/apporders/:orderHash', bodyParser(), async (ctx) => {
   const { orderHash } = await object({
     orderHash: bytes32Schema().required(),
   }).validate(ctx.params);
-  const {
-    order,
-    remaining,
-    status,
-    count,
-    publicationTimestamp,
-    signer,
-  } = await getApporder({
-    chainId,
-    orderHash,
-  });
+  const { order, remaining, status, count, publicationTimestamp, signer } =
+    await getApporder({
+      chainId,
+      orderHash,
+    });
   ctx.body = {
     ok: true,
     orderHash,
@@ -306,17 +295,11 @@ router.get('/datasetorders/:orderHash', bodyParser(), async (ctx) => {
   const { orderHash } = await object({
     orderHash: bytes32Schema().required(),
   }).validate(ctx.params);
-  const {
-    order,
-    remaining,
-    status,
-    count,
-    publicationTimestamp,
-    signer,
-  } = await getDatasetorder({
-    chainId,
-    orderHash,
-  });
+  const { order, remaining, status, count, publicationTimestamp, signer } =
+    await getDatasetorder({
+      chainId,
+      orderHash,
+    });
   ctx.body = {
     ok: true,
     orderHash,
@@ -389,17 +372,11 @@ router.get('/workerpoolorders/:orderHash', bodyParser(), async (ctx) => {
   const { orderHash } = await object({
     orderHash: bytes32Schema().required(),
   }).validate(ctx.params);
-  const {
-    order,
-    remaining,
-    status,
-    count,
-    publicationTimestamp,
-    signer,
-  } = await getWorkerpoolorder({
-    chainId,
-    orderHash,
-  });
+  const { order, remaining, status, count, publicationTimestamp, signer } =
+    await getWorkerpoolorder({
+      chainId,
+      orderHash,
+    });
   ctx.body = {
     ok: true,
     orderHash,
@@ -472,17 +449,11 @@ router.get('/requestorders/:orderHash', bodyParser(), async (ctx) => {
   const { orderHash } = await object({
     orderHash: bytes32Schema().required(),
   }).validate(ctx.params);
-  const {
-    order,
-    remaining,
-    status,
-    count,
-    publicationTimestamp,
-    signer,
-  } = await getRequestorder({
-    chainId,
-    orderHash,
-  });
+  const { order, remaining, status, count, publicationTimestamp, signer } =
+    await getRequestorder({
+      chainId,
+      orderHash,
+    });
   ctx.body = {
     ok: true,
     orderHash,
@@ -621,12 +592,14 @@ router.put('/apporders', bodyParser(), authentify, async (ctx) => {
       .default(UNPUBLISH_TARGET_MAP.ORDERHASH)
       .oneOf(Object.values(UNPUBLISH_TARGET_MAP)),
     orderHash: string().when('target', {
-      is: (value) => [UNPUBLISH_TARGET_MAP.LAST, UNPUBLISH_TARGET_MAP.ALL].includes(value),
+      is: (value) =>
+        [UNPUBLISH_TARGET_MAP.LAST, UNPUBLISH_TARGET_MAP.ALL].includes(value),
       then: string().notRequired(),
       otherwise: bytes32Schema().required(),
     }),
     app: string().when('target', {
-      is: (value) => [UNPUBLISH_TARGET_MAP.LAST, UNPUBLISH_TARGET_MAP.ALL].includes(value),
+      is: (value) =>
+        [UNPUBLISH_TARGET_MAP.LAST, UNPUBLISH_TARGET_MAP.ALL].includes(value),
       then: addressSchema().required(),
     }),
   }).validate(ctx.request.body);
@@ -649,12 +622,14 @@ router.put('/datasetorders', bodyParser(), authentify, async (ctx) => {
       .default(UNPUBLISH_TARGET_MAP.ORDERHASH)
       .oneOf(Object.values(UNPUBLISH_TARGET_MAP)),
     orderHash: string().when('target', {
-      is: (value) => [UNPUBLISH_TARGET_MAP.LAST, UNPUBLISH_TARGET_MAP.ALL].includes(value),
+      is: (value) =>
+        [UNPUBLISH_TARGET_MAP.LAST, UNPUBLISH_TARGET_MAP.ALL].includes(value),
       then: string().notRequired(),
       otherwise: bytes32Schema().required(),
     }),
     dataset: string().when('target', {
-      is: (value) => [UNPUBLISH_TARGET_MAP.LAST, UNPUBLISH_TARGET_MAP.ALL].includes(value),
+      is: (value) =>
+        [UNPUBLISH_TARGET_MAP.LAST, UNPUBLISH_TARGET_MAP.ALL].includes(value),
       then: addressSchema().required(),
     }),
   }).validate(ctx.request.body);
@@ -677,12 +652,14 @@ router.put('/workerpoolorders', bodyParser(), authentify, async (ctx) => {
       .default(UNPUBLISH_TARGET_MAP.ORDERHASH)
       .oneOf(Object.values(UNPUBLISH_TARGET_MAP)),
     orderHash: string().when('target', {
-      is: (value) => [UNPUBLISH_TARGET_MAP.LAST, UNPUBLISH_TARGET_MAP.ALL].includes(value),
+      is: (value) =>
+        [UNPUBLISH_TARGET_MAP.LAST, UNPUBLISH_TARGET_MAP.ALL].includes(value),
       then: string().notRequired(),
       otherwise: bytes32Schema().required(),
     }),
     workerpool: string().when('target', {
-      is: (value) => [UNPUBLISH_TARGET_MAP.LAST, UNPUBLISH_TARGET_MAP.ALL].includes(value),
+      is: (value) =>
+        [UNPUBLISH_TARGET_MAP.LAST, UNPUBLISH_TARGET_MAP.ALL].includes(value),
       then: addressSchema().required(),
     }),
   }).validate(ctx.request.body);
@@ -706,12 +683,14 @@ router.put('/requestorders', bodyParser(), authentify, async (ctx) => {
       .default(UNPUBLISH_TARGET_MAP.ORDERHASH)
       .oneOf(Object.values(UNPUBLISH_TARGET_MAP)),
     orderHash: string().when('target', {
-      is: (value) => [UNPUBLISH_TARGET_MAP.LAST, UNPUBLISH_TARGET_MAP.ALL].includes(value),
+      is: (value) =>
+        [UNPUBLISH_TARGET_MAP.LAST, UNPUBLISH_TARGET_MAP.ALL].includes(value),
       then: string().notRequired(),
       otherwise: bytes32Schema().required(),
     }),
     requester: string().when('target', {
-      is: (value) => [UNPUBLISH_TARGET_MAP.LAST, UNPUBLISH_TARGET_MAP.ALL].includes(value),
+      is: (value) =>
+        [UNPUBLISH_TARGET_MAP.LAST, UNPUBLISH_TARGET_MAP.ALL].includes(value),
       then: addressSchema().required(),
     }),
   }).validate(ctx.request.body);

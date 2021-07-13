@@ -240,8 +240,8 @@ const cleanApporderDependantOrders = async ({
 
     // tee apporder dependency check
     if (
-      apporder.order.tag
-      && tagToArray(apporder.order.tag).includes(TAG_MAP.tee)
+      apporder.order.tag &&
+      tagToArray(apporder.order.tag).includes(TAG_MAP.tee)
     ) {
       const [priceTeeRes] = await ApporderModel.aggregate([
         {
@@ -278,8 +278,12 @@ const cleanApporderDependantOrders = async ({
     }
 
     const dependantOrders = await Promise.all(
-      toCheckOrders.map((requestorder) => checkMatchableApporder({ order: requestorder.order })),
-    ).then((matchResults) => toCheckOrders.filter((requestorder, index) => !matchResults[index]));
+      toCheckOrders.map((requestorder) =>
+        checkMatchableApporder({ order: requestorder.order }),
+      ),
+    ).then((matchResults) =>
+      toCheckOrders.filter((requestorder, index) => !matchResults[index]),
+    );
 
     await cleanRequestorders({
       orders: dependantOrders,
@@ -330,8 +334,12 @@ const cleanDatasetorderDependantOrders = async ({
     });
 
     const dependantOrders = await Promise.all(
-      toCheckOrders.map((requestorder) => checkMatchableDatasetorder({ order: requestorder.order })),
-    ).then((matchResults) => toCheckOrders.filter((requestorder, index) => !matchResults[index]));
+      toCheckOrders.map((requestorder) =>
+        checkMatchableDatasetorder({ order: requestorder.order }),
+      ),
+    ).then((matchResults) =>
+      toCheckOrders.filter((requestorder, index) => !matchResults[index]),
+    );
 
     await cleanRequestorders({
       orders: dependantOrders,
@@ -366,12 +374,14 @@ const cleanBalanceDependantOrders = async ({
         'order.workerpoolprice': { $gt: 0 },
         remaining: { $gt: 0 },
       });
-      return workerpoolorders.filter((e) => userStake.lt(
-        new BN(e.order.workerpoolprice)
-          .mul(new BN(30))
-          .div(new BN(100))
-          .mul(new BN(e.remaining)),
-      ));
+      return workerpoolorders.filter((e) =>
+        userStake.lt(
+          new BN(e.order.workerpoolprice)
+            .mul(new BN(30))
+            .div(new BN(100))
+            .mul(new BN(e.remaining)),
+        ),
+      );
     };
     const RequestorderModel = await requestorderModel.getModel(chainId);
     const getDeadRequestOrders = async () => {
@@ -380,15 +390,17 @@ const cleanBalanceDependantOrders = async ({
         status: STATUS_MAP.OPEN,
         remaining: { $gt: 0 },
       });
-      return requestorders.filter((e) => userStake.lt(
-        new BN(e.order.appmaxprice)
-          .add(
-            new BN(e.order.datasetmaxprice).add(
-              new BN(e.order.workerpoolmaxprice),
-            ),
-          )
-          .mul(new BN(e.remaining)),
-      ));
+      return requestorders.filter((e) =>
+        userStake.lt(
+          new BN(e.order.appmaxprice)
+            .add(
+              new BN(e.order.datasetmaxprice).add(
+                new BN(e.order.workerpoolmaxprice),
+              ),
+            )
+            .mul(new BN(e.remaining)),
+        ),
+      );
     };
     const [deadRequestOrders, deadWorkerpoolOrders] = await Promise.all([
       getDeadRequestOrders(),
@@ -529,7 +541,8 @@ const cleanRevokedUserOrders = async ({
   log(`user ${address} KYC revoked`);
 
   // fix block height to prevent the risk of moving indexes in registries
-  const blockNumberOverride = blockNumber || (await getBlockNumber(getProvider()));
+  const blockNumberOverride =
+    blockNumber || (await getBlockNumber(getProvider()));
   const ApporderModel = await apporderModel.getModel(chainId);
   const DatasetorderModel = await datasetorderModel.getModel(chainId);
   const WorkerpoolorderModel = await workerpoolorderModel.getModel(chainId);
@@ -854,9 +867,10 @@ const updateApporder = async ({
         ),
       );
       const volume = new BN(publishedOrder.order.volume).sub(consumedVolume);
-      const remaining = publishedOrder.remaining !== undefined
-        ? Math.min(volume.toNumber(), publishedOrder.remaining)
-        : volume.toNumber();
+      const remaining =
+        publishedOrder.remaining !== undefined
+          ? Math.min(volume.toNumber(), publishedOrder.remaining)
+          : volume.toNumber();
       if (remaining === publishedOrder.remaining) {
         return;
       }
@@ -902,9 +916,10 @@ const updateDatasetorder = async ({
         ),
       );
       const volume = new BN(publishedOrder.order.volume).sub(consumedVolume);
-      const remaining = publishedOrder.remaining !== undefined
-        ? Math.min(volume.toNumber(), publishedOrder.remaining)
-        : volume.toNumber();
+      const remaining =
+        publishedOrder.remaining !== undefined
+          ? Math.min(volume.toNumber(), publishedOrder.remaining)
+          : volume.toNumber();
       if (remaining === publishedOrder.remaining) {
         return;
       }
@@ -950,9 +965,10 @@ const updateWorkerpoolorder = async ({
         ),
       );
       const volume = new BN(publishedOrder.order.volume).sub(consumedVolume);
-      const remaining = publishedOrder.remaining !== undefined
-        ? Math.min(volume.toNumber(), publishedOrder.remaining)
-        : volume.toNumber();
+      const remaining =
+        publishedOrder.remaining !== undefined
+          ? Math.min(volume.toNumber(), publishedOrder.remaining)
+          : volume.toNumber();
       if (remaining === publishedOrder.remaining) {
         return;
       }
@@ -998,9 +1014,10 @@ const updateRequestorder = async ({
         ),
       );
       const volume = new BN(publishedOrder.order.volume).sub(consumedVolume);
-      const remaining = publishedOrder.remaining !== undefined
-        ? Math.min(volume.toNumber(), publishedOrder.remaining)
-        : volume.toNumber();
+      const remaining =
+        publishedOrder.remaining !== undefined
+          ? Math.min(volume.toNumber(), publishedOrder.remaining)
+          : volume.toNumber();
       if (remaining === publishedOrder.remaining) {
         return;
       }

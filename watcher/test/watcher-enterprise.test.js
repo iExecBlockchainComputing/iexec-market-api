@@ -34,7 +34,8 @@ const PROCESS_TRIGGERED_EVENT_TIMEOUT = 1000;
 let chainId;
 const chainUrl = chain.httpHost;
 const { hubAddress } = chain;
-const PRIVATE_KEY = '0x564a9db84969c8159f7aa3d5393c5ecd014fce6a375842a45b12af6677b12407';
+const PRIVATE_KEY =
+  '0x564a9db84969c8159f7aa3d5393c5ecd014fce6a375842a45b12af6677b12407';
 const rpc = new ethers.providers.JsonRpcProvider(chainUrl);
 const wallet = new ethers.Wallet(PRIVATE_KEY, rpc);
 

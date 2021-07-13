@@ -67,20 +67,21 @@ const iexec = new IExec(
   },
 );
 
-const getIexecRandomSigner = () => new IExec(
-  {
-    ethProvider: utils.getSignerFromPrivateKey(
-      chainUrl,
-      Wallet.createRandom().privateKey,
-    ),
-    chainId,
-  },
-  {
-    hubAddress: chains[chainName].hubAddress,
-    isNative: chains[chainName].isNative,
-    resultProxyURL: 'http://example.com/',
-  },
-);
+const getIexecRandomSigner = () =>
+  new IExec(
+    {
+      ethProvider: utils.getSignerFromPrivateKey(
+        chainUrl,
+        Wallet.createRandom().privateKey,
+      ),
+      chainId,
+    },
+    {
+      hubAddress: chains[chainName].hubAddress,
+      isNative: chains[chainName].isNative,
+      resultProxyURL: 'http://example.com/',
+    },
+  );
 
 let server;
 let request;
@@ -159,8 +160,7 @@ describe('API', () => {
           test('POST /apporders (standard)', async () => {
             const order = await iexec.order.signApporder({
               ...apporderTemplate,
-              tag:
-                '0x1000000000000000000000000000000000000000000000000000000000000101',
+              tag: '0x1000000000000000000000000000000000000000000000000000000000000101',
             });
             const hash = await iexec.order.hashApporder(order);
             const address = await iexec.wallet.getAddress();
@@ -232,8 +232,7 @@ describe('API', () => {
           test('POST /apporders (missing chainId)', async () => {
             const order = await iexec.order.signApporder({
               ...apporderTemplate,
-              tag:
-                '0x1000000000000000000000000000000000000000000000000000000000000101',
+              tag: '0x1000000000000000000000000000000000000000000000000000000000000101',
             });
             jest.clearAllMocks();
             await setChallenge(chainId, WALLETS.DEFAULT.challenge);
@@ -914,17 +913,15 @@ describe('API', () => {
               .then(parseResult);
 
             await sleep(1000);
-            const [
-              [savedRequestorder2nRlc],
-              [savedRequestorder5nRlc],
-            ] = await Promise.all([
-              find(chainId, 'requestorders', {
-                orderHash: request2nRlcHash,
-              }),
-              find(chainId, 'requestorders', {
-                orderHash: request5nRlcHash,
-              }),
-            ]);
+            const [[savedRequestorder2nRlc], [savedRequestorder5nRlc]] =
+              await Promise.all([
+                find(chainId, 'requestorders', {
+                  orderHash: request2nRlcHash,
+                }),
+                find(chainId, 'requestorders', {
+                  orderHash: request5nRlcHash,
+                }),
+              ]);
             expect(savedRequestorder2nRlc).toBeDefined();
             expect(savedRequestorder2nRlc.status).toBe('dead');
             expect(savedRequestorder5nRlc).toBeDefined();
@@ -1044,17 +1041,15 @@ describe('API', () => {
               .then(parseResult);
 
             await sleep(1000);
-            const [
-              [savedRequestorder],
-              [savedRequestorderTee],
-            ] = await Promise.all([
-              find(chainId, 'requestorders', {
-                orderHash: requestHash,
-              }),
-              find(chainId, 'requestorders', {
-                orderHash: requestTeeHash,
-              }),
-            ]);
+            const [[savedRequestorder], [savedRequestorderTee]] =
+              await Promise.all([
+                find(chainId, 'requestorders', {
+                  orderHash: requestHash,
+                }),
+                find(chainId, 'requestorders', {
+                  orderHash: requestTeeHash,
+                }),
+              ]);
             expect(savedRequestorder).toBeDefined();
             expect(savedRequestorder.status).toBe('open');
             expect(savedRequestorderTee).toBeDefined();
@@ -1075,8 +1070,7 @@ describe('API', () => {
           test('POST /datasetorders (standard)', async () => {
             const order = await iexec.order.signDatasetorder({
               ...datasetorderTemplate,
-              tag:
-                '0x1000000000000000000000000000000000000000000000000000000000000101',
+              tag: '0x1000000000000000000000000000000000000000000000000000000000000101',
             });
             const hash = await iexec.order.hashDatasetorder(order);
             const address = await iexec.wallet.getAddress();
@@ -1151,8 +1145,7 @@ describe('API', () => {
           test('POST /datasetorders (missing chainId)', async () => {
             const order = await iexec.order.signDatasetorder({
               ...datasetorderTemplate,
-              tag:
-                '0x1000000000000000000000000000000000000000000000000000000000000101',
+              tag: '0x1000000000000000000000000000000000000000000000000000000000000101',
             });
             jest.clearAllMocks();
             await setChallenge(chainId, WALLETS.DEFAULT.challenge);
@@ -1712,9 +1705,8 @@ describe('API', () => {
               },
               { checkRequest: false },
             );
-            const requestorderUsePrivateHash = await iexec.order.hashRequestorder(
-              requestorderUsePrivate,
-            );
+            const requestorderUsePrivateHash =
+              await iexec.order.hashRequestorder(requestorderUsePrivate);
             const requestorder1nRlcHash = await iexec.order.hashRequestorder(
               requestorder1nRlc,
             );
@@ -1901,17 +1893,15 @@ describe('API', () => {
               .set('authorization', WALLETS.DEFAULT.authorization)
               .then(parseResult);
             await sleep(1000);
-            const [
-              [savedRequestorder1nRlc],
-              [savedRequestorder5nRlc],
-            ] = await Promise.all([
-              find(chainId, 'requestorders', {
-                orderHash: requestorder1nRlcHash,
-              }),
-              find(chainId, 'requestorders', {
-                orderHash: requestorder5nRlcHash,
-              }),
-            ]);
+            const [[savedRequestorder1nRlc], [savedRequestorder5nRlc]] =
+              await Promise.all([
+                find(chainId, 'requestorders', {
+                  orderHash: requestorder1nRlcHash,
+                }),
+                find(chainId, 'requestorders', {
+                  orderHash: requestorder5nRlcHash,
+                }),
+              ]);
             expect(savedRequestorder1nRlc).toBeDefined();
             expect(savedRequestorder1nRlc.status).toBe('dead');
             expect(savedRequestorder5nRlc).toBeDefined();
@@ -1933,8 +1923,7 @@ describe('API', () => {
             const address = await iexec.wallet.getAddress();
             const order = await iexec.order.signWorkerpoolorder({
               ...workerpoolorderTemplate,
-              tag:
-                '0x1000000000000000000000000000000000000000000000000000000000000101',
+              tag: '0x1000000000000000000000000000000000000000000000000000000000000101',
             });
             const hash = await iexec.order.hashWorkerpoolorder(order);
             jest.clearAllMocks();
@@ -2007,8 +1996,7 @@ describe('API', () => {
           test('POST /workerpoolorders (missing chainId)', async () => {
             const order = await iexec.order.signWorkerpoolorder({
               ...workerpoolorderTemplate,
-              tag:
-                '0x1000000000000000000000000000000000000000000000000000000000000101',
+              tag: '0x1000000000000000000000000000000000000000000000000000000000000101',
             });
             jest.clearAllMocks();
             await setChallenge(chainId, WALLETS.DEFAULT.challenge);
@@ -2744,8 +2732,7 @@ describe('API', () => {
               {
                 ...requestorderTemplate,
                 workerpool: utils.NULL_ADDRESS,
-                tag:
-                  '0x0000000000000000000000000000000000000000000000000000000000000001',
+                tag: '0x0000000000000000000000000000000000000000000000000000000000000001',
               },
               { checkRequest: false },
             );
@@ -2789,16 +2776,14 @@ describe('API', () => {
               {
                 ...requestorderTemplate,
                 workerpool: utils.NULL_ADDRESS,
-                tag:
-                  '0xf000000000000000000000000000000000000000000000000000000000000001',
+                tag: '0xf000000000000000000000000000000000000000000000000000000000000001',
               },
               { checkRequest: false },
             );
             const hash = await iexec.order.hashRequestorder(order);
             const apporder = await iexec.order.signApporder({
               ...apporderTemplate,
-              tag:
-                '0x0000000000000000000000000000000000000000000000000000000000000001',
+              tag: '0x0000000000000000000000000000000000000000000000000000000000000001',
             });
             await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
@@ -2901,8 +2886,7 @@ describe('API', () => {
               {
                 ...requestorderTemplate,
                 workerpool: utils.NULL_ADDRESS,
-                tag:
-                  '0xf000000000000000000000000000000000000000000000000000000000000001',
+                tag: '0xf000000000000000000000000000000000000000000000000000000000000001',
               },
               { checkRequest: false },
             );
@@ -4394,8 +4378,8 @@ describe('API', () => {
           expect(data.orders.length).toBe(20);
           data.orders.forEach((e) => {
             expect(
-              e.order.datasetrestrict === allowedDataset
-                || e.order.datasetrestrict === utils.NULL_ADDRESS,
+              e.order.datasetrestrict === allowedDataset ||
+                e.order.datasetrestrict === utils.NULL_ADDRESS,
             ).toBe(true);
           });
         });
@@ -4418,8 +4402,8 @@ describe('API', () => {
           expect(data.orders.length).toBe(20);
           data.orders.forEach((e) => {
             expect(
-              e.order.workerpoolrestrict === allowedWorkerpool
-                || e.order.workerpoolrestrict === utils.NULL_ADDRESS,
+              e.order.workerpoolrestrict === allowedWorkerpool ||
+                e.order.workerpoolrestrict === utils.NULL_ADDRESS,
             ).toBe(true);
           });
         });
@@ -4442,8 +4426,8 @@ describe('API', () => {
           expect(data.orders.length).toBe(20);
           data.orders.forEach((e) => {
             expect(
-              e.order.requesterrestrict === allowedRequester
-                || e.order.requesterrestrict === utils.NULL_ADDRESS,
+              e.order.requesterrestrict === allowedRequester ||
+                e.order.requesterrestrict === utils.NULL_ADDRESS,
             ).toBe(true);
           });
         });
@@ -4467,10 +4451,10 @@ describe('API', () => {
           expect(data.orders.length).toBe(minTeeTagOrders.length);
           data.orders.forEach((e) => {
             expect(
-              e.order.tag
-                === '0x0000000000000000000000000000000000000000000000000000000000000001'
-                || e.order.tag
-                  === '0x0000000000000000000000000000000000000000000000000000000000000101',
+              e.order.tag ===
+                '0x0000000000000000000000000000000000000000000000000000000000000001' ||
+                e.order.tag ===
+                  '0x0000000000000000000000000000000000000000000000000000000000000101',
             ).toBe(true);
           });
         });
@@ -4494,10 +4478,10 @@ describe('API', () => {
           expect(data.orders.length).toBe(20);
           data.orders.forEach((e) => {
             expect(
-              e.order.tag
-                === '0x0000000000000000000000000000000000000000000000000000000000000000'
-                || e.order.tag
-                  === '0x0000000000000000000000000000000000000000000000000000000000000100',
+              e.order.tag ===
+                '0x0000000000000000000000000000000000000000000000000000000000000000' ||
+                e.order.tag ===
+                  '0x0000000000000000000000000000000000000000000000000000000000000100',
             ).toBe(true);
           });
         });
@@ -4523,8 +4507,8 @@ describe('API', () => {
           expect(data.orders.length).toBe(minMaxTeeTagOrders.length);
           data.orders.forEach((e) => {
             expect(
-              e.order.tag
-                === '0x0000000000000000000000000000000000000000000000000000000000000001',
+              e.order.tag ===
+                '0x0000000000000000000000000000000000000000000000000000000000000001',
             ).toBe(true);
           });
         });
@@ -5125,8 +5109,8 @@ describe('API', () => {
           expect(data.orders.length).toBe(20);
           data.orders.forEach((e) => {
             expect(
-              e.order.apprestrict === allowedApp
-                || e.order.apprestrict === utils.NULL_ADDRESS,
+              e.order.apprestrict === allowedApp ||
+                e.order.apprestrict === utils.NULL_ADDRESS,
             ).toBe(true);
           });
         });
@@ -5149,8 +5133,8 @@ describe('API', () => {
           expect(data.orders.length).toBe(20);
           data.orders.forEach((e) => {
             expect(
-              e.order.workerpoolrestrict === allowedWorkerpool
-                || e.order.workerpoolrestrict === utils.NULL_ADDRESS,
+              e.order.workerpoolrestrict === allowedWorkerpool ||
+                e.order.workerpoolrestrict === utils.NULL_ADDRESS,
             ).toBe(true);
           });
         });
@@ -5173,8 +5157,8 @@ describe('API', () => {
           expect(data.orders.length).toBe(20);
           data.orders.forEach((e) => {
             expect(
-              e.order.requesterrestrict === allowedRequester
-                || e.order.requesterrestrict === utils.NULL_ADDRESS,
+              e.order.requesterrestrict === allowedRequester ||
+                e.order.requesterrestrict === utils.NULL_ADDRESS,
             ).toBe(true);
           });
         });
@@ -5198,10 +5182,10 @@ describe('API', () => {
           expect(data.orders.length).toBe(minTeeTagOrders.length);
           data.orders.forEach((e) => {
             expect(
-              e.order.tag
-                === '0x0000000000000000000000000000000000000000000000000000000000000001'
-                || e.order.tag
-                  === '0x0000000000000000000000000000000000000000000000000000000000000101',
+              e.order.tag ===
+                '0x0000000000000000000000000000000000000000000000000000000000000001' ||
+                e.order.tag ===
+                  '0x0000000000000000000000000000000000000000000000000000000000000101',
             ).toBe(true);
           });
         });
@@ -5225,10 +5209,10 @@ describe('API', () => {
           expect(data.orders.length).toBe(20);
           data.orders.forEach((e) => {
             expect(
-              e.order.tag
-                === '0x0000000000000000000000000000000000000000000000000000000000000000'
-                || e.order.tag
-                  === '0x0000000000000000000000000000000000000000000000000000000000000100',
+              e.order.tag ===
+                '0x0000000000000000000000000000000000000000000000000000000000000000' ||
+                e.order.tag ===
+                  '0x0000000000000000000000000000000000000000000000000000000000000100',
             ).toBe(true);
           });
         });
@@ -5254,8 +5238,8 @@ describe('API', () => {
           expect(data.orders.length).toBe(minMaxTeeTagOrders.length);
           data.orders.forEach((e) => {
             expect(
-              e.order.tag
-                === '0x0000000000000000000000000000000000000000000000000000000000000001',
+              e.order.tag ===
+                '0x0000000000000000000000000000000000000000000000000000000000000001',
             ).toBe(true);
           });
         });
@@ -5991,8 +5975,8 @@ describe('API', () => {
           expect(data.orders.length).toBe(20);
           data.orders.forEach((e) => {
             expect(
-              e.order.datasetrestrict === allowedDataset
-                || e.order.datasetrestrict === utils.NULL_ADDRESS,
+              e.order.datasetrestrict === allowedDataset ||
+                e.order.datasetrestrict === utils.NULL_ADDRESS,
             ).toBe(true);
           });
         });
@@ -6014,8 +5998,8 @@ describe('API', () => {
           expect(data.orders.length).toBe(20);
           data.orders.forEach((e) => {
             expect(
-              e.order.apprestrict === allowedApp
-                || e.order.apprestrict === utils.NULL_ADDRESS,
+              e.order.apprestrict === allowedApp ||
+                e.order.apprestrict === utils.NULL_ADDRESS,
             ).toBe(true);
           });
         });
@@ -6037,8 +6021,8 @@ describe('API', () => {
           expect(data.orders.length).toBe(20);
           data.orders.forEach((e) => {
             expect(
-              e.order.requesterrestrict === allowedRequester
-                || e.order.requesterrestrict === utils.NULL_ADDRESS,
+              e.order.requesterrestrict === allowedRequester ||
+                e.order.requesterrestrict === utils.NULL_ADDRESS,
             ).toBe(true);
           });
         });
@@ -6061,10 +6045,10 @@ describe('API', () => {
           expect(data.orders.length).toBe(minTeeTagOrders.length);
           data.orders.forEach((e) => {
             expect(
-              e.order.tag
-                === '0x0000000000000000000000000000000000000000000000000000000000000001'
-                || e.order.tag
-                  === '0x0000000000000000000000000000000000000000000000000000000000000101',
+              e.order.tag ===
+                '0x0000000000000000000000000000000000000000000000000000000000000001' ||
+                e.order.tag ===
+                  '0x0000000000000000000000000000000000000000000000000000000000000101',
             ).toBe(true);
           });
         });
@@ -6087,10 +6071,10 @@ describe('API', () => {
           expect(data.orders.length).toBe(20);
           data.orders.forEach((e) => {
             expect(
-              e.order.tag
-                === '0x0000000000000000000000000000000000000000000000000000000000000000'
-                || e.order.tag
-                  === '0x0000000000000000000000000000000000000000000000000000000000000100',
+              e.order.tag ===
+                '0x0000000000000000000000000000000000000000000000000000000000000000' ||
+                e.order.tag ===
+                  '0x0000000000000000000000000000000000000000000000000000000000000100',
             ).toBe(true);
           });
         });
@@ -6115,8 +6099,8 @@ describe('API', () => {
           expect(data.orders.length).toBe(minMaxTeeTagOrders.length);
           data.orders.forEach((e) => {
             expect(
-              e.order.tag
-                === '0x0000000000000000000000000000000000000000000000000000000000000001',
+              e.order.tag ===
+                '0x0000000000000000000000000000000000000000000000000000000000000001',
             ).toBe(true);
           });
         });
@@ -6172,9 +6156,11 @@ describe('API', () => {
                     workerpoolmaxprice: 0,
                     category: 0,
                   })
-                  .then((o) => iexecUser1.order.signRequestorder(o, {
-                    checkRequest: false,
-                  }));
+                  .then((o) =>
+                    iexecUser1.order.signRequestorder(o, {
+                      checkRequest: false,
+                    }),
+                  );
                 const orderHash = await iexecUser1.order.hashRequestorder(
                   order,
                 );
@@ -6197,9 +6183,11 @@ describe('API', () => {
                     workerpoolmaxprice: 20,
                     category: 0,
                   })
-                  .then((o) => iexecUser1.order.signRequestorder(o, {
-                    checkRequest: false,
-                  }));
+                  .then((o) =>
+                    iexecUser1.order.signRequestorder(o, {
+                      checkRequest: false,
+                    }),
+                  );
                 const orderHash = await iexecUser1.order.hashRequestorder(
                   order,
                 );
@@ -6222,9 +6210,11 @@ describe('API', () => {
                     workerpoolmaxprice: 10,
                     category: 0,
                   })
-                  .then((o) => iexecUser1.order.signRequestorder(o, {
-                    checkRequest: false,
-                  }));
+                  .then((o) =>
+                    iexecUser1.order.signRequestorder(o, {
+                      checkRequest: false,
+                    }),
+                  );
                 const orderHash = await iexecUser1.order.hashRequestorder(
                   order,
                 );
@@ -6247,9 +6237,11 @@ describe('API', () => {
                     volume: 1234,
                     category: 0,
                   })
-                  .then((o) => iexecUser1.order.signRequestorder(o, {
-                    checkRequest: false,
-                  }));
+                  .then((o) =>
+                    iexecUser1.order.signRequestorder(o, {
+                      checkRequest: false,
+                    }),
+                  );
                 const orderHash = await iexecUser1.order.hashRequestorder(
                   order,
                 );
@@ -6272,9 +6264,11 @@ describe('API', () => {
                     workerpoolmaxprice: 0,
                     category: 1,
                   })
-                  .then((o) => iexecUser1.order.signRequestorder(o, {
-                    checkRequest: false,
-                  }));
+                  .then((o) =>
+                    iexecUser1.order.signRequestorder(o, {
+                      checkRequest: false,
+                    }),
+                  );
                 const orderHash = await iexecUser1.order.hashRequestorder(
                   order,
                 );
@@ -6297,9 +6291,11 @@ describe('API', () => {
                     workerpoolmaxprice: 0,
                     category: 0,
                   })
-                  .then((o) => iexecUser2.order.signRequestorder(o, {
-                    checkRequest: false,
-                  }));
+                  .then((o) =>
+                    iexecUser2.order.signRequestorder(o, {
+                      checkRequest: false,
+                    }),
+                  );
                 const orderHash = await iexecUser1.order.hashRequestorder(
                   order,
                 );
@@ -6323,9 +6319,11 @@ describe('API', () => {
                     category: 0,
                     beneficiary: beneficiaryAddress,
                   })
-                  .then((o) => iexecUser1.order.signRequestorder(o, {
-                    checkRequest: false,
-                  }));
+                  .then((o) =>
+                    iexecUser1.order.signRequestorder(o, {
+                      checkRequest: false,
+                    }),
+                  );
                 const orderHash = await iexecUser1.order.hashRequestorder(
                   order,
                 );
@@ -6348,9 +6346,11 @@ describe('API', () => {
                     workerpoolmaxprice: 0,
                     category: 0,
                   })
-                  .then((o) => iexecUser1.order.signRequestorder(o, {
-                    checkRequest: false,
-                  }));
+                  .then((o) =>
+                    iexecUser1.order.signRequestorder(o, {
+                      checkRequest: false,
+                    }),
+                  );
                 const orderHash = await iexecUser1.order.hashRequestorder(
                   order,
                 );
@@ -6374,9 +6374,11 @@ describe('API', () => {
                     dataset: datasetAddress,
                     category: 0,
                   })
-                  .then((o) => iexecUser1.order.signRequestorder(o, {
-                    checkRequest: false,
-                  }));
+                  .then((o) =>
+                    iexecUser1.order.signRequestorder(o, {
+                      checkRequest: false,
+                    }),
+                  );
                 const orderHash = await iexecUser1.order.hashRequestorder(
                   order,
                 );
@@ -6400,9 +6402,11 @@ describe('API', () => {
                     tag: ['tee'],
                     category: 0,
                   })
-                  .then((o) => iexecUser1.order.signRequestorder(o, {
-                    checkRequest: false,
-                  }));
+                  .then((o) =>
+                    iexecUser1.order.signRequestorder(o, {
+                      checkRequest: false,
+                    }),
+                  );
                 const orderHash = await iexecUser1.order.hashRequestorder(
                   order,
                 );
@@ -6426,9 +6430,11 @@ describe('API', () => {
                     tag: ['gpu'],
                     category: 0,
                   })
-                  .then((o) => iexecUser1.order.signRequestorder(o, {
-                    checkRequest: false,
-                  }));
+                  .then((o) =>
+                    iexecUser1.order.signRequestorder(o, {
+                      checkRequest: false,
+                    }),
+                  );
                 const orderHash = await iexecUser1.order.hashRequestorder(
                   order,
                 );
@@ -6452,9 +6458,11 @@ describe('API', () => {
                     tag: ['tee', 'gpu'],
                     category: 0,
                   })
-                  .then((o) => iexecUser1.order.signRequestorder(o, {
-                    checkRequest: false,
-                  }));
+                  .then((o) =>
+                    iexecUser1.order.signRequestorder(o, {
+                      checkRequest: false,
+                    }),
+                  );
                 const orderHash = await iexecUser1.order.hashRequestorder(
                   order,
                 );
@@ -6478,9 +6486,11 @@ describe('API', () => {
                     workerpoolmaxprice: 0,
                     category: 0,
                   })
-                  .then((o) => iexecUser1.order.signRequestorder(o, {
-                    checkRequest: false,
-                  }));
+                  .then((o) =>
+                    iexecUser1.order.signRequestorder(o, {
+                      checkRequest: false,
+                    }),
+                  );
                 const orderHash = await iexecUser1.order.hashRequestorder(
                   order,
                 );
@@ -6504,9 +6514,11 @@ describe('API', () => {
                     trust: 5,
                     category: 0,
                   })
-                  .then((o) => iexecUser1.order.signRequestorder(o, {
-                    checkRequest: false,
-                  }));
+                  .then((o) =>
+                    iexecUser1.order.signRequestorder(o, {
+                      checkRequest: false,
+                    }),
+                  );
                 const orderHash = await iexecUser1.order.hashRequestorder(
                   order,
                 );
@@ -6530,9 +6542,11 @@ describe('API', () => {
                     trust: 6,
                     category: 0,
                   })
-                  .then((o) => iexecUser1.order.signRequestorder(o, {
-                    checkRequest: false,
-                  }));
+                  .then((o) =>
+                    iexecUser1.order.signRequestorder(o, {
+                      checkRequest: false,
+                    }),
+                  );
                 const orderHash = await iexecUser1.order.hashRequestorder(
                   order,
                 );
@@ -6555,9 +6569,11 @@ describe('API', () => {
                     workerpoolmaxprice: 0,
                     category: 0,
                   })
-                  .then((o) => iexecUser1.order.signRequestorder(o, {
-                    checkRequest: false,
-                  }));
+                  .then((o) =>
+                    iexecUser1.order.signRequestorder(o, {
+                      checkRequest: false,
+                    }),
+                  );
                 const orderHash = await iexecUser1.order.hashRequestorder(
                   order,
                 );
@@ -6581,9 +6597,11 @@ describe('API', () => {
                     workerpoolmaxprice: 0,
                     category: 0,
                   })
-                  .then((o) => iexecUser1.order.signRequestorder(o, {
-                    checkRequest: false,
-                  }));
+                  .then((o) =>
+                    iexecUser1.order.signRequestorder(o, {
+                      checkRequest: false,
+                    }),
+                  );
                 const orderHash = await iexecUser1.order.hashRequestorder(
                   order,
                 );
@@ -6969,10 +6987,10 @@ describe('API', () => {
           expect(data.orders.length).toBe(minTeeTagOrders.length);
           data.orders.forEach((e) => {
             expect(
-              e.order.tag
-                === '0x0000000000000000000000000000000000000000000000000000000000000001'
-                || e.order.tag
-                  === '0x0000000000000000000000000000000000000000000000000000000000000101',
+              e.order.tag ===
+                '0x0000000000000000000000000000000000000000000000000000000000000001' ||
+                e.order.tag ===
+                  '0x0000000000000000000000000000000000000000000000000000000000000101',
             ).toBe(true);
           });
         });
@@ -6995,10 +7013,10 @@ describe('API', () => {
           expect(data.orders.length).toBe(20);
           data.orders.forEach((e) => {
             expect(
-              e.order.tag
-                === '0x0000000000000000000000000000000000000000000000000000000000000000'
-                || e.order.tag
-                  === '0x0000000000000000000000000000000000000000000000000000000000000100',
+              e.order.tag ===
+                '0x0000000000000000000000000000000000000000000000000000000000000000' ||
+                e.order.tag ===
+                  '0x0000000000000000000000000000000000000000000000000000000000000100',
             ).toBe(true);
           });
         });
@@ -7023,8 +7041,8 @@ describe('API', () => {
           expect(data.orders.length).toBe(minMaxTeeTagOrders.length);
           data.orders.forEach((e) => {
             expect(
-              e.order.tag
-                === '0x0000000000000000000000000000000000000000000000000000000000000001',
+              e.order.tag ===
+                '0x0000000000000000000000000000000000000000000000000000000000000001',
             ).toBe(true);
           });
         });
@@ -7046,8 +7064,8 @@ describe('API', () => {
           expect(data.orders.length).toBe(20);
           data.orders.forEach((e) => {
             expect(
-              e.order.workerpool === allowedWorkerpool
-                || e.order.workerpool === utils.NULL_ADDRESS,
+              e.order.workerpool === allowedWorkerpool ||
+                e.order.workerpool === utils.NULL_ADDRESS,
             ).toBe(true);
           });
         });
@@ -7261,10 +7279,14 @@ describe('API', () => {
       const appOwner = getRandomAddress();
       const datasetOwner = getRandomAddress();
       const workerpoolOwner = getRandomAddress();
-      const apporderHash = '0xabc1000000000000000000000000000000000000000000000000000000000000';
-      const datasetorderHash = '0xabc2000000000000000000000000000000000000000000000000000000000000';
-      const workerpoolorderHash = '0xabc3000000000000000000000000000000000000000000000000000000000000';
-      const requestorderHash = '0xabc4000000000000000000000000000000000000000000000000000000000000';
+      const apporderHash =
+        '0xabc1000000000000000000000000000000000000000000000000000000000000';
+      const datasetorderHash =
+        '0xabc2000000000000000000000000000000000000000000000000000000000000';
+      const workerpoolorderHash =
+        '0xabc3000000000000000000000000000000000000000000000000000000000000';
+      const requestorderHash =
+        '0xabc4000000000000000000000000000000000000000000000000000000000000';
 
       const allDeals = [];
       let categorySpecificDeals;

@@ -32,10 +32,12 @@ const config = require('../config');
 
 const log = logger.extend('controllers:ethEventsWatcher');
 
-const extractEvent = (processCallback) => (...args) => {
-  const event = args[args.length - 1];
-  return processCallback(event);
-};
+const extractEvent =
+  (processCallback) =>
+  (...args) => {
+    const event = args[args.length - 1];
+    return processCallback(event);
+  };
 
 const registerNewBlock = () => {
   log('registering block events');
@@ -153,13 +155,14 @@ const replayPastEventBatch = async (
   log('replay batch from block', firstBlock, 'to block', lastBlock);
 
   const fromBlock = firstBlock;
-  const last = lastBlock === 'latest' ? await getBlockNumber(getProvider()) : lastBlock;
+  const last =
+    lastBlock === 'latest' ? await getBlockNumber(getProvider()) : lastBlock;
 
   let toBlock;
   let iterate;
   if (
-    config.runtime.blocksBatchSize > 0
-    && last - fromBlock > config.runtime.blocksBatchSize
+    config.runtime.blocksBatchSize > 0 &&
+    last - fromBlock > config.runtime.blocksBatchSize
   ) {
     toBlock = fromBlock + config.runtime.blocksBatchSize - 10;
     iterate = true;
@@ -228,9 +231,9 @@ const replayPastEventBatch = async (
     }),
     isEnterpriseFlavour(config.flavour)
       ? getContractPastEvent(getERlc(), 'RoleRevoked', {
-        fromBlock,
-        toBlock,
-      })
+          fromBlock,
+          toBlock,
+        })
       : [],
   ]);
 

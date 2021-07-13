@@ -73,9 +73,9 @@ const processOrdersMatched = async (event, { isReplay = false } = {}) => {
       }),
       datasetHash !== NULL_ADDRESS
         ? updateDatasetorder({
-          orderHash: datasetHash,
-          blockNumber: isReplay ? undefined : blockNumber,
-        })
+            orderHash: datasetHash,
+            blockNumber: isReplay ? undefined : blockNumber,
+          })
         : undefined,
       updateWorkerpoolorder({
         orderHash: workerpoolHash,
