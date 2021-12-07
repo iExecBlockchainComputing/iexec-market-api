@@ -6,14 +6,14 @@ Watch events emitted by iexec smart contracts and update market database
 
 start databases
 
-```
+```sh
 docker run --rm -p 27017:27017 mongo:latest
 docker run --rm -p 6379:6379 redis:alpine redis-server --appendonly yes
 ```
 
 configure blockchain access in `.env` file (infura, alchemy or custom node)
 
-```
+```text
 ## configure the ethereum websocket and RPC endpoints
 # ETH_WS_HOST=wss://goerli-node:8546
 # ETH_RPC_HOST=https://goerli-node:8545
@@ -27,19 +27,19 @@ configure blockchain access in `.env` file (infura, alchemy or custom node)
 
 install dependencies
 
-```
+```sh
 npm i
 ```
 
 start project
 
-```
+```sh
 npm start
 ```
 
 ## Test
 
-```
+```sh
 docker-compose -f test/docker-compose.yml up -d
 npm i
 npm test
@@ -47,7 +47,7 @@ npm test
 
 ## Monitor jobs
 
-```
+```sh
 npx agendash --db=mongodb://localhost:27017/65535_jobs --port=8080
 ```
 

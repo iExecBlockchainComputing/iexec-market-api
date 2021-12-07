@@ -17,10 +17,12 @@ const { logger } = require('./utils/logger');
 const log = logger.extend('config');
 
 const {
+  PORT,
   CHAINS,
   MONGO_HOST,
   REDIS_HOST,
   FLAVOUR,
+  MAX_OPEN_ORDERS_PER_WALLET,
   RATE_LIMIT_MAX,
   RATE_LIMIT_PERIOD,
   GOERLI_ETH_RPC_HOST,
@@ -215,6 +217,12 @@ const rateLimit = {
 
 log('rateLimit', rateLimit);
 
+const maxOpenOrdersPerWallet = parseInt(MAX_OPEN_ORDERS_PER_WALLET, 10) || 50;
+log('maxOpenOrdersPerWallet', maxOpenOrdersPerWallet);
+
+const serverPort = parseInt(PORT, 10) || 3000;
+log('serverPort', serverPort);
+
 module.exports = {
   chains,
   supportedChainsIds,
@@ -222,4 +230,6 @@ module.exports = {
   mongo,
   redis,
   rateLimit,
+  maxOpenOrdersPerWallet,
+  serverPort,
 };
