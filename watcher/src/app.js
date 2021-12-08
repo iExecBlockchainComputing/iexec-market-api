@@ -23,9 +23,7 @@ const { errorHandler } = require('./utils/error');
 
 const log = logger.extend('app');
 
-const {
-  wsHost, httpHost, chainId, hubAddress,
-} = config.chain;
+const { wsHost, httpHost, chainId, hubAddress } = config.chain;
 if (!chainId) throw Error('missing chainId');
 if (!wsHost) throw Error('missing wsHost');
 if (!httpHost) throw Error('missing httpHost');

@@ -30,8 +30,8 @@ const checkSync = () => async () => {
       ]);
       log('Sync - RPC:', rpcBlock, 'WS:', wsBlock);
       if (
-        rpcBlock > wsBlock + config.runtime.outOfSyncThreshold
-        || wsBlock > rpcBlock + config.runtime.outOfSyncThreshold
+        rpcBlock > wsBlock + config.runtime.outOfSyncThreshold ||
+        wsBlock > rpcBlock + config.runtime.outOfSyncThreshold
       ) {
         errorHandler(
           Error(

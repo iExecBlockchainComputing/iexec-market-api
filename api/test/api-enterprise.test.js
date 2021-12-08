@@ -141,8 +141,7 @@ describe('API enterprise specific', () => {
           test('POST /apporders (standard)', async () => {
             const order = await iexec.order.signApporder({
               ...apporderTemplate,
-              tag:
-                '0x1000000000000000000000000000000000000000000000000000000000000101',
+              tag: '0x1000000000000000000000000000000000000000000000000000000000000101',
             });
             const hash = await iexec.order.hashApporder(order);
             const address = await iexec.wallet.getAddress();
@@ -180,8 +179,7 @@ describe('API enterprise specific', () => {
           test('POST /apporders (order signer not whitelisted)', async () => {
             const order = await iexecNotWhitelisted.order.signApporder({
               ...apporderNotWhitelisted,
-              tag:
-                '0x1000000000000000000000000000000000000000000000000000000000000101',
+              tag: '0x1000000000000000000000000000000000000000000000000000000000000101',
             });
             await setChallenge(chainId, WALLETS.NOT_KYC.challenge);
             const { data, status } = await request
@@ -207,8 +205,7 @@ describe('API enterprise specific', () => {
             const order = await iexec.order.signApporder({
               ...apporderTemplate,
               datasetrestrict: datasetNotWhitelisted,
-              tag:
-                '0x1000000000000000000000000000000000000000000000000000000000000101',
+              tag: '0x1000000000000000000000000000000000000000000000000000000000000101',
             });
             await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             const { data, status } = await request
@@ -234,8 +231,7 @@ describe('API enterprise specific', () => {
             const order = await iexec.order.signApporder({
               ...apporderTemplate,
               workerpoolrestrict: workerpoolNotWhitelisted,
-              tag:
-                '0x1000000000000000000000000000000000000000000000000000000000000101',
+              tag: '0x1000000000000000000000000000000000000000000000000000000000000101',
             });
             await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             const { data, status } = await request
@@ -261,8 +257,7 @@ describe('API enterprise specific', () => {
             const order = await iexec.order.signApporder({
               ...apporderTemplate,
               requesterrestrict: WALLETS.NOT_KYC.address,
-              tag:
-                '0x1000000000000000000000000000000000000000000000000000000000000101',
+              tag: '0x1000000000000000000000000000000000000000000000000000000000000101',
             });
             await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             const { data, status } = await request
@@ -291,8 +286,7 @@ describe('API enterprise specific', () => {
           test('POST /datasetorders (standard)', async () => {
             const order = await iexec.order.signDatasetorder({
               ...datasetorderTemplate,
-              tag:
-                '0x1000000000000000000000000000000000000000000000000000000000000101',
+              tag: '0x1000000000000000000000000000000000000000000000000000000000000101',
             });
             const hash = await iexec.order.hashDatasetorder(order);
             const address = await iexec.wallet.getAddress();
@@ -331,8 +325,7 @@ describe('API enterprise specific', () => {
         test('POST /datasetorders (order signer not whitelisted)', async () => {
           const order = await iexecNotWhitelisted.order.signDatasetorder({
             ...datasetorderNotWhitelisted,
-            tag:
-              '0x1000000000000000000000000000000000000000000000000000000000000101',
+            tag: '0x1000000000000000000000000000000000000000000000000000000000000101',
           });
           await setChallenge(chainId, WALLETS.NOT_KYC.challenge);
           const { data, status } = await request
@@ -358,8 +351,7 @@ describe('API enterprise specific', () => {
           const order = await iexec.order.signDatasetorder({
             ...datasetorderTemplate,
             apprestrict: appNotWhitelisted,
-            tag:
-              '0x1000000000000000000000000000000000000000000000000000000000000101',
+            tag: '0x1000000000000000000000000000000000000000000000000000000000000101',
           });
           await setChallenge(chainId, WALLETS.DEFAULT.challenge);
           const { data, status } = await request
@@ -385,8 +377,7 @@ describe('API enterprise specific', () => {
           const order = await iexec.order.signDatasetorder({
             ...datasetorderTemplate,
             workerpoolrestrict: workerpoolNotWhitelisted,
-            tag:
-              '0x1000000000000000000000000000000000000000000000000000000000000101',
+            tag: '0x1000000000000000000000000000000000000000000000000000000000000101',
           });
           await setChallenge(chainId, WALLETS.DEFAULT.challenge);
           const { data, status } = await request
@@ -412,8 +403,7 @@ describe('API enterprise specific', () => {
           const order = await iexec.order.signDatasetorder({
             ...datasetorderTemplate,
             requesterrestrict: WALLETS.NOT_KYC.address,
-            tag:
-              '0x1000000000000000000000000000000000000000000000000000000000000101',
+            tag: '0x1000000000000000000000000000000000000000000000000000000000000101',
           });
           await setChallenge(chainId, WALLETS.DEFAULT.challenge);
           const { data, status } = await request
@@ -442,8 +432,7 @@ describe('API enterprise specific', () => {
             const address = await iexec.wallet.getAddress();
             const order = await iexec.order.signWorkerpoolorder({
               ...workerpoolorderTemplate,
-              tag:
-                '0x1000000000000000000000000000000000000000000000000000000000000101',
+              tag: '0x1000000000000000000000000000000000000000000000000000000000000101',
             });
             const hash = await iexec.order.hashWorkerpoolorder(order);
             jest.clearAllMocks();
@@ -481,8 +470,7 @@ describe('API enterprise specific', () => {
         test('POST /workerpoolorders (order signer not whitelisted)', async () => {
           const order = await iexecNotWhitelisted.order.signWorkerpoolorder({
             ...workerpoolorderNotWhitelisted,
-            tag:
-              '0x1000000000000000000000000000000000000000000000000000000000000101',
+            tag: '0x1000000000000000000000000000000000000000000000000000000000000101',
           });
           await setChallenge(chainId, WALLETS.NOT_KYC.challenge);
           const { data, status } = await request
@@ -508,8 +496,7 @@ describe('API enterprise specific', () => {
           const order = await iexec.order.signWorkerpoolorder({
             ...workerpoolorderTemplate,
             apprestrict: appNotWhitelisted,
-            tag:
-              '0x1000000000000000000000000000000000000000000000000000000000000101',
+            tag: '0x1000000000000000000000000000000000000000000000000000000000000101',
           });
           await setChallenge(chainId, WALLETS.DEFAULT.challenge);
           const { data, status } = await request
@@ -535,8 +522,7 @@ describe('API enterprise specific', () => {
           const order = await iexec.order.signWorkerpoolorder({
             ...workerpoolorderTemplate,
             datasetrestrict: datasetNotWhitelisted,
-            tag:
-              '0x1000000000000000000000000000000000000000000000000000000000000101',
+            tag: '0x1000000000000000000000000000000000000000000000000000000000000101',
           });
           await setChallenge(chainId, WALLETS.DEFAULT.challenge);
           const { data, status } = await request
@@ -562,8 +548,7 @@ describe('API enterprise specific', () => {
           const order = await iexec.order.signWorkerpoolorder({
             ...workerpoolorderTemplate,
             requesterrestrict: WALLETS.NOT_KYC.address,
-            tag:
-              '0x1000000000000000000000000000000000000000000000000000000000000101',
+            tag: '0x1000000000000000000000000000000000000000000000000000000000000101',
           });
           await setChallenge(chainId, WALLETS.DEFAULT.challenge);
           const { data, status } = await request
@@ -593,16 +578,14 @@ describe('API enterprise specific', () => {
               {
                 ...requestorderTemplate,
                 workerpool: utils.NULL_ADDRESS,
-                tag:
-                  '0xf000000000000000000000000000000000000000000000000000000000000001',
+                tag: '0xf000000000000000000000000000000000000000000000000000000000000001',
               },
               { checkRequest: false },
             );
             const hash = await iexec.order.hashRequestorder(order);
             const apporder = await iexec.order.signApporder({
               ...apporderTemplate,
-              tag:
-                '0x0000000000000000000000000000000000000000000000000000000000000001',
+              tag: '0x0000000000000000000000000000000000000000000000000000000000000001',
             });
             await setChallenge(chainId, WALLETS.DEFAULT.challenge);
             await request
@@ -651,8 +634,7 @@ describe('API enterprise specific', () => {
           const order = await iexecNotWhitelisted.order.signRequestorder(
             {
               ...requestorderNotWhitelisted,
-              tag:
-                '0x1000000000000000000000000000000000000000000000000000000000000101',
+              tag: '0x1000000000000000000000000000000000000000000000000000000000000101',
             },
             { checkRequest: false },
           );
@@ -682,8 +664,7 @@ describe('API enterprise specific', () => {
             {
               ...requestorderTemplate,
               app: appNotWhitelisted,
-              tag:
-                '0x1000000000000000000000000000000000000000000000000000000000000101',
+              tag: '0x1000000000000000000000000000000000000000000000000000000000000101',
             },
             { checkRequest: false },
           );
@@ -712,8 +693,7 @@ describe('API enterprise specific', () => {
             {
               ...requestorderTemplate,
               dataset: datasetNotWhitelisted,
-              tag:
-                '0x1000000000000000000000000000000000000000000000000000000000000101',
+              tag: '0x1000000000000000000000000000000000000000000000000000000000000101',
             },
             { checkRequest: false },
           );
@@ -742,8 +722,7 @@ describe('API enterprise specific', () => {
             {
               ...requestorderTemplate,
               workerpool: workerpoolNotWhitelisted,
-              tag:
-                '0x1000000000000000000000000000000000000000000000000000000000000101',
+              tag: '0x1000000000000000000000000000000000000000000000000000000000000101',
             },
             { checkRequest: false },
           );

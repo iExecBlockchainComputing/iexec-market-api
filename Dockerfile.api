@@ -6,7 +6,8 @@ WORKDIR /app
 RUN apk update && apk upgrade
 
 COPY api/package.json package.json
-RUN npm install --production
+COPY api/package-lock.json package-lock.json
+RUN npm ci --only=production
 
 COPY api/src ./src
 

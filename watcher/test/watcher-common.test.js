@@ -30,14 +30,15 @@ const {
   CATEGORIES_COLLECTION,
 } = require('./test-utils');
 
-jest.setTimeout(50000);
+jest.setTimeout(120000);
 
-const PROCESS_TRIGGERED_EVENT_TIMEOUT = 500;
+const PROCESS_TRIGGERED_EVENT_TIMEOUT = 1000;
 
 let chainId;
 const chainUrl = chain.httpHost;
 const { hubAddress } = chain;
-const PRIVATE_KEY = '0x564a9db84969c8159f7aa3d5393c5ecd014fce6a375842a45b12af6677b12407';
+const PRIVATE_KEY =
+  '0x564a9db84969c8159f7aa3d5393c5ecd014fce6a375842a45b12af6677b12407';
 const rpc = new ethers.providers.JsonRpcProvider(chainUrl);
 const wallet = new ethers.Wallet(PRIVATE_KEY, rpc);
 
@@ -119,17 +120,13 @@ describe('Watcher', () => {
       },
       { checkRequest: false },
     );
-    const [
-      appHash,
-      datasetHash,
-      workerpoolHash,
-      requestHash,
-    ] = await Promise.all([
-      iexec.order.hashApporder(apporder),
-      iexec.order.hashDatasetorder(datasetorder),
-      iexec.order.hashWorkerpoolorder(workerpoolorder),
-      iexec.order.hashRequestorder(requestorder),
-    ]);
+    const [appHash, datasetHash, workerpoolHash, requestHash] =
+      await Promise.all([
+        iexec.order.hashApporder(apporder),
+        iexec.order.hashDatasetorder(datasetorder),
+        iexec.order.hashWorkerpoolorder(workerpoolorder),
+        iexec.order.hashRequestorder(requestorder),
+      ]);
     await sleep(PROCESS_TRIGGERED_EVENT_TIMEOUT);
     const [saved] = await find(chainId, DEALS_COLLECTION, { dealid });
     expect(saved.dealid).toBe(dealid);
@@ -186,17 +183,13 @@ describe('Watcher', () => {
       datasetorder,
       workerpoolorder,
     });
-    const [
-      appHash,
-      datasetHash,
-      workerpoolHash,
-      requestHash,
-    ] = await Promise.all([
-      iexec.order.hashApporder(apporder),
-      iexec.order.hashDatasetorder(datasetorder),
-      iexec.order.hashWorkerpoolorder(workerpoolorder),
-      iexec.order.hashRequestorder(requestorder),
-    ]);
+    const [appHash, datasetHash, workerpoolHash, requestHash] =
+      await Promise.all([
+        iexec.order.hashApporder(apporder),
+        iexec.order.hashDatasetorder(datasetorder),
+        iexec.order.hashWorkerpoolorder(workerpoolorder),
+        iexec.order.hashRequestorder(requestorder),
+      ]);
     await Promise.all([
       addApporders(chainId, [
         {
@@ -1511,13 +1504,12 @@ describe('Watcher', () => {
       workerpoolprice: 104,
       volume: 1,
     });
-    const workerpoolorderCumulativeTooExpensive = await iexec.order.signWorkerpoolorder(
-      {
+    const workerpoolorderCumulativeTooExpensive =
+      await iexec.order.signWorkerpoolorder({
         ...independantWorkerpoolorder,
         workerpoolprice: 37,
         volume: 3,
-      },
-    );
+      });
     const [
       independantWorkerpoolHash,
       workerpoolorderTooExpensiveHash,
@@ -1572,8 +1564,9 @@ describe('Watcher', () => {
     expect(socketEmitSpy).toHaveBeenCalledTimes(2);
     expect(
       socketEmitSpy.mock.calls.filter(
-        (args) => args[1] === 'workerpoolorder_unpublished'
-          && args[2] === workerpoolorderTooExpensiveHash,
+        (args) =>
+          args[1] === 'workerpoolorder_unpublished' &&
+          args[2] === workerpoolorderTooExpensiveHash,
       ),
     ).toMatchObject([
       [
@@ -1584,8 +1577,9 @@ describe('Watcher', () => {
     ]);
     expect(
       socketEmitSpy.mock.calls.filter(
-        (args) => args[1] === 'workerpoolorder_unpublished'
-          && args[2] === workerpoolorderCumulativeTooExpensiveHash,
+        (args) =>
+          args[1] === 'workerpoolorder_unpublished' &&
+          args[2] === workerpoolorderCumulativeTooExpensiveHash,
       ),
     ).toMatchObject([
       [
@@ -1628,24 +1622,26 @@ describe('Watcher', () => {
       },
       { checkRequest: false },
     );
-    const requestorderWorkerpoolTooExpensive = await iexec.order.signRequestorder(
-      {
-        ...independantRequestorder,
-        appmaxprice: 0,
-        datasetmaxprice: 0,
-        workerpoolmaxprice: 4,
-      },
-      { checkRequest: false },
-    );
-    const requestorderCumulativeTooExpensive = await iexec.order.signRequestorder(
-      {
-        ...independantRequestorder,
-        appmaxprice: 2,
-        datasetmaxprice: 2,
-        workerpoolmaxprice: 2,
-      },
-      { checkRequest: false },
-    );
+    const requestorderWorkerpoolTooExpensive =
+      await iexec.order.signRequestorder(
+        {
+          ...independantRequestorder,
+          appmaxprice: 0,
+          datasetmaxprice: 0,
+          workerpoolmaxprice: 4,
+        },
+        { checkRequest: false },
+      );
+    const requestorderCumulativeTooExpensive =
+      await iexec.order.signRequestorder(
+        {
+          ...independantRequestorder,
+          appmaxprice: 2,
+          datasetmaxprice: 2,
+          workerpoolmaxprice: 2,
+        },
+        { checkRequest: false },
+      );
     const [
       independantRequestHash,
       requestorderAppTooExpensiveHash,
@@ -1726,8 +1722,9 @@ describe('Watcher', () => {
     expect(socketEmitSpy).toHaveBeenCalledTimes(4);
     expect(
       socketEmitSpy.mock.calls.filter(
-        (args) => args[1] === 'requestorder_unpublished'
-          && args[2] === requestorderAppTooExpensiveHash,
+        (args) =>
+          args[1] === 'requestorder_unpublished' &&
+          args[2] === requestorderAppTooExpensiveHash,
       ),
     ).toMatchObject([
       [
@@ -1738,8 +1735,9 @@ describe('Watcher', () => {
     ]);
     expect(
       socketEmitSpy.mock.calls.filter(
-        (args) => args[1] === 'requestorder_unpublished'
-          && args[2] === requestorderDatasetTooExpensiveHash,
+        (args) =>
+          args[1] === 'requestorder_unpublished' &&
+          args[2] === requestorderDatasetTooExpensiveHash,
       ),
     ).toMatchObject([
       [
@@ -1750,8 +1748,9 @@ describe('Watcher', () => {
     ]);
     expect(
       socketEmitSpy.mock.calls.filter(
-        (args) => args[1] === 'requestorder_unpublished'
-          && args[2] === requestorderWorkerpoolTooExpensiveHash,
+        (args) =>
+          args[1] === 'requestorder_unpublished' &&
+          args[2] === requestorderWorkerpoolTooExpensiveHash,
       ),
     ).toMatchObject([
       [
@@ -1762,8 +1761,9 @@ describe('Watcher', () => {
     ]);
     expect(
       socketEmitSpy.mock.calls.filter(
-        (args) => args[1] === 'requestorder_unpublished'
-          && args[2] === requestorderCumulativeTooExpensiveHash,
+        (args) =>
+          args[1] === 'requestorder_unpublished' &&
+          args[2] === requestorderCumulativeTooExpensiveHash,
       ),
     ).toMatchObject([
       [
@@ -1915,17 +1915,13 @@ describe('Recover on start', () => {
       },
       { checkRequest: false },
     );
-    const [
-      appHash,
-      datasetHash,
-      workerpoolHash,
-      requestHash,
-    ] = await Promise.all([
-      iexec.order.hashApporder(apporder),
-      iexec.order.hashDatasetorder(datasetorder),
-      iexec.order.hashWorkerpoolorder(workerpoolorder),
-      iexec.order.hashRequestorder(requestorder),
-    ]);
+    const [appHash, datasetHash, workerpoolHash, requestHash] =
+      await Promise.all([
+        iexec.order.hashApporder(apporder),
+        iexec.order.hashDatasetorder(datasetorder),
+        iexec.order.hashWorkerpoolorder(workerpoolorder),
+        iexec.order.hashRequestorder(requestorder),
+      ]);
     const [notSaved] = await find(chainId, DEALS_COLLECTION, {
       dealid,
     });
@@ -1980,17 +1976,13 @@ describe('Recover on start', () => {
       datasetorder,
       workerpoolorder,
     });
-    const [
-      appHash,
-      datasetHash,
-      workerpoolHash,
-      requestHash,
-    ] = await Promise.all([
-      iexec.order.hashApporder(apporder),
-      iexec.order.hashDatasetorder(datasetorder),
-      iexec.order.hashWorkerpoolorder(workerpoolorder),
-      iexec.order.hashRequestorder(requestorder),
-    ]);
+    const [appHash, datasetHash, workerpoolHash, requestHash] =
+      await Promise.all([
+        iexec.order.hashApporder(apporder),
+        iexec.order.hashDatasetorder(datasetorder),
+        iexec.order.hashWorkerpoolorder(workerpoolorder),
+        iexec.order.hashRequestorder(requestorder),
+      ]);
     await Promise.all([
       addApporders(chainId, [
         {
@@ -2981,13 +2973,12 @@ describe('Recover on start', () => {
       workerpoolprice: 104,
       volume: 1,
     });
-    const workerpoolorderCumulativeTooExpensive = await iexec.order.signWorkerpoolorder(
-      {
+    const workerpoolorderCumulativeTooExpensive =
+      await iexec.order.signWorkerpoolorder({
         ...independantWorkerpoolorder,
         workerpoolprice: 37,
         volume: 3,
-      },
-    );
+      });
     const [
       independantWorkerpoolHash,
       finallyGoodWorkerpoolHash,
@@ -3121,24 +3112,26 @@ describe('Recover on start', () => {
       },
       { checkRequest: false },
     );
-    const requestorderWorkerpoolTooExpensive = await iexec.order.signRequestorder(
-      {
-        ...independantRequestorder,
-        appmaxprice: 0,
-        datasetmaxprice: 0,
-        workerpoolmaxprice: 4,
-      },
-      { checkRequest: false },
-    );
-    const requestorderCumulativeTooExpensive = await iexec.order.signRequestorder(
-      {
-        ...independantRequestorder,
-        appmaxprice: 2,
-        datasetmaxprice: 2,
-        workerpoolmaxprice: 2,
-      },
-      { checkRequest: false },
-    );
+    const requestorderWorkerpoolTooExpensive =
+      await iexec.order.signRequestorder(
+        {
+          ...independantRequestorder,
+          appmaxprice: 0,
+          datasetmaxprice: 0,
+          workerpoolmaxprice: 4,
+        },
+        { checkRequest: false },
+      );
+    const requestorderCumulativeTooExpensive =
+      await iexec.order.signRequestorder(
+        {
+          ...independantRequestorder,
+          appmaxprice: 2,
+          datasetmaxprice: 2,
+          workerpoolmaxprice: 2,
+        },
+        { checkRequest: false },
+      );
     const [
       independantRequestHash,
       finallyGoodRequestHash,
@@ -3432,17 +3425,13 @@ describe('Replay Past', () => {
       },
       { checkRequest: false },
     );
-    const [
-      appHash,
-      datasetHash,
-      workerpoolHash,
-      requestHash,
-    ] = await Promise.all([
-      iexec.order.hashApporder(apporder),
-      iexec.order.hashDatasetorder(datasetorder),
-      iexec.order.hashWorkerpoolorder(workerpoolorder),
-      iexec.order.hashRequestorder(requestorder),
-    ]);
+    const [appHash, datasetHash, workerpoolHash, requestHash] =
+      await Promise.all([
+        iexec.order.hashApporder(apporder),
+        iexec.order.hashDatasetorder(datasetorder),
+        iexec.order.hashWorkerpoolorder(workerpoolorder),
+        iexec.order.hashRequestorder(requestorder),
+      ]);
     const [notSaved] = await find(chainId, DEALS_COLLECTION, {
       dealid,
     });
@@ -3500,17 +3489,13 @@ describe('Replay Past', () => {
       datasetorder,
       workerpoolorder,
     });
-    const [
-      appHash,
-      datasetHash,
-      workerpoolHash,
-      requestHash,
-    ] = await Promise.all([
-      iexec.order.hashApporder(apporder),
-      iexec.order.hashDatasetorder(datasetorder),
-      iexec.order.hashWorkerpoolorder(workerpoolorder),
-      iexec.order.hashRequestorder(requestorder),
-    ]);
+    const [appHash, datasetHash, workerpoolHash, requestHash] =
+      await Promise.all([
+        iexec.order.hashApporder(apporder),
+        iexec.order.hashDatasetorder(datasetorder),
+        iexec.order.hashWorkerpoolorder(workerpoolorder),
+        iexec.order.hashRequestorder(requestorder),
+      ]);
     await Promise.all([
       addApporders(chainId, [
         {
@@ -4495,13 +4480,12 @@ describe('Replay Past', () => {
       volume: 1,
     });
 
-    const workerpoolorderCumulativeTooExpensive = await iexec.order.signWorkerpoolorder(
-      {
+    const workerpoolorderCumulativeTooExpensive =
+      await iexec.order.signWorkerpoolorder({
         ...independantWorkerpoolorder,
         workerpoolprice: 37,
         volume: 3,
-      },
-    );
+      });
 
     const [
       independantWorkerpoolHash,
@@ -4640,25 +4624,27 @@ describe('Replay Past', () => {
       { checkRequest: false },
     );
 
-    const requestorderWorkerpoolTooExpensive = await iexec.order.signRequestorder(
-      {
-        ...independantRequestorder,
-        appmaxprice: 0,
-        datasetmaxprice: 0,
-        workerpoolmaxprice: 4,
-      },
-      { checkRequest: false },
-    );
+    const requestorderWorkerpoolTooExpensive =
+      await iexec.order.signRequestorder(
+        {
+          ...independantRequestorder,
+          appmaxprice: 0,
+          datasetmaxprice: 0,
+          workerpoolmaxprice: 4,
+        },
+        { checkRequest: false },
+      );
 
-    const requestorderCumulativeTooExpensive = await iexec.order.signRequestorder(
-      {
-        ...independantRequestorder,
-        appmaxprice: 2,
-        datasetmaxprice: 2,
-        workerpoolmaxprice: 2,
-      },
-      { checkRequest: false },
-    );
+    const requestorderCumulativeTooExpensive =
+      await iexec.order.signRequestorder(
+        {
+          ...independantRequestorder,
+          appmaxprice: 2,
+          datasetmaxprice: 2,
+          workerpoolmaxprice: 2,
+        },
+        { checkRequest: false },
+      );
     const [
       independantRequestHash,
       finallyGoodRequestHash,

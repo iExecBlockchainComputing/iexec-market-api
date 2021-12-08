@@ -4,10 +4,11 @@ const { logger } = require('./logger');
 const log = logger.extend('utils:sig-utils');
 
 // Typed data signature inspired by eth-sig-util refactored to work with ethers
-const rawEncode = (encodedTypes, encodedValues) => Buffer.from(
-  defaultAbiCoder.encode(encodedTypes, encodedValues).substr(2),
-  'hex',
-);
+const rawEncode = (encodedTypes, encodedValues) =>
+  Buffer.from(
+    defaultAbiCoder.encode(encodedTypes, encodedValues).substr(2),
+    'hex',
+  );
 const sha3 = (value) => {
   const b = Buffer.from(keccak256(Buffer.from(value)).substr(2), 'hex');
   return b;
@@ -92,8 +93,8 @@ const TypedDataUtils = {
   findTypeDependencies(primaryType, types, results = []) {
     const [sanitizedPrimaryType] = primaryType.match(/^\w*/);
     if (
-      results.includes(sanitizedPrimaryType)
-      || types[sanitizedPrimaryType] === undefined
+      results.includes(sanitizedPrimaryType) ||
+      types[sanitizedPrimaryType] === undefined
     ) {
       return results;
     }

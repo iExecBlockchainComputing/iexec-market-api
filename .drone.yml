@@ -5,7 +5,7 @@ pipeline:
       - apk update && apk upgrade
       - node -v
       - cd api/
-      - npm i
+      - npm ci
       - npm run ci-test-token
       - npm run ci-test-token-enterprise
       - npm run ci-test-native
@@ -16,7 +16,7 @@ pipeline:
       - apk update && apk upgrade
       - node -v
       - cd watcher/
-      - npm i
+      - npm ci
       - npm run ci-test-token
       - npm run ci-test-token-enterprise
       - npm run ci-test-native

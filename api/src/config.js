@@ -69,14 +69,14 @@ const DEFAULT_CHAINS_CONFIG = {
     id: '5',
     isNative: false,
     host:
-      GOERLI_ETH_RPC_HOST
-      || (INFURA_PROJECT_ID
-        && `https://goerli.infura.io/v3/${INFURA_PROJECT_ID}`)
-      || (GOERLI_ALCHEMY_API_KEY
-        && `https://eth-goerli.alchemyapi.io/v2/${GOERLI_ALCHEMY_API_KEY}`),
+      GOERLI_ETH_RPC_HOST ||
+      (INFURA_PROJECT_ID &&
+        `https://goerli.infura.io/v3/${INFURA_PROJECT_ID}`) ||
+      (GOERLI_ALCHEMY_API_KEY &&
+        `https://eth-goerli.alchemyapi.io/v2/${GOERLI_ALCHEMY_API_KEY}`),
     hubAddress:
-      GOERLI_IEXEC_ADDRESS
-      || (!isEnterpriseFlavour(flavour)
+      GOERLI_IEXEC_ADDRESS ||
+      (!isEnterpriseFlavour(flavour)
         ? '0x3eca1B216A7DF1C7689aEb259fFB83ADFB894E7f'
         : '0x0bf375A6238359CE14987C2285B8B099eE8e8709'),
   },
@@ -85,8 +85,8 @@ const DEFAULT_CHAINS_CONFIG = {
     isNative: true,
     host: VIVIANI_ETH_RPC_HOST || 'https://viviani.iex.ec',
     hubAddress:
-      VIVIANI_IEXEC_ADDRESS
-      || (!isEnterpriseFlavour(flavour)
+      VIVIANI_IEXEC_ADDRESS ||
+      (!isEnterpriseFlavour(flavour)
         ? '0x3eca1B216A7DF1C7689aEb259fFB83ADFB894E7f'
         : undefined),
   },
@@ -94,14 +94,14 @@ const DEFAULT_CHAINS_CONFIG = {
     id: '1',
     isNative: false,
     host:
-      MAINNET_ETH_RPC_HOST
-      || (INFURA_PROJECT_ID
-        && `https://mainnet.infura.io/v3/${INFURA_PROJECT_ID}`)
-      || (MAINNET_ALCHEMY_API_KEY
-        && `https://eth-mainnet.alchemyapi.io/v2/${MAINNET_ALCHEMY_API_KEY}`),
+      MAINNET_ETH_RPC_HOST ||
+      (INFURA_PROJECT_ID &&
+        `https://mainnet.infura.io/v3/${INFURA_PROJECT_ID}`) ||
+      (MAINNET_ALCHEMY_API_KEY &&
+        `https://eth-mainnet.alchemyapi.io/v2/${MAINNET_ALCHEMY_API_KEY}`),
     hubAddress:
-      MAINNET_IEXEC_ADDRESS
-      || (!isEnterpriseFlavour(flavour)
+      MAINNET_IEXEC_ADDRESS ||
+      (!isEnterpriseFlavour(flavour)
         ? '0x3eca1B216A7DF1C7689aEb259fFB83ADFB894E7f'
         : undefined),
   },
@@ -110,8 +110,8 @@ const DEFAULT_CHAINS_CONFIG = {
     isNative: true,
     host: BELLECOUR_ETH_RPC_HOST || 'https://bellecour.iex.ec',
     hubAddress:
-      BELLECOUR_IEXEC_ADDRESS
-      || (!isEnterpriseFlavour(flavour)
+      BELLECOUR_IEXEC_ADDRESS ||
+      (!isEnterpriseFlavour(flavour)
         ? '0x3eca1B216A7DF1C7689aEb259fFB83ADFB894E7f'
         : undefined),
   },

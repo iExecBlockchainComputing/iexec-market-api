@@ -49,10 +49,12 @@ const log = logger.extend('services:order');
 
 log('instanciating service');
 
-const minTagClause = (minTag) => minTag
-  && minTag !== NULL_BYTES32 && { tagArray: { $all: tagToArray(minTag) } };
+const minTagClause = (minTag) =>
+  minTag &&
+  minTag !== NULL_BYTES32 && { tagArray: { $all: tagToArray(minTag) } };
 
-const maxTagClause = (maxTag) => maxTag && { tagArray: { $nin: excludeTagArray(tagToArray(maxTag)) } };
+const maxTagClause = (maxTag) =>
+  maxTag && { tagArray: { $nin: excludeTagArray(tagToArray(maxTag)) } };
 
 const tagClause = ({ minTag, maxTag }) => {
   if (!minTag && !maxTag) {
@@ -74,11 +76,14 @@ const tagClause = ({ minTag, maxTag }) => {
   return {};
 };
 
-const minVolumeClause = (minVolume) => minVolume && { remaining: { $gte: minVolume } };
+const minVolumeClause = (minVolume) =>
+  minVolume && { remaining: { $gte: minVolume } };
 
-const minTrustClause = (minTrust) => minTrust && minTrust > 1 && { 'order.trust': { $gte: minTrust } };
+const minTrustClause = (minTrust) =>
+  minTrust && minTrust > 1 && { 'order.trust': { $gte: minTrust } };
 
-const maxTrustClause = (maxTrust) => (maxTrust || maxTrust === 0) && { 'order.trust': { $lte: maxTrust } };
+const maxTrustClause = (maxTrust) =>
+  (maxTrust || maxTrust === 0) && { 'order.trust': { $lte: maxTrust } };
 
 const fetchContractOwner = async ({
   chainId = throwIfMissing(),
@@ -357,8 +362,8 @@ const cleanApporderDependantOrders = async ({
 
     // tee apporder dependency check
     if (
-      apporder.order.tag
-      && tagToArray(apporder.order.tag).includes(TAG_MAP.tee)
+      apporder.order.tag &&
+      tagToArray(apporder.order.tag).includes(TAG_MAP.tee)
     ) {
       const [priceTeeRes] = await ApporderModel.aggregate([
         {
@@ -395,8 +400,12 @@ const cleanApporderDependantOrders = async ({
     }
 
     const dependantOrders = await Promise.all(
-      toCheckOrders.map((requestorder) => checkMatchableApporder({ chainId, order: requestorder.order })),
-    ).then((matchResults) => toCheckOrders.filter((requestorder, index) => !matchResults[index]));
+      toCheckOrders.map((requestorder) =>
+        checkMatchableApporder({ chainId, order: requestorder.order }),
+      ),
+    ).then((matchResults) =>
+      toCheckOrders.filter((requestorder, index) => !matchResults[index]),
+    );
 
     const cleanedOrders = await Promise.all(
       dependantOrders.map(async (e) => {
@@ -463,8 +472,12 @@ const cleanDatasetorderDependantOrders = async ({
     });
 
     const dependantOrders = await Promise.all(
-      toCheckOrders.map((requestorder) => checkMatchableDatasetorder({ chainId, order: requestorder.order })),
-    ).then((matchResults) => toCheckOrders.filter((requestorder, index) => !matchResults[index]));
+      toCheckOrders.map((requestorder) =>
+        checkMatchableDatasetorder({ chainId, order: requestorder.order }),
+      ),
+    ).then((matchResults) =>
+      toCheckOrders.filter((requestorder, index) => !matchResults[index]),
+    );
 
     const cleanedOrders = await Promise.all(
       dependantOrders.map(async (e) => {
@@ -853,8 +866,10 @@ const publishApporder = async ({
     // auth
     const authorizedAddress = authorized.address;
     const authorizedChain = authorized.chainId;
-    if (!authorizedAddress && !authorizedChain) throw new AuthError('operation not authorized');
-    if (chainId !== authorizedChain) throw new AuthError(`operation not authorized for chain ${chainId}`);
+    if (!authorizedAddress && !authorizedChain)
+      throw new AuthError('operation not authorized');
+    if (chainId !== authorizedChain)
+      throw new AuthError(`operation not authorized for chain ${chainId}`);
 
     const formatedSignedOrder = await signedApporderSchema().validate(order);
     const formatedOrder = await apporderSchema().validate(order);
@@ -879,7 +894,8 @@ const publishApporder = async ({
 
     // check existing reccord
     const existing = await ApporderModel.findOne({ orderHash });
-    if (existing && existing.status !== STATUS_MAP.DEAD) throw new BusinessError('order already published');
+    if (existing && existing.status !== STATUS_MAP.DEAD)
+      throw new BusinessError('order already published');
 
     // check sign
     const signer = await fetchContractOwner({
@@ -941,13 +957,15 @@ const publishApporder = async ({
       await wrapEthCall(iExecContract.viewConsumed(orderHash)),
     );
     const remainingVolume = new BN(formatedOrder.volume).sub(consumedVolume);
-    if (remainingVolume.isZero()) throw new BusinessError('order already consumed');
+    if (remainingVolume.isZero())
+      throw new BusinessError('order already consumed');
 
     // publishing
     const status = STATUS_MAP.OPEN;
     const publicationTimestamp = new Date().toISOString();
-    const toPublish = existing
-      || new ApporderModel({
+    const toPublish =
+      existing ||
+      new ApporderModel({
         order,
         orderHash,
         chainId,
@@ -979,8 +997,10 @@ const publishDatasetorder = async ({
     // auth
     const authorizedAddress = authorized.address;
     const authorizedChain = authorized.chainId;
-    if (!authorizedAddress && !authorizedChain) throw new AuthError('operation not authorized');
-    if (chainId !== authorizedChain) throw new AuthError(`operation not authorized for chain ${chainId}`);
+    if (!authorizedAddress && !authorizedChain)
+      throw new AuthError('operation not authorized');
+    if (chainId !== authorizedChain)
+      throw new AuthError(`operation not authorized for chain ${chainId}`);
 
     const formatedSignedOrder = await signedDatasetorderSchema().validate(
       order,
@@ -1007,7 +1027,8 @@ const publishDatasetorder = async ({
 
     // check existing reccord
     const existing = await DatasetorderModel.findOne({ orderHash });
-    if (existing && existing.status !== STATUS_MAP.DEAD) throw new BusinessError('order already published');
+    if (existing && existing.status !== STATUS_MAP.DEAD)
+      throw new BusinessError('order already published');
 
     // check sign
     const signer = await fetchContractOwner({
@@ -1069,13 +1090,15 @@ const publishDatasetorder = async ({
       await wrapEthCall(iExecContract.viewConsumed(orderHash)),
     );
     const remainingVolume = new BN(formatedOrder.volume).sub(consumedVolume);
-    if (remainingVolume.isZero()) throw new BusinessError('order already consumed');
+    if (remainingVolume.isZero())
+      throw new BusinessError('order already consumed');
 
     // publishing
     const status = STATUS_MAP.OPEN;
     const publicationTimestamp = new Date().toISOString();
-    const toPublish = existing
-      || new DatasetorderModel({
+    const toPublish =
+      existing ||
+      new DatasetorderModel({
         order,
         orderHash,
         chainId,
@@ -1107,8 +1130,10 @@ const publishWorkerpoolorder = async ({
     // auth
     const authorizedAddress = authorized.address;
     const authorizedChain = authorized.chainId;
-    if (!authorizedAddress && !authorizedChain) throw new AuthError('operation not authorized');
-    if (chainId !== authorizedChain) throw new AuthError(`operation not authorized for chain ${chainId}`);
+    if (!authorizedAddress && !authorizedChain)
+      throw new AuthError('operation not authorized');
+    if (chainId !== authorizedChain)
+      throw new AuthError(`operation not authorized for chain ${chainId}`);
 
     const formatedSignedOrder = await signedWorkerpoolorderSchema().validate(
       order,
@@ -1135,7 +1160,8 @@ const publishWorkerpoolorder = async ({
 
     // check existing reccord
     const existing = await WorkerpoolorderModel.findOne({ orderHash });
-    if (existing && existing.status !== STATUS_MAP.DEAD) throw new BusinessError('order already published');
+    if (existing && existing.status !== STATUS_MAP.DEAD)
+      throw new BusinessError('order already published');
 
     // check sign
     const signer = await fetchContractOwner({
@@ -1197,7 +1223,8 @@ const publishWorkerpoolorder = async ({
       await wrapEthCall(iExecContract.viewConsumed(orderHash)),
     );
     const remainingVolume = new BN(formatedOrder.volume).sub(consumedVolume);
-    if (remainingVolume.isZero()) throw new BusinessError('order already consumed');
+    if (remainingVolume.isZero())
+      throw new BusinessError('order already consumed');
 
     /** ---- ALLOW BID/ASK OVERLAP ----
     // check best price (workerpoolorder specific)
@@ -1242,8 +1269,9 @@ const publishWorkerpoolorder = async ({
     // publishing
     const status = STATUS_MAP.OPEN;
     const publicationTimestamp = new Date().toISOString();
-    const toPublish = existing
-      || new WorkerpoolorderModel({
+    const toPublish =
+      existing ||
+      new WorkerpoolorderModel({
         order,
         orderHash,
         chainId,
@@ -1275,8 +1303,10 @@ const publishRequestorder = async ({
     // auth
     const authorizedAddress = authorized.address;
     const authorizedChain = authorized.chainId;
-    if (!authorizedAddress && !authorizedChain) throw new AuthError('operation not authorized');
-    if (chainId !== authorizedChain) throw new AuthError(`operation not authorized for chain ${chainId}`);
+    if (!authorizedAddress && !authorizedChain)
+      throw new AuthError('operation not authorized');
+    if (chainId !== authorizedChain)
+      throw new AuthError(`operation not authorized for chain ${chainId}`);
 
     const formatedSignedOrder = await signedRequestorderSchema().validate(
       order,
@@ -1303,7 +1333,8 @@ const publishRequestorder = async ({
 
     // check existing reccord
     const existing = await RequestorderModel.findOne({ orderHash });
-    if (existing && existing.status !== STATUS_MAP.DEAD) throw new BusinessError('order already published');
+    if (existing && existing.status !== STATUS_MAP.DEAD)
+      throw new BusinessError('order already published');
 
     // check sign
     const signer = formatedSignedOrder.requester;
@@ -1359,7 +1390,8 @@ const publishRequestorder = async ({
       await wrapEthCall(iExecContract.viewConsumed(orderHash)),
     );
     const remainingVolume = new BN(formatedOrder.volume).sub(consumedVolume);
-    if (remainingVolume.isZero()) throw new BusinessError('order already consumed');
+    if (remainingVolume.isZero())
+      throw new BusinessError('order already consumed');
 
     // check requester stake (requestorder specific)
     const appPrice = new BN(formatedOrder.appmaxprice);
@@ -1420,8 +1452,9 @@ const publishRequestorder = async ({
     // publishing
     const status = STATUS_MAP.OPEN;
     const publicationTimestamp = new Date().toISOString();
-    const toPublish = existing
-      || new RequestorderModel({
+    const toPublish =
+      existing ||
+      new RequestorderModel({
         order,
         orderHash,
         chainId,
@@ -1521,8 +1554,10 @@ const unpublishApporders = async ({
   try {
     const authorizedAddress = authorized.address;
     const authorizedChain = authorized.chainId;
-    if (!authorizedAddress && !authorizedChain) throw new AuthError('operation not authorized');
-    if (chainId !== authorizedChain) throw new AuthError(`operation not authorized for chain ${chainId}`);
+    if (!authorizedAddress && !authorizedChain)
+      throw new AuthError('operation not authorized');
+    if (chainId !== authorizedChain)
+      throw new AuthError(`operation not authorized for chain ${chainId}`);
     const ApporderModel = await apporderModel.getModel(chainId);
     const unpublishedOrders = await unpublishOrders({
       orderName,
@@ -1531,7 +1566,9 @@ const unpublishApporders = async ({
       resourceId,
       signer: authorizedAddress,
     });
-    unpublishedOrders.forEach((e) => eventEmitter.emit('apporder_unpublished', e));
+    unpublishedOrders.forEach((e) =>
+      eventEmitter.emit('apporder_unpublished', e),
+    );
     return unpublishedOrders.map((e) => e.orderHash);
   } catch (e) {
     log('unpublishApporders() error', e);
@@ -1549,8 +1586,10 @@ const unpublishDatasetorders = async ({
   try {
     const authorizedAddress = authorized.address;
     const authorizedChain = authorized.chainId;
-    if (!authorizedAddress && !authorizedChain) throw new AuthError('operation not authorized');
-    if (chainId !== authorizedChain) throw new AuthError(`operation not authorized for chain ${chainId}`);
+    if (!authorizedAddress && !authorizedChain)
+      throw new AuthError('operation not authorized');
+    if (chainId !== authorizedChain)
+      throw new AuthError(`operation not authorized for chain ${chainId}`);
     const DatasetorderModel = await datasetorderModel.getModel(chainId);
     const unpublishedOrders = await unpublishOrders({
       orderName,
@@ -1559,7 +1598,9 @@ const unpublishDatasetorders = async ({
       resourceId,
       signer: authorizedAddress,
     });
-    unpublishedOrders.forEach((e) => eventEmitter.emit('datasetorder_unpublished', e));
+    unpublishedOrders.forEach((e) =>
+      eventEmitter.emit('datasetorder_unpublished', e),
+    );
     return unpublishedOrders.map((e) => e.orderHash);
   } catch (e) {
     log('unpublishDatasetorders() error', e);
@@ -1577,8 +1618,10 @@ const unpublishWorkerpoolorders = async ({
   try {
     const authorizedAddress = authorized.address;
     const authorizedChain = authorized.chainId;
-    if (!authorizedAddress && !authorizedChain) throw new AuthError('operation not authorized');
-    if (chainId !== authorizedChain) throw new AuthError(`operation not authorized for chain ${chainId}`);
+    if (!authorizedAddress && !authorizedChain)
+      throw new AuthError('operation not authorized');
+    if (chainId !== authorizedChain)
+      throw new AuthError(`operation not authorized for chain ${chainId}`);
     const WorkerpoolorderModel = await workerpoolorderModel.getModel(chainId);
     const unpublishedOrders = await unpublishOrders({
       orderName,
@@ -1587,7 +1630,9 @@ const unpublishWorkerpoolorders = async ({
       resourceId,
       signer: authorizedAddress,
     });
-    unpublishedOrders.forEach((e) => eventEmitter.emit('workerpoolorder_unpublished', e));
+    unpublishedOrders.forEach((e) =>
+      eventEmitter.emit('workerpoolorder_unpublished', e),
+    );
     return unpublishedOrders.map((e) => e.orderHash);
   } catch (e) {
     log('unpublishWorkerpoolorders() error', e);
@@ -1605,8 +1650,10 @@ const unpublishRequestorders = async ({
   try {
     const authorizedAddress = authorized.address;
     const authorizedChain = authorized.chainId;
-    if (!authorizedAddress && !authorizedChain) throw new AuthError('operation not authorized');
-    if (chainId !== authorizedChain) throw new AuthError(`operation not authorized for chain ${chainId}`);
+    if (!authorizedAddress && !authorizedChain)
+      throw new AuthError('operation not authorized');
+    if (chainId !== authorizedChain)
+      throw new AuthError(`operation not authorized for chain ${chainId}`);
     const RequestorderModel = await requestorderModel.getModel(chainId);
     const unpublishedOrders = await unpublishOrders({
       orderName,
@@ -1615,7 +1662,9 @@ const unpublishRequestorders = async ({
       resourceId,
       signer: authorizedAddress,
     });
-    unpublishedOrders.forEach((e) => eventEmitter.emit('requestorder_unpublished', e));
+    unpublishedOrders.forEach((e) =>
+      eventEmitter.emit('requestorder_unpublished', e),
+    );
     return unpublishedOrders.map((e) => e.orderHash);
   } catch (e) {
     log('unpublishRequestorders() error', e);

@@ -128,9 +128,7 @@ const deployAndGetWorkerpoolorder = async (
 
 const getMatchableRequestorder = async (
   iexec,
-  {
-    apporder, datasetorder, workerpoolorder, volume,
-  } = {},
+  { apporder, datasetorder, workerpoolorder, volume } = {},
 ) => {
   const address = await iexec.wallet.getAddress();
   const requestorder = await iexec.order
@@ -210,7 +208,8 @@ const transferResourceERC721 = async (wallet, tokenAddress, to) => {
   await initTx.wait();
 };
 
-const timestampRegex = /(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2}).(\d{3})Z/;
+const timestampRegex =
+  /(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2}).(\d{3})Z/;
 const bytes32Regex = /^(0x)([0-9a-f]{2}){32}$/;
 const addressRegex = /^(0x)([0-9a-fA-F]{2}){20}$/;
 
@@ -221,9 +220,12 @@ const addApporders = async (dbName, orders) => {
       const order = new ApporderModel(e);
       order.chainId = dbName;
       order.tagArray = tagToArray(e.order.tag);
-      order.remaining = order.remaining !== undefined ? order.remaining : e.order.volume;
-      order.status = order.status !== undefined ? order.status : STATUS_MAP.OPEN;
-      order.signer = order.signer !== undefined ? order.signer : utils.NULL_ADDRESS;
+      order.remaining =
+        order.remaining !== undefined ? order.remaining : e.order.volume;
+      order.status =
+        order.status !== undefined ? order.status : STATUS_MAP.OPEN;
+      order.signer =
+        order.signer !== undefined ? order.signer : utils.NULL_ADDRESS;
       order.publicationTimestamp = new Date().toISOString();
       await order.save();
     }),
@@ -237,9 +239,12 @@ const addDatasetorders = async (dbName, orders) => {
       const order = new DatasetorderModel(e);
       order.chainId = dbName;
       order.tagArray = tagToArray(e.order.tag);
-      order.remaining = order.remaining !== undefined ? order.remaining : e.order.volume;
-      order.status = order.status !== undefined ? order.status : STATUS_MAP.OPEN;
-      order.signer = order.signer !== undefined ? order.signer : utils.NULL_ADDRESS;
+      order.remaining =
+        order.remaining !== undefined ? order.remaining : e.order.volume;
+      order.status =
+        order.status !== undefined ? order.status : STATUS_MAP.OPEN;
+      order.signer =
+        order.signer !== undefined ? order.signer : utils.NULL_ADDRESS;
       order.publicationTimestamp = new Date().toISOString();
       await order.save();
     }),
@@ -253,9 +258,12 @@ const addWorkerpoolorders = async (dbName, orders) => {
       const order = new WorkerpoolorderModel(e);
       order.chainId = dbName;
       order.tagArray = tagToArray(e.order.tag);
-      order.remaining = order.remaining !== undefined ? order.remaining : e.order.volume;
-      order.status = order.status !== undefined ? order.status : STATUS_MAP.OPEN;
-      order.signer = order.signer !== undefined ? order.signer : utils.NULL_ADDRESS;
+      order.remaining =
+        order.remaining !== undefined ? order.remaining : e.order.volume;
+      order.status =
+        order.status !== undefined ? order.status : STATUS_MAP.OPEN;
+      order.signer =
+        order.signer !== undefined ? order.signer : utils.NULL_ADDRESS;
       order.publicationTimestamp = new Date().toISOString();
       await order.save();
     }),
@@ -269,8 +277,10 @@ const addRequestorders = async (dbName, orders) => {
       const order = new RequestorderModel(e);
       order.chainId = dbName;
       order.tagArray = tagToArray(e.order.tag);
-      order.remaining = order.remaining !== undefined ? order.remaining : e.order.volume;
-      order.status = order.status !== undefined ? order.status : STATUS_MAP.OPEN;
+      order.remaining =
+        order.remaining !== undefined ? order.remaining : e.order.volume;
+      order.status =
+        order.status !== undefined ? order.status : STATUS_MAP.OPEN;
       order.publicationTimestamp = new Date().toISOString();
       order.signer = e.order.requester;
       await order.save();
@@ -298,10 +308,12 @@ const dropDB = async (
 ) => {
   const { db } = await getMongoose({ db: dbName });
   await Promise.all(
-    collectionsToDelete.map((e) => db
-      .collection(e)
-      .deleteMany()
-      .catch((err) => console.log(`${e}.deleteMany()`, err))),
+    collectionsToDelete.map((e) =>
+      db
+        .collection(e)
+        .deleteMany()
+        .catch((err) => console.log(`${e}.deleteMany()`, err)),
+    ),
   );
 };
 

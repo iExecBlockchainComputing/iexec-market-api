@@ -93,8 +93,8 @@ const throwIfMissing = () => {
 
 const errorHandler = (error, context) => {
   if (
-    !(error instanceof ValidationError)
-    && !(error instanceof OperationalError)
+    !(error instanceof ValidationError) &&
+    !(error instanceof OperationalError)
   ) {
     logError(error, '\nContext: ', JSON.stringify(context, null, 2));
   }
