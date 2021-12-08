@@ -41,7 +41,7 @@ npm start
 
 ```sh
 docker-compose -f test/docker-compose.yml up -d
-npm i
+npm ci
 npm test
 ```
 

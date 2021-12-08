@@ -108,7 +108,7 @@ describe('API', () => {
       const { data, status } = await request
         .get(
           buildQuery('/challenge', {
-            chainId: iexec.network.id,
+            chainId,
             address: '0x0000000000000000000000000000000000000000',
           }),
         )

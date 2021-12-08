@@ -40,7 +40,7 @@ const deployAndGetApporder = async (
     multiaddr: 'registry.hub.docker.com/iexechub/vanityeth:1.1.1',
     checksum:
       '0x00f51494d7a42a3c1c43464d9f09e06b2a99968e3b978f6cd11ab3410b7bcd14',
-    mrenclave: 'abc|123|test',
+    mrenclave: '',
   });
   const app = appDeployRes.address;
   const apporder = await iexec.order
