@@ -31,7 +31,7 @@
     "debug": "^4.3.3",
     "dotenv": "^10.0.0",
     "ethers": "^5.5.2",
-    "mongoose": "^5.13.13",
+    "mongoose": "^6.1.0",
     "redis": "^3.1.2",
     "socket.io": "^4.4.0",
     "socket.io-redis": "^6.1.1"
