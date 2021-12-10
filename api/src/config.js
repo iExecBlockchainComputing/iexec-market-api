@@ -205,7 +205,7 @@ const mongo = {
 log('mongo', mongo);
 
 const redis = {
-  host: REDIS_HOST || 'localhost',
+  url: REDIS_HOST ? `redis://${REDIS_HOST}` : 'redis://localhost',
 };
 
 log('redis', redis);

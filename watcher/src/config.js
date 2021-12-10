@@ -139,7 +139,7 @@ const mongo = {
 };
 
 const redis = {
-  host: REDIS_HOST || 'localhost',
+  url: REDIS_HOST ? `redis://${REDIS_HOST}` : 'redis://localhost',
 };
 
 if (!chain.wsHost) {

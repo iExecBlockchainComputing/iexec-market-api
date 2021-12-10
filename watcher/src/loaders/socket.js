@@ -1,10 +1,10 @@
 const http = require('http');
 const socketio = require('socket.io');
-const redis = require('redis').createClient;
-const adapter = require('socket.io-redis');
+const { createClient } = require('redis');
+const { createAdapter } = require('@socket.io/redis-adapter');
 const config = require('../config');
 const { logger } = require('../utils/logger');
-const { throwIfMissing } = require('../utils/error');
+const { throwIfMissing, errorHandler } = require('../utils/error');
 
 const log = logger.extend('socket');
 
@@ -17,28 +17,46 @@ const getWs = () => {
   return ws;
 };
 
-const init = () => {
-  log('init socket');
-  const redisConfig = { host: config.redis.host };
-  const pubClient = redis(redisConfig);
-  const subClient = redis(redisConfig);
-  pubClient.on('error', (err) => log('pubClient', 'Error', err));
-  subClient.on('error', (err) => log('subClient', 'Error', err));
-  const redisAdapter = adapter({
-    pubClient,
-    subClient,
-  });
-  ws = socketio(server);
-  ws.adapter(redisAdapter);
+const init = async () => {
+  try {
+    log('init socket');
+    const redisConfig = config.redis;
+    const pubClient = createClient(redisConfig);
+    const subClient = pubClient.duplicate();
+    pubClient.on('error', (err) => log('pubClient', 'Error', err));
+    subClient.on('error', (err) => log('subClient', 'Error', err));
+    pubClient.on('connect', () => log('pubClient connect'));
+    subClient.on('connect', () => log('subClient connect'));
+    pubClient.on('end', () => log('pubClient end'));
+    subClient.on('end', () => log('subClient end'));
+    await Promise.all[(pubClient.connect(), subClient.connect())];
+    const redisAdapter = createAdapter(pubClient, subClient);
+    ws = socketio(server);
+    ws.adapter(redisAdapter);
+    log('socket initialized');
+  } catch (error) {
+    errorHandler(error, {
+      type: 'init-socket',
+    });
+  }
 };
 
-const emit = (
+const emit = async (
   channel = throwIfMissing(),
   object = throwIfMissing(),
   message = throwIfMissing(),
 ) => {
-  getWs().to(channel).emit(object, message);
-  log(`emitted to ${channel}`, object, message);
+  try {
+    await getWs().to(channel).emit(object, message);
+    log(`emitted to ${channel}`, object, message);
+  } catch (error) {
+    errorHandler(error, {
+      type: 'socket-emit',
+      channel,
+      object,
+      message,
+    });
+  }
 };
 
 module.exports = { init, emit };
