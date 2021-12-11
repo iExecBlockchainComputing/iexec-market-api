@@ -1,9 +1,17 @@
-# v5.2.1
+# CHANGELOG
+
+## next
+
+- added custom value for maximum orders per wallet with env `MAX_OPEN_ORDERS_PER_WALLET`
+- added custom value for server port with env `PORT`
+- dependencies update
+
+## v5.2.1
 
 - dependencies update
 
-# v5.2.0
+## v5.2.0
 
 - added enterprise flavour with eRlc withelist checks
 
-# v5.1.0 initial release
+## v5.1.0 initial release

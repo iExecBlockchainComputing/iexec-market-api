@@ -51,7 +51,6 @@ beforeAll(async () => {
   iexec = new IExec(
     {
       ethProvider: signer,
-      chainId,
     },
     {
       hubAddress,
@@ -473,7 +472,6 @@ describe('Watcher', () => {
           chainUrl,
           ethers.Wallet.createRandom().privateKey,
         ),
-        chainId,
       },
       {
         hubAddress,
@@ -760,7 +758,6 @@ describe('Watcher', () => {
           chainUrl,
           ethers.Wallet.createRandom().privateKey,
         ),
-        chainId,
       },
       {
         hubAddress,
@@ -968,7 +965,6 @@ describe('Watcher', () => {
           chainUrl,
           ethers.Wallet.createRandom().privateKey,
         ),
-        chainId,
       },
       {
         hubAddress,
@@ -1263,7 +1259,6 @@ describe('Watcher', () => {
           chainUrl,
           ethers.Wallet.createRandom().privateKey,
         ),
-        chainId,
       },
       {
         hubAddress,

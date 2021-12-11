@@ -106,7 +106,6 @@ beforeAll(async () => {
   iexec = new IExec(
     {
       ethProvider: signer,
-      chainId,
       flavour: 'enterprise',
     },
     {
@@ -118,7 +117,6 @@ beforeAll(async () => {
   iexecUser = new IExec(
     {
       ethProvider: userSigner,
-      chainId,
       flavour: 'enterprise',
     },
     {

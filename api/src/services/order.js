@@ -39,9 +39,7 @@ const {
   excludeTagArray,
 } = require('../utils/order-utils');
 const { isEnterpriseFlavour } = require('../utils/iexec-utils');
-const { flavour } = require('../config');
-
-const MAX_OPEN_ORDER_PER_WALLET = 50;
+const { flavour, maxOpenOrdersPerWallet } = require('../config');
 
 const PAGE_LENGHT = 20;
 
@@ -924,9 +922,9 @@ const publishApporder = async ({
       signer,
       status: STATUS_MAP.OPEN,
     }).countDocuments();
-    if (nbPublished >= MAX_OPEN_ORDER_PER_WALLET) {
+    if (nbPublished >= maxOpenOrdersPerWallet) {
       throw new BusinessError(
-        `maximun of ${MAX_OPEN_ORDER_PER_WALLET} published open ${orderName} has been reached for wallet ${signer}`,
+        `maximun of ${maxOpenOrdersPerWallet} published open ${orderName} has been reached for wallet ${signer}`,
       );
     }
 
@@ -1057,9 +1055,9 @@ const publishDatasetorder = async ({
       signer,
       status: STATUS_MAP.OPEN,
     }).countDocuments();
-    if (nbPublished >= MAX_OPEN_ORDER_PER_WALLET) {
+    if (nbPublished >= maxOpenOrdersPerWallet) {
       throw new BusinessError(
-        `maximun of ${MAX_OPEN_ORDER_PER_WALLET} published open ${orderName} has been reached for wallet ${signer}`,
+        `maximun of ${maxOpenOrdersPerWallet} published open ${orderName} has been reached for wallet ${signer}`,
       );
     }
 
@@ -1190,9 +1188,9 @@ const publishWorkerpoolorder = async ({
       signer,
       status: STATUS_MAP.OPEN,
     }).countDocuments();
-    if (nbPublished >= MAX_OPEN_ORDER_PER_WALLET) {
+    if (nbPublished >= maxOpenOrdersPerWallet) {
       throw new BusinessError(
-        `maximun of ${MAX_OPEN_ORDER_PER_WALLET} published open ${orderName} has been reached for wallet ${signer}`,
+        `maximun of ${maxOpenOrdersPerWallet} published open ${orderName} has been reached for wallet ${signer}`,
       );
     }
 
@@ -1357,9 +1355,9 @@ const publishRequestorder = async ({
       signer,
       status: STATUS_MAP.OPEN,
     }).countDocuments();
-    if (nbPublished >= MAX_OPEN_ORDER_PER_WALLET) {
+    if (nbPublished >= maxOpenOrdersPerWallet) {
       throw new BusinessError(
-        `maximun of ${MAX_OPEN_ORDER_PER_WALLET} published open ${orderName} has been reached for wallet ${signer}`,
+        `maximun of ${maxOpenOrdersPerWallet} published open ${orderName} has been reached for wallet ${signer}`,
       );
     }
 

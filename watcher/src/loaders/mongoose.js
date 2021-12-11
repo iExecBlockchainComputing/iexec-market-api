@@ -18,16 +18,13 @@ const getMongoose = async ({ server = mongoConfig.host, db } = {}) => {
     }
     log(`creating connection ${server}${db}`);
     mongooseConnections[server] = mongooseConnections[server] || {};
-    mongooseConnections[server][db] = mongoose.createConnection(
-      `${server}${db}`,
-      {
+    mongooseConnections[server][db] = mongoose
+      .createConnection(`${server}${db}`, {
         useNewUrlParser: true,
         useUnifiedTopology: true,
-        useFindAndModify: false,
-        useCreateIndex: true,
         autoIndex: mongoConfig.createIndex || false,
-      },
-    );
+      })
+      .asPromise();
     const connection = await mongooseConnections[server][db];
     log(`openned connection ${server}${db}`);
     return connection;
