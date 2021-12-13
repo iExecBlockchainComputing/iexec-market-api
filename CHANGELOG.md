@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## next
+## v5.3.0
 
 - added custom value for maximum orders per wallet with env `MAX_OPEN_ORDERS_PER_WALLET`
 - added custom value for server port with env `PORT`

@@ -1,6 +1,6 @@
 {
   "name": "iexec-market-api",
-  "version": "5.2.2",
+  "version": "5.3.0",
   "description": "iexec marketplace api gateway",
   "main": "src/index.js",
   "scripts": {
