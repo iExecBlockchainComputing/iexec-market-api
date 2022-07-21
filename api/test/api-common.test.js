@@ -270,6 +270,30 @@ describe('API', () => {
             expect(socketEmitSpy).toHaveBeenCalledTimes(0);
           });
 
+          test('POST /apporders (challenge address mismatch)', async () => {
+            const order = await iexec.order.signApporder(apporderTemplate);
+            await setChallenge(chainId, {
+              ...WALLETS.DEFAULT.challenge,
+              address: getRandomAddress(),
+            });
+            const { data, status } = await request
+              .post(
+                buildQuery('/apporders', {
+                  chainId, // *
+                }),
+              )
+              .send({
+                order,
+              })
+              .set('authorization', WALLETS.DEFAULT.authorization)
+              .then(parseResult);
+            expect(status).toBe(AUTH_ERROR_STATUS);
+            expect(data.ok).toBe(false);
+            expect(data.error).toBe(AUTH_ERROR_MSG);
+            expect(data.published).toBeUndefined();
+            expect(socketEmitSpy).toHaveBeenCalledTimes(0);
+          });
+
           test('POST /apporders (no authorization header)', async () => {
             const order = await iexec.order.signApporder(apporderTemplate);
             await setChallenge(chainId, WALLETS.DEFAULT.challenge);
