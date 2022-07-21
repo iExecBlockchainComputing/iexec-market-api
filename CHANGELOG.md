@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## next
+
+- fix prevent a user to consume a challenge generated for another user
+
 ## v5.3.0
 
 - added custom value for maximum orders per wallet with env `MAX_OPEN_ORDERS_PER_WALLET`
