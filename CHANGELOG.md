@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## next
+
+- use ethers implementation for EIP712 hash
+
 ## v5.3.0
 
 - added custom value for maximum orders per wallet with env `MAX_OPEN_ORDERS_PER_WALLET`
