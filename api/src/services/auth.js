@@ -4,6 +4,7 @@ const { logger } = require('../utils/logger');
 const { throwIfMissing, AuthError } = require('../utils/error');
 const { hashEIP712, recoverAddressEIP712 } = require('../utils/sig-utils');
 const { NULL_ADDRESS } = require('../utils/eth-utils');
+const { addressSchema } = require('../utils/validator');
 
 const log = logger.extend('services:auth');
 
@@ -72,11 +73,16 @@ const checkAuthorization = async ({
     const authArray = authorization.split('_');
     const hash = authArray[0];
     const signature = authArray[1];
-    const address = authArray[2];
+    const address = await addressSchema().validate(authArray[2]);
     if (address === NULL_ADDRESS) throw new AuthError('Null address');
-    const ChallengeModel = await challengeModel.getModel(chainId);
-    const current = await ChallengeModel.findOne({ hash });
-    if (!current || !current.value || !current.address) {
+    const ChallengeModel = await challengeModel.getModel(chainId).catch(() => {
+      throw new AuthError('Invalid authorization');
+    });
+    const current = await ChallengeModel.findOne({
+      hash,
+      address,
+    });
+    if (!current || !current.value) {
       throw new AuthError(
         'Challenge not valid. Need to request a new challenge.',
       );
