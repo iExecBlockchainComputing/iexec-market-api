@@ -2,6 +2,7 @@
 
 ## next
 
+- use ethers implementation for EIP712 hash
 - fix prevent a user to consume a challenge generated for another user
 
 ## v5.3.0

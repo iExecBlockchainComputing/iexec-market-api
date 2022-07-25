@@ -83,6 +83,13 @@ const minTrustClause = (minTrust) =>
 const maxTrustClause = (maxTrust) =>
   (maxTrust || maxTrust === 0) && { 'order.trust': { $lte: maxTrust } };
 
+const fetchIExecDomain = async (iExecContract = throwIfMissing()) => {
+  const { name, version, chainId, verifyingContract } = await wrapEthCall(
+    iExecContract.domain(),
+  );
+  return { name, version, chainId, verifyingContract };
+};
+
 const fetchContractOwner = async ({
   chainId = throwIfMissing(),
   iExecContract = throwIfMissing(),
@@ -878,7 +885,7 @@ const publishApporder = async ({
     const iExecContract = getContract('hub', chainId);
 
     // get orderHash
-    const domain = await wrapEthCall(iExecContract.domain());
+    const domain = await fetchIExecDomain(iExecContract);
     const typedData = {
       types: {
         EIP712Domain: OBJ_MAP.EIP712Domain.structMembers,
@@ -1011,7 +1018,7 @@ const publishDatasetorder = async ({
     const iExecContract = getContract('hub', chainId);
 
     // get orderHash
-    const domain = await wrapEthCall(iExecContract.domain());
+    const domain = await fetchIExecDomain(iExecContract);
     const typedData = {
       types: {
         EIP712Domain: OBJ_MAP.EIP712Domain.structMembers,
@@ -1144,7 +1151,7 @@ const publishWorkerpoolorder = async ({
     const iExecContract = getContract('hub', chainId);
 
     // get orderHash
-    const domain = await wrapEthCall(iExecContract.domain());
+    const domain = await fetchIExecDomain(iExecContract);
     const typedData = {
       types: {
         EIP712Domain: OBJ_MAP.EIP712Domain.structMembers,
@@ -1317,7 +1324,7 @@ const publishRequestorder = async ({
     const iExecContract = getContract('hub', chainId);
 
     // get orderHash
-    const domain = await wrapEthCall(iExecContract.domain());
+    const domain = await fetchIExecDomain(iExecContract);
     const typedData = {
       types: {
         EIP712Domain: OBJ_MAP.EIP712Domain.structMembers,
