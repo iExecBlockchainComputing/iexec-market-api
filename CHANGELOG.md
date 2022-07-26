@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## next
+## v5.3.1
 
 - use ethers implementation for EIP712 hash
 - fix prevent a user to consume a challenge generated for another user
