@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## next
+
+- removed viviani and goerli default configuration
+
 ## v5.3.1
 
 - use ethers implementation for EIP712 hash
@@ -17,6 +21,6 @@
 
 ## v5.2.0
 
-- added enterprise flavour with eRlc withelist checks
+- added enterprise flavour with eRlc whitelist checks
 
 ## v5.1.0 initial release
