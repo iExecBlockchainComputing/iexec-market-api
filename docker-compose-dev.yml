@@ -1,4 +1,4 @@
-version: '3.4'
+version: "3.4"
 
 networks:
   database:
@@ -10,7 +10,7 @@ services:
     restart: unless-stopped
     image: mongo:latest
     expose:
-      - '27017'
+      - "27017"
     networks:
       - database
 
@@ -19,7 +19,7 @@ services:
     image: redis:alpine
     command: redis-server --appendonly yes
     expose:
-      - '6379'
+      - "6379"
     networks:
       - database
 
@@ -30,13 +30,13 @@ services:
       context: ./api
       dockerfile: Dockerfile
     ports:
-      - '3000:3000'
+      - "3000:3000"
     expose:
-      - '3000'
+      - "3000"
     environment:
       - DEBUG=iexec-market-api:*
       - DEBUG_COLORS=true
-      - CHAINS=GOERLI,VIVIANI,MAINNET,BELLECOUR
+      - CHAINS=BELLECOUR
       - MONGO_HOST=mongo
       - REDIS_HOST=redis
       - INFURA_PROJECT_ID=${INFURA_PROJECT_ID}
@@ -49,46 +49,6 @@ services:
       - webproxy
       - database
 
-  goerli-watcher:
-    restart: unless-stopped
-    image: iexechub/iexec-market-watcher
-    build:
-      context: ./watcher
-      dockerfile: Dockerfile
-    environment:
-      - DEBUG=iexec-watcher:app
-      - DEBUG_COLORS=true
-      - CHAIN=GOERLI
-      - MONGO_HOST=mongo
-      - REDIS_HOST=redis
-      - INFURA_PROJECT_ID=${INFURA_PROJECT_ID}
-      - ALCHEMY_API_KEY=${ALCHEMY_API_KEY}
-      - CREATE_INDEX=${CREATE_INDEX}
-    depends_on:
-      - mongo
-      - redis
-    networks:
-      - database
-
-  # viviani-watcher:
-  #   restart: unless-stopped
-  #   image: iexechub/iexec-market-watcher
-  #   build:
-  #     context: ./watcher
-  #     dockerfile: Dockerfile
-  #   environment:
-  #     - DEBUG=iexec-watcher:app
-  #     - DEBUG_COLORS=true
-  #     - CHAIN=VIVIANI
-  #     - MONGO_HOST=mongo
-  #     - REDIS_HOST=redis
-  #     - CREATE_INDEX=${CREATE_INDEX}
-  #   depends_on:
-  #     - mongo
-  #     - redis
-  #   networks:
-  #     - database
-  #
   # mainnet-watcher:
   #   restart: unless-stopped
   #   image: iexechub/iexec-market-watcher
@@ -109,22 +69,22 @@ services:
   #     - redis
   #   networks:
   #     - database
-  #
-  # bellecour-watcher:
-  #   restart: unless-stopped
-  #   image: iexechub/iexec-market-watcher
-  #   build:
-  #     context: ./watcher
-  #     dockerfile: Dockerfile
-  #   environment:
-  #     - DEBUG=iexec-watcher:app
-  #     - DEBUG_COLORS=true
-  #     - CHAIN=BELLECOUR
-  #     - MONGO_HOST=mongo
-  #     - REDIS_HOST=redis
-  #     - CREATE_INDEX=${CREATE_INDEX}
-  #   depends_on:
-  #     - mongo
-  #     - redis
-  #   networks:
-  #     - database
+
+  bellecour-watcher:
+    restart: unless-stopped
+    image: iexechub/iexec-market-watcher
+    build:
+      context: ./watcher
+      dockerfile: Dockerfile
+    environment:
+      - DEBUG=iexec-watcher:app
+      - DEBUG_COLORS=true
+      - CHAIN=BELLECOUR
+      - MONGO_HOST=mongo
+      - REDIS_HOST=redis
+      - CREATE_INDEX=${CREATE_INDEX}
+    depends_on:
+      - mongo
+      - redis
+    networks:
+      - database
