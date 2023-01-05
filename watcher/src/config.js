@@ -54,7 +54,7 @@ const stringToBoolean = (string) => {
   }
 };
 
-const chains = {
+const DEFAULT_CHAINS_CONFIG = {
   MAINNET: {
     httpHost:
       (INFURA_PROJECT_ID &&
@@ -80,7 +80,7 @@ const chains = {
 
 const chain = {
   ...{ name },
-  ...(name in chains && chains[name]),
+  ...(name in DEFAULT_CHAINS_CONFIG && DEFAULT_CHAINS_CONFIG[name]),
   ...(CHAIN_ID && { chainId: CHAIN_ID }),
   ...(ETH_WS_HOST && { wsHost: ETH_WS_HOST }),
   ...(ETH_RPC_HOST && { httpHost: ETH_RPC_HOST }),
