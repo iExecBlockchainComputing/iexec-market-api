@@ -125,13 +125,13 @@ chainsNames.forEach((name) => {
 });
 
 Object.entries(chains).forEach(([name, chain], index) => {
-  const firstOccurence = Object.values(chains)
+  const firstOccurrence = Object.values(chains)
     .map((e) => e.id)
     .indexOf(chain.id);
-  if (firstOccurence !== index) {
+  if (firstOccurrence !== index) {
     throw Error(
       `invalid duplicated CHAIN_ID ${chain.id} for chains ${
-        Object.keys(chains)[firstOccurence]
+        Object.keys(chains)[firstOccurrence]
       } and ${name}`,
     );
   }
