@@ -1,8 +1,8 @@
 # CHANGELOG
 
-## next
+## v6.0.0
 
-- removed viviani and goerli default configuration
+- \[BREAKING\] removed viviani and goerli default configuration
 
 ## v5.3.1
 
