@@ -15,14 +15,12 @@ configure blockchain access in `.env` file (infura, alchemy or custom node)
 
 ```text
 ## configure the ethereum RPC endpoint
-# GOERLI_ETH_RPC_HOST=https://goerli-node:8545
 # MAINNET_ETH_RPC_HOST=https://mainnet-node:8545
 
 ## or set INFURA_PROJECT_ID to access public chains through infura.io
 # INFURA_PROJECT_ID=abcdef1234567890
 
 ## or set [CHAIN]_ALCHEMY_API_KEY to access public chains through alchemyapi.io
-# GOERLI_ALCHEMY_API_KEY=myKey
 # MAINNET_ALCHEMY_API_KEY=myKey
 ```
 

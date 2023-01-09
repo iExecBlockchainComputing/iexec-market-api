@@ -25,16 +25,11 @@ const {
   MAX_OPEN_ORDERS_PER_WALLET,
   RATE_LIMIT_MAX,
   RATE_LIMIT_PERIOD,
-  GOERLI_ETH_RPC_HOST,
-  GOERLI_IEXEC_ADDRESS,
-  VIVIANI_ETH_RPC_HOST,
-  VIVIANI_IEXEC_ADDRESS,
   MAINNET_ETH_RPC_HOST,
   MAINNET_IEXEC_ADDRESS,
   BELLECOUR_ETH_RPC_HOST,
   BELLECOUR_IEXEC_ADDRESS,
   INFURA_PROJECT_ID,
-  GOERLI_ALCHEMY_API_KEY,
   MAINNET_ALCHEMY_API_KEY,
   CREATE_INDEX,
 } = process.env;
@@ -67,31 +62,6 @@ const nativeAbis = {
 };
 
 const DEFAULT_CHAINS_CONFIG = {
-  GOERLI: {
-    id: '5',
-    isNative: false,
-    host:
-      GOERLI_ETH_RPC_HOST ||
-      (INFURA_PROJECT_ID &&
-        `https://goerli.infura.io/v3/${INFURA_PROJECT_ID}`) ||
-      (GOERLI_ALCHEMY_API_KEY &&
-        `https://eth-goerli.alchemyapi.io/v2/${GOERLI_ALCHEMY_API_KEY}`),
-    hubAddress:
-      GOERLI_IEXEC_ADDRESS ||
-      (!isEnterpriseFlavour(flavour)
-        ? '0x3eca1B216A7DF1C7689aEb259fFB83ADFB894E7f'
-        : '0x0bf375A6238359CE14987C2285B8B099eE8e8709'),
-  },
-  VIVIANI: {
-    id: '133',
-    isNative: true,
-    host: VIVIANI_ETH_RPC_HOST || 'https://viviani.iex.ec',
-    hubAddress:
-      VIVIANI_IEXEC_ADDRESS ||
-      (!isEnterpriseFlavour(flavour)
-        ? '0x3eca1B216A7DF1C7689aEb259fFB83ADFB894E7f'
-        : undefined),
-  },
   MAINNET: {
     id: '1',
     isNative: false,
@@ -155,13 +125,13 @@ chainsNames.forEach((name) => {
 });
 
 Object.entries(chains).forEach(([name, chain], index) => {
-  const firstOccurence = Object.values(chains)
+  const firstOccurrence = Object.values(chains)
     .map((e) => e.id)
     .indexOf(chain.id);
-  if (firstOccurence !== index) {
+  if (firstOccurrence !== index) {
     throw Error(
       `invalid duplicated CHAIN_ID ${chain.id} for chains ${
-        Object.keys(chains)[firstOccurence]
+        Object.keys(chains)[firstOccurrence]
       } and ${name}`,
     );
   }

@@ -54,7 +54,7 @@ const stringToBoolean = (string) => {
   }
 };
 
-const chains = {
+const DEFAULT_CHAINS_CONFIG = {
   MAINNET: {
     httpHost:
       (INFURA_PROJECT_ID &&
@@ -69,27 +69,6 @@ const chains = {
     chainId: '1',
     hubAddress: '0x3eca1B216A7DF1C7689aEb259fFB83ADFB894E7f',
   },
-  GOERLI: {
-    httpHost:
-      (INFURA_PROJECT_ID &&
-        `https://goerli.infura.io/v3/${INFURA_PROJECT_ID}`) ||
-      (ALCHEMY_API_KEY &&
-        `https://eth-goerli.alchemyapi.io/v2/${ALCHEMY_API_KEY}`),
-    wsHost:
-      (INFURA_PROJECT_ID &&
-        `wss://goerli.infura.io/ws/v3/${INFURA_PROJECT_ID}`) ||
-      (ALCHEMY_API_KEY &&
-        `wss://eth-goerli.ws.alchemyapi.io/v2/${ALCHEMY_API_KEY}`),
-    chainId: '5',
-    hubAddress: '0x3eca1B216A7DF1C7689aEb259fFB83ADFB894E7f',
-  },
-  VIVIANI: {
-    httpHost: 'https://viviani.iex.ec',
-    wsHost: 'wss://viviani-ws.iex.ec',
-    chainId: '133',
-    hubAddress: '0x3eca1B216A7DF1C7689aEb259fFB83ADFB894E7f',
-    isNative: true,
-  },
   BELLECOUR: {
     httpHost: 'https://bellecour.iex.ec',
     wsHost: 'wss://bellecour-ws.iex.ec',
@@ -101,7 +80,7 @@ const chains = {
 
 const chain = {
   ...{ name },
-  ...(name in chains && chains[name]),
+  ...(name in DEFAULT_CHAINS_CONFIG && DEFAULT_CHAINS_CONFIG[name]),
   ...(CHAIN_ID && { chainId: CHAIN_ID }),
   ...(ETH_WS_HOST && { wsHost: ETH_WS_HOST }),
   ...(ETH_RPC_HOST && { httpHost: ETH_RPC_HOST }),

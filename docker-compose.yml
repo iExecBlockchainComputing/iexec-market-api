@@ -33,7 +33,7 @@ services:
     environment:
       # - DEBUG=iexec-market-api:*
       - DEBUG_COLORS=true
-      - CHAINS=GOERLI,VIVIANI,MAINNET,BELLECOUR
+      - CHAINS=MAINNET,BELLECOUR
       - MONGO_HOST=mongo
       - REDIS_HOST=redis
       - INFURA_PROJECT_ID=${INFURA_PROJECT_ID}
@@ -43,39 +43,6 @@ services:
       - redis
     networks:
       - webproxy
-      - database
-
-  goerli-watcher:
-    restart: unless-stopped
-    image: iexechub/iexec-market-watcher
-    environment:
-      - DEBUG=iexec-watcher:app
-      - DEBUG_COLORS=true
-      - CHAIN=GOERLI
-      - MONGO_HOST=mongo
-      - REDIS_HOST=redis
-      - INFURA_PROJECT_ID=${INFURA_PROJECT_ID}
-      - CREATE_INDEX=${CREATE_INDEX}
-    depends_on:
-      - mongo
-      - redis
-    networks:
-      - database
-
-  viviani-watcher:
-    restart: unless-stopped
-    image: iexechub/iexec-market-watcher
-    environment:
-      - DEBUG=iexec-watcher:app
-      - DEBUG_COLORS=true
-      - CHAIN=VIVIANI
-      - MONGO_HOST=mongo
-      - REDIS_HOST=redis
-      - CREATE_INDEX=${CREATE_INDEX}
-    depends_on:
-      - mongo
-      - redis
-    networks:
       - database
 
   mainnet-watcher:

@@ -15,8 +15,8 @@ configure blockchain access in `.env` file (infura, alchemy or custom node)
 
 ```text
 ## configure the ethereum websocket and RPC endpoints
-# ETH_WS_HOST=wss://goerli-node:8546
-# ETH_RPC_HOST=https://goerli-node:8545
+# ETH_WS_HOST=wss://my-node:8546
+# ETH_RPC_HOST=https://my-node:8545
 
 ## or set INFURA_PROJECT_ID to access public chains through infura.io
 # INFURA_PROJECT_ID=abcdef1234567890
