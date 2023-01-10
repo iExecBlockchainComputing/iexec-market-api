@@ -152,8 +152,6 @@ const replayPastEventBatch = async (
   lastBlock,
   { processedCount = 0 } = {},
 ) => {
-  log('replay batch from block', firstBlock, 'to block', lastBlock);
-
   const fromBlock = firstBlock;
   const last =
     lastBlock === 'latest' ? await getBlockNumber(getProvider()) : lastBlock;
@@ -170,6 +168,8 @@ const replayPastEventBatch = async (
     toBlock = last;
     iterate = false;
   }
+
+  log('replay batch from block', firstBlock, 'to block', toBlock);
 
   const hubContract = getHub();
   const appRegistryContract = getAppRegistry();
