@@ -17,7 +17,7 @@ const {
   stopSyncWatcher,
 } = require('./controllers/syncWatcher');
 const { startReplayer, stopReplayer } = require('./controllers/replayer');
-const { getNextBlockToProcess } = require('./services/counter');
+const { getNextBlockToProcess, setLastBlock } = require('./services/counter');
 const { logger } = require('./utils/logger');
 const { errorHandler } = require('./utils/error');
 
@@ -49,7 +49,9 @@ const start = async ({ replayer = true, syncWatcher = true } = {}) => {
     log('done');
 
     log(`replaying past events from block ${startBlock} to latest...`);
-    await replayPastEvents(startBlock);
+    await replayPastEvents(startBlock, {
+      handleIndexedBlock: setLastBlock,
+    });
     log('done');
 
     log('starting listening to new events...');

@@ -150,7 +150,7 @@ const getContractPastEvent = async (
 const replayPastEventBatch = async (
   firstBlock,
   lastBlock,
-  { processedCount = 0 } = {},
+  { processedCount = 0, handleIndexedBlock } = {},
 ) => {
   const fromBlock = firstBlock;
   const last =
@@ -329,10 +329,15 @@ const replayPastEventBatch = async (
 
   await processEvents(eventsArray);
 
+  if (typeof handleIndexedBlock === 'function') {
+    await handleIndexedBlock(toBlock);
+  }
+
   const processed = processedCount + eventsArray.length;
   if (iterate) {
     return replayPastEventBatch(toBlock + 1, lastBlock, {
       processedCount: processed,
+      handleIndexedBlock,
     });
   }
   return processed;
@@ -340,7 +345,10 @@ const replayPastEventBatch = async (
 
 const replayPastEvents = async (
   startingBlockNumber,
-  lastBlockNumber = 'latest',
+  {
+    lastBlockNumber = 'latest',
+    handleIndexedBlock = () => Promise.resolve(),
+  } = {},
 ) => {
   try {
     log(
@@ -358,6 +366,7 @@ const replayPastEvents = async (
       startingBlockNumber,
       lastBlockNumber,
       {
+        handleIndexedBlock,
         batch: config.runtime.blocksBatchSize,
       },
     );

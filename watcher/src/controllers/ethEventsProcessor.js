@@ -1,4 +1,4 @@
-const { updateLastBlock } = require('../services/counter');
+const { setLastBlock } = require('../services/counter');
 const { addCategory } = require('../services/category');
 const { addDeal } = require('../services/deal');
 const {
@@ -293,7 +293,7 @@ const processRoleRevoked = async (event, { isReplay = false } = {}) => {
 const processNewBlock = async (blockNumber) => {
   try {
     log('Block', blockNumber);
-    await updateLastBlock(blockNumber);
+    await setLastBlock(blockNumber);
   } catch (error) {
     errorHandler(error, {
       type: 'process-event',

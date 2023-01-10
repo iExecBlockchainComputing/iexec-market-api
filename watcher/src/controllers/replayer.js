@@ -32,8 +32,10 @@ const replayPastOnly = async ({ nbConfirmation = 10 } = {}) => {
     const nextCheckpoint = currentBlock - nbConfirmation;
     log('next checkpoint:', nextCheckpoint);
     if (nextCheckpoint > currentCheckpoint) {
-      await replayPastEvents(currentCheckpoint, nextCheckpoint);
-      await setCheckpointBlock(nextCheckpoint);
+      await replayPastEvents(currentCheckpoint, {
+        lastBlockNumber: nextCheckpoint,
+        handleIndexedBlock: setCheckpointBlock,
+      });
     } else {
       log('nothing to replay skipping');
     }

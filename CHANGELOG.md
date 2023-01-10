@@ -3,6 +3,7 @@
 ## v6.0.0
 
 - \[BREAKING\] removed viviani and goerli default configuration
+- better tracking of indexed block number
 - fix typos
 
 ## v5.3.1
