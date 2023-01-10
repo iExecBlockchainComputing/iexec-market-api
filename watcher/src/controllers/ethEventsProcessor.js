@@ -11,9 +11,9 @@ const {
   updateWorkerpoolorder,
   updateRequestorder,
   cleanBalanceDependantOrders,
-  cleanTransferedAppOrders,
-  cleanTransferedDatasetOrders,
-  cleanTransferedWorkerpoolOrders,
+  cleanTransferredAppOrders,
+  cleanTransferredDatasetOrders,
+  cleanTransferredWorkerpoolOrders,
   cleanRevokedUserOrders,
 } = require('../services/order');
 const { tokenIdToAddress } = require('../utils/iexec-utils');
@@ -179,7 +179,7 @@ const processStakeLoss = async (event, { isReplay = false } = {}) => {
   // account withdraw & lock
   try {
     log(
-      'processsTransferStake',
+      'processTransferStake',
       isReplay ? 'replay' : '',
       event.transactionHash,
     );
@@ -205,7 +205,7 @@ const processTransferApp = async (event, { isReplay = false } = {}) => {
     log('processTransferApp', isReplay ? 'replay' : '', event.transactionHash);
     const { from, tokenId } = cleanRPC(event.args);
     if (from !== NULL_ADDRESS) {
-      await cleanTransferedAppOrders({
+      await cleanTransferredAppOrders({
         address: from,
         app: tokenIdToAddress(tokenId),
         blockNumber: isReplay ? undefined : event.blockNumber,
@@ -230,7 +230,7 @@ const processTransferDataset = async (event, { isReplay = false } = {}) => {
     );
     const { from, tokenId } = cleanRPC(event.args);
     if (from !== NULL_ADDRESS) {
-      await cleanTransferedDatasetOrders({
+      await cleanTransferredDatasetOrders({
         address: from,
         dataset: tokenIdToAddress(tokenId),
         blockNumber: isReplay ? undefined : event.blockNumber,
@@ -255,7 +255,7 @@ const processTransferWorkerpool = async (event, { isReplay = false } = {}) => {
     );
     const { from, tokenId } = cleanRPC(event.args);
     if (from !== NULL_ADDRESS) {
-      await cleanTransferedWorkerpoolOrders({
+      await cleanTransferredWorkerpoolOrders({
         address: from,
         workerpool: tokenIdToAddress(tokenId),
         blockNumber: isReplay ? undefined : event.blockNumber,

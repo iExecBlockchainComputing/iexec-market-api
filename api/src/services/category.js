@@ -2,11 +2,11 @@ const categoryModel = require('../models/categoryModel');
 const { logger } = require('../utils/logger');
 const { throwIfMissing, ObjectNotFoundError } = require('../utils/error');
 
-const PAGE_LENGHT = 20;
+const PAGE_LENGTH = 20;
 
 const log = logger.extend('services:category');
 
-log('instanciating service');
+log('instantiating service');
 
 const getCategory = async ({
   chainId = throwIfMissing(),
@@ -46,7 +46,7 @@ const getCategories = async ({
       workClockTimeRef: 'asc',
       catid: 'asc', // make sort deterministic
     };
-    const limit = PAGE_LENGHT;
+    const limit = PAGE_LENGTH;
     const skip = page || 0;
 
     const count = await CategoryModel.find(request).countDocuments();

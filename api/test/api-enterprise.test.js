@@ -4,7 +4,7 @@ const socket = require('../src/loaders/socket');
 // jest spies
 const socketEmitSpy = jest.spyOn(socket, 'emit');
 
-const appli = require('../src/app');
+const application = require('../src/app');
 const { chains } = require('../src/config');
 const {
   WALLETS,
@@ -41,7 +41,7 @@ const iexec = new IExec(
   {
     ethProvider: signer,
     chainId,
-    falvour: 'enterprise',
+    flavour: 'enterprise',
   },
   {
     hubAddress: chains[chainName].hubAddress,
@@ -57,7 +57,7 @@ const iexecNotWhitelisted = new IExec(
       WALLETS.NOT_KYC.privateKey,
     ),
     chainId,
-    falvour: 'enterprise',
+    flavour: 'enterprise',
   },
   {
     hubAddress: chains[chainName].hubAddress,
@@ -70,7 +70,7 @@ let server;
 let request;
 
 beforeAll(async () => {
-  server = appli.listen();
+  server = application.listen();
   request = supertest(server);
 });
 

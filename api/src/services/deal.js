@@ -2,11 +2,11 @@ const dealModel = require('../models/dealModel');
 const { logger } = require('../utils/logger');
 const { throwIfMissing, ObjectNotFoundError } = require('../utils/error');
 
-const PAGE_LENGHT = 20;
+const PAGE_LENGTH = 20;
 
 const log = logger.extend('services:deal');
 
-log('instanciating service');
+log('instantiating service');
 
 const getOhlc = async ({
   chainId = throwIfMissing(),
@@ -111,7 +111,7 @@ const getDeals = async ({
       blockNumber: 'desc',
       dealid: 'asc', // make sort deterministic
     };
-    const limit = PAGE_LENGHT;
+    const limit = PAGE_LENGTH;
     const skip = page || 0;
 
     const count = await DealModel.find(request).countDocuments();

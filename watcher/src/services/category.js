@@ -9,7 +9,7 @@ const { chainId } = config.chain;
 
 const log = logger.extend('services:category');
 
-log('instanciating service');
+log('instantiating service');
 
 const addCategory = async ({
   catid = throwIfMissing(),

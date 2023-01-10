@@ -24,7 +24,7 @@ const getModel = async (db) => {
       log('getting connection');
       getMongoose({ db })
         .then((mongoose) => {
-          log('instanciating model');
+          log('instantiating model');
           const ChallengeModel = mongoose.model('Challenge', challengeSchema);
           ChallengeModel.on('index', (err) => {
             if (err) {

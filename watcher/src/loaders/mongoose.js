@@ -26,7 +26,7 @@ const getMongoose = async ({ server = mongoConfig.host, db } = {}) => {
       })
       .asPromise();
     const connection = await mongooseConnections[server][db];
-    log(`openned connection ${server}${db}`);
+    log(`opened connection ${server}${db}`);
     return connection;
   } catch (error) {
     log('getMongoose', error);

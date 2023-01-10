@@ -6,6 +6,8 @@ const { chainId } = config.chain;
 
 const log = logger.extend('services:counter');
 
+log('instantiating service');
+
 const getNextBlockToProcess = async () => {
   try {
     const CounterModel = await counterModel.getModel(chainId);

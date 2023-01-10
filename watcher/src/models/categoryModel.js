@@ -36,7 +36,7 @@ const getModel = async (db) => {
       log('getting connection');
       getMongoose({ db })
         .then((mongoose) => {
-          log('instanciating model');
+          log('instantiating model');
           const CategoryModel = mongoose.model('Category', categorySchema);
           CategoryModel.on('index', (err) => {
             if (err) {

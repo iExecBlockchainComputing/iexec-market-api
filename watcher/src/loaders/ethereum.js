@@ -26,7 +26,7 @@ let eRlcContract;
 
 const init = async (wsClosedCallback) => {
   try {
-    log('openning ws');
+    log('opening ws');
     wsProvider = new ethers.providers.WebSocketProvider(wsHost);
     wsProvider._websocket.on('open', () => log('ws open'));
     wsProvider._websocket.on('error', (e) => {
@@ -101,7 +101,7 @@ const init = async (wsClosedCallback) => {
   }
 };
 
-const thowIfNotReady = () => {
+const throwIfNotReady = () => {
   if (!initialized) {
     throw Error('ethereum ws not ready');
   }
@@ -109,20 +109,20 @@ const thowIfNotReady = () => {
 };
 
 const getRpcProvider = () => rpcProvider;
-const getProvider = () => thowIfNotReady() || wsProvider;
-const getHub = () => thowIfNotReady() || hubContract;
-const getAppRegistry = () => thowIfNotReady() || appRegistryContract;
-const getDatasetRegistry = () => thowIfNotReady() || datasetRegistryContract;
+const getProvider = () => throwIfNotReady() || wsProvider;
+const getHub = () => throwIfNotReady() || hubContract;
+const getAppRegistry = () => throwIfNotReady() || appRegistryContract;
+const getDatasetRegistry = () => throwIfNotReady() || datasetRegistryContract;
 const getWorkerpoolRegistry = () =>
-  thowIfNotReady() || workerpoolRegistryContract;
-const getERlc = () => thowIfNotReady() || eRlcContract;
+  throwIfNotReady() || workerpoolRegistryContract;
+const getERlc = () => throwIfNotReady() || eRlcContract;
 const getApp = (address) =>
-  thowIfNotReady() || new ethers.Contract(address, config.abi.app, wsProvider);
+  throwIfNotReady() || new ethers.Contract(address, config.abi.app, wsProvider);
 const getDataset = (address) =>
-  thowIfNotReady() ||
+  throwIfNotReady() ||
   new ethers.Contract(address, config.abi.dataset, wsProvider);
 const getWorkerpool = (address) =>
-  thowIfNotReady() ||
+  throwIfNotReady() ||
   new ethers.Contract(address, config.abi.workerpool, wsProvider);
 
 module.exports = {

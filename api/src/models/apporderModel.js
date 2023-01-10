@@ -53,7 +53,7 @@ const getModel = async (db) => {
       log('getting connection');
       getMongoose({ db })
         .then((mongoose) => {
-          log('instanciating model');
+          log('instantiating model');
           const ApporderModel = mongoose.model('Apporder', apporderSchema);
           ApporderModel.on('index', (err) => {
             if (err) {

@@ -41,11 +41,11 @@ const {
 const { isEnterpriseFlavour } = require('../utils/iexec-utils');
 const { flavour, maxOpenOrdersPerWallet } = require('../config');
 
-const PAGE_LENGHT = 20;
+const PAGE_LENGTH = 20;
 
 const log = logger.extend('services:order');
 
-log('instanciating service');
+log('instantiating service');
 
 const minTagClause = (minTag) =>
   minTag &&
@@ -138,7 +138,7 @@ const checkSignerInWhitelist = async ({
   }
 };
 
-const checkAppownerInWhitelist = async ({
+const checkAppOwnerInWhitelist = async ({
   chainId = throwIfMissing(),
   iExecContract = throwIfMissing(),
   app = throwIfMissing(),
@@ -164,7 +164,7 @@ const checkAppownerInWhitelist = async ({
   }
 };
 
-const checkDatasetownerInWhitelist = async ({
+const checkDatasetOwnerInWhitelist = async ({
   chainId = throwIfMissing(),
   iExecContract = throwIfMissing(),
   dataset = throwIfMissing(),
@@ -190,7 +190,7 @@ const checkDatasetownerInWhitelist = async ({
   }
 };
 
-const checkWorkerpoolownerInWhitelist = async ({
+const checkWorkerpoolOwnerInWhitelist = async ({
   chainId = throwIfMissing(),
   iExecContract = throwIfMissing(),
   workerpool = throwIfMissing(),
@@ -614,7 +614,7 @@ const getApporders = async ({
       publicationTimestamp: 'asc',
       orderHash: 'asc', // make sort deterministic
     };
-    const limit = PAGE_LENGHT;
+    const limit = PAGE_LENGTH;
     const skip = page || 0;
 
     const count = await ApporderModel.find(request).countDocuments();
@@ -687,7 +687,7 @@ const getDatasetorders = async ({
       publicationTimestamp: 'asc',
       orderHash: 'asc', // make sort deterministic
     };
-    const limit = PAGE_LENGHT;
+    const limit = PAGE_LENGTH;
     const skip = page || 0;
 
     const count = await DatasetorderModel.find(request).countDocuments();
@@ -764,7 +764,7 @@ const getWorkerpoolorders = async ({
       publicationTimestamp: 'asc',
       orderHash: 'asc', // make sort deterministic
     };
-    const limit = PAGE_LENGHT;
+    const limit = PAGE_LENGTH;
     const skip = page || 0;
 
     const count = await WorkerpoolorderModel.find(request).countDocuments();
@@ -839,7 +839,7 @@ const getRequestorders = async ({
       publicationTimestamp: 'asc',
       orderHash: 'asc', // make sort deterministic
     };
-    const limit = PAGE_LENGHT;
+    const limit = PAGE_LENGTH;
     const skip = page || 0;
 
     const count = await RequestorderModel.find(request).countDocuments();
@@ -876,10 +876,10 @@ const publishApporder = async ({
     if (chainId !== authorizedChain)
       throw new AuthError(`operation not authorized for chain ${chainId}`);
 
-    const formatedSignedOrder = await signedApporderSchema().validate(order);
-    const formatedOrder = await apporderSchema().validate(order);
+    const formattedSignedOrder = await signedApporderSchema().validate(order);
+    const formattedOrder = await apporderSchema().validate(order);
 
-    const tagArray = tagToArray(formatedSignedOrder.tag);
+    const tagArray = tagToArray(formattedSignedOrder.tag);
 
     const ApporderModel = await apporderModel.getModel(chainId);
     const iExecContract = getContract('hub', chainId);
@@ -893,11 +893,11 @@ const publishApporder = async ({
       },
       domain,
       primaryType: OBJ_MAP[orderName].primaryType,
-      message: formatedOrder,
+      message: formattedOrder,
     };
     const orderHash = hashEIP712(typedData);
 
-    // check existing reccord
+    // check existing record
     const existing = await ApporderModel.findOne({ orderHash });
     if (existing && existing.status !== STATUS_MAP.DEAD)
       throw new BusinessError('order already published');
@@ -906,7 +906,7 @@ const publishApporder = async ({
     const signer = await fetchContractOwner({
       chainId,
       iExecContract,
-      deployedAddress: formatedSignedOrder.app,
+      deployedAddress: formattedSignedOrder.app,
       registryName: OBJ_MAP[orderName].registryName,
       contractName: OBJ_MAP[orderName].contractName,
     });
@@ -919,7 +919,7 @@ const publishApporder = async ({
       iExecContract.verifySignature(
         signer,
         orderHash,
-        formatedSignedOrder.sign,
+        formattedSignedOrder.sign,
       ),
     );
     if (!verifySign) throw new BusinessError('invalid sign');
@@ -931,7 +931,7 @@ const publishApporder = async ({
     }).countDocuments();
     if (nbPublished >= maxOpenOrdersPerWallet) {
       throw new BusinessError(
-        `maximun of ${maxOpenOrdersPerWallet} published open ${orderName} has been reached for wallet ${signer}`,
+        `maximum of ${maxOpenOrdersPerWallet} published open ${orderName} has been reached for wallet ${signer}`,
       );
     }
 
@@ -939,20 +939,20 @@ const publishApporder = async ({
       // check whitelist
       await Promise.all([
         checkSignerInWhitelist({ chainId, iExecContract, signer }),
-        checkDatasetownerInWhitelist({
+        checkDatasetOwnerInWhitelist({
           chainId,
           iExecContract,
-          dataset: formatedSignedOrder.datasetrestrict,
+          dataset: formattedSignedOrder.datasetrestrict,
         }),
-        checkWorkerpoolownerInWhitelist({
+        checkWorkerpoolOwnerInWhitelist({
           chainId,
           iExecContract,
-          workerpool: formatedSignedOrder.workerpoolrestrict,
+          workerpool: formattedSignedOrder.workerpoolrestrict,
         }),
         checkRequesterInWhitelist({
           chainId,
           iExecContract,
-          requester: formatedSignedOrder.requesterrestrict,
+          requester: formattedSignedOrder.requesterrestrict,
         }),
       ]);
     }
@@ -961,7 +961,7 @@ const publishApporder = async ({
     const consumedVolume = ethersBnToBn(
       await wrapEthCall(iExecContract.viewConsumed(orderHash)),
     );
-    const remainingVolume = new BN(formatedOrder.volume).sub(consumedVolume);
+    const remainingVolume = new BN(formattedOrder.volume).sub(consumedVolume);
     if (remainingVolume.isZero())
       throw new BusinessError('order already consumed');
 
@@ -1007,12 +1007,12 @@ const publishDatasetorder = async ({
     if (chainId !== authorizedChain)
       throw new AuthError(`operation not authorized for chain ${chainId}`);
 
-    const formatedSignedOrder = await signedDatasetorderSchema().validate(
+    const formattedSignedOrder = await signedDatasetorderSchema().validate(
       order,
     );
-    const formatedOrder = await datasetorderSchema().validate(order);
+    const formattedOrder = await datasetorderSchema().validate(order);
 
-    const tagArray = tagToArray(formatedSignedOrder.tag);
+    const tagArray = tagToArray(formattedSignedOrder.tag);
 
     const DatasetorderModel = await datasetorderModel.getModel(chainId);
     const iExecContract = getContract('hub', chainId);
@@ -1026,11 +1026,11 @@ const publishDatasetorder = async ({
       },
       domain,
       primaryType: OBJ_MAP[orderName].primaryType,
-      message: formatedOrder,
+      message: formattedOrder,
     };
     const orderHash = hashEIP712(typedData);
 
-    // check existing reccord
+    // check existing record
     const existing = await DatasetorderModel.findOne({ orderHash });
     if (existing && existing.status !== STATUS_MAP.DEAD)
       throw new BusinessError('order already published');
@@ -1039,7 +1039,7 @@ const publishDatasetorder = async ({
     const signer = await fetchContractOwner({
       chainId,
       iExecContract,
-      deployedAddress: formatedSignedOrder.dataset,
+      deployedAddress: formattedSignedOrder.dataset,
       registryName: OBJ_MAP[orderName].registryName,
       contractName: OBJ_MAP[orderName].contractName,
     });
@@ -1052,7 +1052,7 @@ const publishDatasetorder = async ({
       iExecContract.verifySignature(
         signer,
         orderHash,
-        formatedSignedOrder.sign,
+        formattedSignedOrder.sign,
       ),
     );
     if (!verifySign) throw new BusinessError('invalid sign');
@@ -1064,7 +1064,7 @@ const publishDatasetorder = async ({
     }).countDocuments();
     if (nbPublished >= maxOpenOrdersPerWallet) {
       throw new BusinessError(
-        `maximun of ${maxOpenOrdersPerWallet} published open ${orderName} has been reached for wallet ${signer}`,
+        `maximum of ${maxOpenOrdersPerWallet} published open ${orderName} has been reached for wallet ${signer}`,
       );
     }
 
@@ -1072,20 +1072,20 @@ const publishDatasetorder = async ({
       // check whitelist
       await Promise.all([
         checkSignerInWhitelist({ chainId, iExecContract, signer }),
-        checkAppownerInWhitelist({
+        checkAppOwnerInWhitelist({
           chainId,
           iExecContract,
-          app: formatedSignedOrder.apprestrict,
+          app: formattedSignedOrder.apprestrict,
         }),
-        checkWorkerpoolownerInWhitelist({
+        checkWorkerpoolOwnerInWhitelist({
           chainId,
           iExecContract,
-          workerpool: formatedSignedOrder.workerpoolrestrict,
+          workerpool: formattedSignedOrder.workerpoolrestrict,
         }),
         checkRequesterInWhitelist({
           chainId,
           iExecContract,
-          requester: formatedSignedOrder.requesterrestrict,
+          requester: formattedSignedOrder.requesterrestrict,
         }),
       ]);
     }
@@ -1094,7 +1094,7 @@ const publishDatasetorder = async ({
     const consumedVolume = ethersBnToBn(
       await wrapEthCall(iExecContract.viewConsumed(orderHash)),
     );
-    const remainingVolume = new BN(formatedOrder.volume).sub(consumedVolume);
+    const remainingVolume = new BN(formattedOrder.volume).sub(consumedVolume);
     if (remainingVolume.isZero())
       throw new BusinessError('order already consumed');
 
@@ -1140,12 +1140,12 @@ const publishWorkerpoolorder = async ({
     if (chainId !== authorizedChain)
       throw new AuthError(`operation not authorized for chain ${chainId}`);
 
-    const formatedSignedOrder = await signedWorkerpoolorderSchema().validate(
+    const formattedSignedOrder = await signedWorkerpoolorderSchema().validate(
       order,
     );
-    const formatedOrder = await workerpoolorderSchema().validate(order);
+    const formattedOrder = await workerpoolorderSchema().validate(order);
 
-    const tagArray = tagToArray(formatedSignedOrder.tag);
+    const tagArray = tagToArray(formattedSignedOrder.tag);
 
     const WorkerpoolorderModel = await workerpoolorderModel.getModel(chainId);
     const iExecContract = getContract('hub', chainId);
@@ -1159,11 +1159,11 @@ const publishWorkerpoolorder = async ({
       },
       domain,
       primaryType: OBJ_MAP[orderName].primaryType,
-      message: formatedOrder,
+      message: formattedOrder,
     };
     const orderHash = hashEIP712(typedData);
 
-    // check existing reccord
+    // check existing record
     const existing = await WorkerpoolorderModel.findOne({ orderHash });
     if (existing && existing.status !== STATUS_MAP.DEAD)
       throw new BusinessError('order already published');
@@ -1172,7 +1172,7 @@ const publishWorkerpoolorder = async ({
     const signer = await fetchContractOwner({
       chainId,
       iExecContract,
-      deployedAddress: formatedSignedOrder.workerpool,
+      deployedAddress: formattedSignedOrder.workerpool,
       registryName: OBJ_MAP[orderName].registryName,
       contractName: OBJ_MAP[orderName].contractName,
     });
@@ -1185,7 +1185,7 @@ const publishWorkerpoolorder = async ({
       iExecContract.verifySignature(
         signer,
         orderHash,
-        formatedSignedOrder.sign,
+        formattedSignedOrder.sign,
       ),
     );
     if (!verifySign) throw new BusinessError('invalid sign');
@@ -1197,7 +1197,7 @@ const publishWorkerpoolorder = async ({
     }).countDocuments();
     if (nbPublished >= maxOpenOrdersPerWallet) {
       throw new BusinessError(
-        `maximun of ${maxOpenOrdersPerWallet} published open ${orderName} has been reached for wallet ${signer}`,
+        `maximum of ${maxOpenOrdersPerWallet} published open ${orderName} has been reached for wallet ${signer}`,
       );
     }
 
@@ -1205,20 +1205,20 @@ const publishWorkerpoolorder = async ({
       // check whitelist
       await Promise.all([
         checkSignerInWhitelist({ chainId, iExecContract, signer }),
-        checkAppownerInWhitelist({
+        checkAppOwnerInWhitelist({
           chainId,
           iExecContract,
-          app: formatedSignedOrder.apprestrict,
+          app: formattedSignedOrder.apprestrict,
         }),
-        checkDatasetownerInWhitelist({
+        checkDatasetOwnerInWhitelist({
           chainId,
           iExecContract,
-          dataset: formatedSignedOrder.datasetrestrict,
+          dataset: formattedSignedOrder.datasetrestrict,
         }),
         checkRequesterInWhitelist({
           chainId,
           iExecContract,
-          requester: formatedSignedOrder.requesterrestrict,
+          requester: formattedSignedOrder.requesterrestrict,
         }),
       ]);
     }
@@ -1227,36 +1227,12 @@ const publishWorkerpoolorder = async ({
     const consumedVolume = ethersBnToBn(
       await wrapEthCall(iExecContract.viewConsumed(orderHash)),
     );
-    const remainingVolume = new BN(formatedOrder.volume).sub(consumedVolume);
+    const remainingVolume = new BN(formattedOrder.volume).sub(consumedVolume);
     if (remainingVolume.isZero())
       throw new BusinessError('order already consumed');
 
-    /** ---- ALLOW BID/ASK OVERLAP ----
-    // check best price (workerpoolorder specific)
-    const RequestorderModel = await requestorderModel.getModel(chainId);
-    const [bestRequestorder] = await RequestorderModel.find({
-      status: STATUS_MAP.OPEN,
-      'order.category': formatedOrder.category,
-      ...maxTrustClause(formatedOrder.trust),
-      ...maxTagClause(formatedOrder.tag),
-    })
-      .sort({ 'order.workerpoolmaxprice': -1 })
-      .limit(1);
-    if (
-      bestRequestorder
-      && bestRequestorder.order
-      && new BN(bestRequestorder.order.workerpoolmaxprice).gte(
-        new BN(formatedOrder.workerpoolprice),
-      )
-    ) {
-      throw new BusinessError(
-        `workerpoolprice (${formatedOrder.workerpoolprice}) is less than or equals best requestorder price (${bestRequestorder.order.workerpoolmaxprice}), you may want to fill it`,
-      );
-    }
-    */
-
     // check workerpool owner stake (workerpoolorder specific)
-    const workerpoolPrice = new BN(formatedOrder.workerpoolprice);
+    const workerpoolPrice = new BN(formattedOrder.workerpoolprice);
     const workerpoolAccount = await wrapEthCall(
       iExecContract.viewAccount(signer),
     );
@@ -1313,12 +1289,12 @@ const publishRequestorder = async ({
     if (chainId !== authorizedChain)
       throw new AuthError(`operation not authorized for chain ${chainId}`);
 
-    const formatedSignedOrder = await signedRequestorderSchema().validate(
+    const formattedSignedOrder = await signedRequestorderSchema().validate(
       order,
     );
-    const formatedOrder = await requestorderSchema().validate(order);
+    const formattedOrder = await requestorderSchema().validate(order);
 
-    const tagArray = tagToArray(formatedSignedOrder.tag);
+    const tagArray = tagToArray(formattedSignedOrder.tag);
 
     const RequestorderModel = await requestorderModel.getModel(chainId);
     const iExecContract = getContract('hub', chainId);
@@ -1332,17 +1308,17 @@ const publishRequestorder = async ({
       },
       domain,
       primaryType: OBJ_MAP[orderName].primaryType,
-      message: formatedOrder,
+      message: formattedOrder,
     };
     const orderHash = hashEIP712(typedData);
 
-    // check existing reccord
+    // check existing record
     const existing = await RequestorderModel.findOne({ orderHash });
     if (existing && existing.status !== STATUS_MAP.DEAD)
       throw new BusinessError('order already published');
 
     // check sign
-    const signer = formatedSignedOrder.requester;
+    const signer = formattedSignedOrder.requester;
     if (signer !== authorizedAddress) {
       throw new BusinessError(
         `only order signer ${signer} can publish an order`,
@@ -1352,7 +1328,7 @@ const publishRequestorder = async ({
       iExecContract.verifySignature(
         signer,
         orderHash,
-        formatedSignedOrder.sign,
+        formattedSignedOrder.sign,
       ),
     );
     if (!verifySign) throw new BusinessError('invalid sign');
@@ -1364,7 +1340,7 @@ const publishRequestorder = async ({
     }).countDocuments();
     if (nbPublished >= maxOpenOrdersPerWallet) {
       throw new BusinessError(
-        `maximun of ${maxOpenOrdersPerWallet} published open ${orderName} has been reached for wallet ${signer}`,
+        `maximum of ${maxOpenOrdersPerWallet} published open ${orderName} has been reached for wallet ${signer}`,
       );
     }
 
@@ -1372,20 +1348,20 @@ const publishRequestorder = async ({
       // check whitelist
       await Promise.all([
         checkSignerInWhitelist({ chainId, iExecContract, signer }),
-        checkAppownerInWhitelist({
+        checkAppOwnerInWhitelist({
           chainId,
           iExecContract,
-          app: formatedSignedOrder.app,
+          app: formattedSignedOrder.app,
         }),
-        checkDatasetownerInWhitelist({
+        checkDatasetOwnerInWhitelist({
           chainId,
           iExecContract,
-          dataset: formatedSignedOrder.dataset,
+          dataset: formattedSignedOrder.dataset,
         }),
-        checkWorkerpoolownerInWhitelist({
+        checkWorkerpoolOwnerInWhitelist({
           chainId,
           iExecContract,
-          workerpool: formatedSignedOrder.workerpool,
+          workerpool: formattedSignedOrder.workerpool,
         }),
       ]);
     }
@@ -1394,14 +1370,14 @@ const publishRequestorder = async ({
     const consumedVolume = ethersBnToBn(
       await wrapEthCall(iExecContract.viewConsumed(orderHash)),
     );
-    const remainingVolume = new BN(formatedOrder.volume).sub(consumedVolume);
+    const remainingVolume = new BN(formattedOrder.volume).sub(consumedVolume);
     if (remainingVolume.isZero())
       throw new BusinessError('order already consumed');
 
     // check requester stake (requestorder specific)
-    const appPrice = new BN(formatedOrder.appmaxprice);
-    const datasetPrice = new BN(formatedOrder.datasetmaxprice);
-    const workerpoolPrice = new BN(formatedOrder.workerpoolmaxprice);
+    const appPrice = new BN(formattedOrder.appmaxprice);
+    const datasetPrice = new BN(formattedOrder.datasetmaxprice);
+    const workerpoolPrice = new BN(formattedOrder.workerpoolmaxprice);
     const costPerWork = appPrice.add(datasetPrice).add(workerpoolPrice);
     const totalCost = costPerWork.mul(remainingVolume);
     const requesterAccount = await wrapEthCall(
@@ -1414,42 +1390,18 @@ const publishRequestorder = async ({
       );
     }
 
-    /** ---- ALLOW BID/ASK OVERLAP ----
-    // check best price (requestorder specific)
-    const WorkerpoolorderModel = await workerpoolorderModel.getModel(chainId);
-    const [bestWorkerpoolOrder] = await WorkerpoolorderModel.find({
-      status: STATUS_MAP.OPEN,
-      'order.category': formatedOrder.category,
-      ...minTrustClause(formatedOrder.trust),
-      ...minTagClause(formatedOrder.tag),
-    })
-      .sort({ 'order.workerpoolprice': 1 })
-      .limit(1);
-    if (
-      bestWorkerpoolOrder
-      && bestWorkerpoolOrder.order
-      && new BN(bestWorkerpoolOrder.order.workerpoolprice).lte(
-        new BN(formatedOrder.workerpoolmaxprice),
-      )
-    ) {
-      throw new BusinessError(
-        `workerpoolmaxprice (${formatedOrder.workerpoolmaxprice}) is greather than or equals best workerpoolorder price (${bestWorkerpoolOrder.order.workerpoolprice}), you may want to fill it`,
-      );
-    }
-    */
-
     // check matchable open apporder (requestorder specific)
     await checkMatchableApporder({
       chainId,
-      order: formatedOrder,
+      order: formattedOrder,
       strict: true,
     });
 
     // check matchable open datasetorder (requestorder specific)
-    if (formatedOrder.dataset !== NULL_ADDRESS) {
+    if (formattedOrder.dataset !== NULL_ADDRESS) {
       await checkMatchableDatasetorder({
         chainId,
-        order: formatedOrder,
+        order: formattedOrder,
         strict: true,
       });
     }

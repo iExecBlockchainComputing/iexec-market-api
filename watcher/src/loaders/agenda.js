@@ -27,7 +27,7 @@ const getAgenda = async () => {
             resolve(agenda);
           })
           .catch((e) => {
-            log('start failled', e);
+            log('start failed', e);
             reject(e);
           });
       })

@@ -10,7 +10,7 @@ const { throwIfMissing } = require('../utils/error');
 
 const log = logger.extend('services:metrics');
 
-log('instanciating service');
+log('instantiating service');
 
 const getMetrics = async ({ chainId = throwIfMissing() } = {}) => {
   try {

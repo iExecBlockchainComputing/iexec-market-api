@@ -8,7 +8,7 @@ const { addressSchema } = require('../utils/validator');
 
 const log = logger.extend('services:auth');
 
-log('instanciating service');
+log('instantiating service');
 
 const getEIP712 = (chainId, challengeValue) => {
   const typedData = {

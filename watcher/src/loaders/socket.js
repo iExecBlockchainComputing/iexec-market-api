@@ -1,5 +1,5 @@
 const http = require('http');
-const socketio = require('socket.io');
+const socketIo = require('socket.io');
 const { createClient } = require('redis');
 const { createAdapter } = require('@socket.io/redis-adapter');
 const config = require('../config');
@@ -31,7 +31,7 @@ const init = async () => {
     subClient.on('end', () => log('subClient end'));
     await Promise.all[(pubClient.connect(), subClient.connect())];
     const redisAdapter = createAdapter(pubClient, subClient);
-    ws = socketio(server);
+    ws = socketIo(server);
     ws.adapter(redisAdapter);
     log('socket initialized');
   } catch (error) {

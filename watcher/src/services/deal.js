@@ -10,7 +10,7 @@ const { chainId } = config.chain;
 
 const log = logger.extend('services:deal');
 
-log('instanciating service');
+log('instantiating service');
 
 const addDeal = async ({
   dealid = throwIfMissing(),

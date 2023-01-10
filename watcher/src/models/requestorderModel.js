@@ -60,7 +60,7 @@ const getModel = async (db) => {
       log('getting connection');
       getMongoose({ db })
         .then((mongoose) => {
-          log('instanciating model');
+          log('instantiating model');
           const RequestorderModel = mongoose.model(
             'Requestorder',
             requestorderSchema,

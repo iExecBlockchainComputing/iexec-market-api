@@ -31,7 +31,7 @@ const { chainId } = config.chain;
 
 const log = logger.extend('services:order');
 
-log('instanciating service');
+log('instantiating service');
 
 const cleanApporders = async ({
   orders = throwIfMissing(),
@@ -423,7 +423,7 @@ const cleanBalanceDependantOrders = async ({
   }
 };
 
-const cleanTransferedAppOrders = async ({
+const cleanTransferredAppOrders = async ({
   address = throwIfMissing(),
   app = throwIfMissing(),
   blockNumber,
@@ -450,12 +450,12 @@ const cleanTransferedAppOrders = async ({
       });
     }
   } catch (e) {
-    log('cleanTransferedAppOrders()', e);
+    log('cleanTransferredAppOrders()', e);
     throw e;
   }
 };
 
-const cleanTransferedDatasetOrders = async ({
+const cleanTransferredDatasetOrders = async ({
   address = throwIfMissing(),
   dataset = throwIfMissing(),
   blockNumber,
@@ -481,12 +481,12 @@ const cleanTransferedDatasetOrders = async ({
       });
     }
   } catch (e) {
-    log('cleanTransferedDatasetOrders()', e);
+    log('cleanTransferredDatasetOrders()', e);
     throw e;
   }
 };
 
-const cleanTransferedWorkerpoolOrders = async ({
+const cleanTransferredWorkerpoolOrders = async ({
   address = throwIfMissing(),
   workerpool = throwIfMissing(),
   blockNumber,
@@ -513,7 +513,7 @@ const cleanTransferedWorkerpoolOrders = async ({
       });
     }
   } catch (e) {
-    log('cleanTransferedWorkerpoolOrders()', e);
+    log('cleanTransferredWorkerpoolOrders()', e);
     throw e;
   }
 };
@@ -1141,9 +1141,9 @@ module.exports = {
   cleanApporderDependantOrders,
   cleanDatasetorderDependantOrders,
   cleanBalanceDependantOrders,
-  cleanTransferedAppOrders,
-  cleanTransferedDatasetOrders,
-  cleanTransferedWorkerpoolOrders,
+  cleanTransferredAppOrders,
+  cleanTransferredDatasetOrders,
+  cleanTransferredWorkerpoolOrders,
   cleanRevokedUserOrders,
   updateApporder,
   updateDatasetorder,
