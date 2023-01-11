@@ -44,6 +44,12 @@ const start = async ({ replayer = true, syncWatcher = true } = {}) => {
     });
     log('done');
 
+    if (replayer) {
+      log('starting event replayer...');
+      await startReplayer();
+      log('done');
+    }
+
     log('checking last block seen');
     const startBlock = await getNextBlockToProcess();
     log('done');
@@ -66,11 +72,6 @@ const start = async ({ replayer = true, syncWatcher = true } = {}) => {
     if (syncWatcher) {
       log('starting sync watcher...');
       await startSyncWatcher();
-      log('done');
-    }
-    if (replayer) {
-      log('starting event replayer...');
-      await startReplayer();
       log('done');
     }
     log('WATCHER SUCCESSFULLY STARTED');

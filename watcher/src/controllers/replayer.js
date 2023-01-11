@@ -38,6 +38,9 @@ const replayPastOnly = async ({ nbConfirmation = 10 } = {}) => {
     );
     log('next checkpoint:', nextCheckpoint);
     if (nextCheckpoint > currentCheckpoint) {
+      log(
+        `checking past events from block ${currentCheckpoint} to ${nextCheckpoint}`,
+      );
       await replayPastEvents(currentCheckpoint, {
         lastBlockNumber: nextCheckpoint,
         handleIndexedBlock: setCheckpointBlock,
