@@ -20,6 +20,18 @@ const getNextBlockToProcess = async () => {
   }
 };
 
+const getLastBlock = async () => {
+  try {
+    const CounterModel = await counterModel.getModel(chainId);
+    const lastBlockCounter = await CounterModel.findOne({ name: 'lastBlock' });
+    if (lastBlockCounter !== null) return lastBlockCounter.value;
+    return config.runtime.startBlock;
+  } catch (e) {
+    log('getLastBlock()', e);
+    throw e;
+  }
+};
+
 const setLastBlock = async (blockNumber) => {
   try {
     const CounterModel = await counterModel.getModel(chainId);
@@ -66,6 +78,7 @@ const setCheckpointBlock = async (blockNumber) => {
 
 module.exports = {
   getNextBlockToProcess,
+  getLastBlock,
   setLastBlock,
   getCheckpointBlock,
   setCheckpointBlock,

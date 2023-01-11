@@ -162,7 +162,7 @@ const replayPastEventBatch = async (
     config.runtime.blocksBatchSize > 0 &&
     last - fromBlock > config.runtime.blocksBatchSize
   ) {
-    toBlock = fromBlock + config.runtime.blocksBatchSize - 10;
+    toBlock = fromBlock + config.runtime.blocksBatchSize - 1;
     iterate = true;
   } else {
     toBlock = last;

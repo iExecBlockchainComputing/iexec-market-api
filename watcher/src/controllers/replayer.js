@@ -5,6 +5,7 @@ const { replayPastEvents } = require('./ethEventsWatcher');
 const {
   getCheckpointBlock,
   setCheckpointBlock,
+  getLastBlock,
 } = require('../services/counter');
 const { logger } = require('../utils/logger');
 const { getBlockNumber } = require('../utils/eth-utils');
@@ -19,17 +20,22 @@ const EVENT_REPLAY_JOB = 'replay-past-events';
 
 const replayPastOnly = async ({ nbConfirmation = 10 } = {}) => {
   try {
-    const [currentCheckpoint, currentBlock] = await Promise.all([
-      getCheckpointBlock(),
-      getBlockNumber(ethereum.getProvider()),
-    ]);
+    const [currentCheckpoint, lastIndexedBlock, currentBlock] =
+      await Promise.all([
+        getCheckpointBlock(),
+        getLastBlock(),
+        getBlockNumber(ethereum.getProvider()),
+      ]);
     log(
       'current block:',
       currentBlock,
       'current checkpoint:',
       currentCheckpoint,
     );
-    const nextCheckpoint = currentBlock - nbConfirmation;
+    const nextCheckpoint = Math.min(
+      currentBlock - nbConfirmation,
+      lastIndexedBlock,
+    );
     log('next checkpoint:', nextCheckpoint);
     if (nextCheckpoint > currentCheckpoint) {
       await replayPastEvents(currentCheckpoint, {

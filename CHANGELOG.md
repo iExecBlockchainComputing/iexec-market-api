@@ -4,6 +4,7 @@
 
 - \[BREAKING\] removed viviani and goerli default configuration
 - better tracking of indexed block number
+- fix avoid checkpoint further than last indexed block
 - fix typos
 
 ## v5.3.1

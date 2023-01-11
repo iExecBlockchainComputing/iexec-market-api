@@ -28,7 +28,9 @@ const {
   REQUESTORDERS_COLLECTION,
   DEALS_COLLECTION,
   CATEGORIES_COLLECTION,
+  fastForwardToLastBlock,
 } = require('./test-utils');
+const { init: ethereumInit } = require('../src/loaders/ethereum');
 
 jest.setTimeout(120000);
 
@@ -3330,6 +3332,11 @@ describe('Recover on start', () => {
 describe('Replay Past', () => {
   beforeAll(async () => {
     await dropDB(chainId);
+    await ethereumInit();
+  });
+
+  beforeEach(async () => {
+    await fastForwardToLastBlock(chainId, rpc);
   });
 
   test('checkpoints', async () => {
@@ -3357,11 +3364,13 @@ describe('Replay Past', () => {
 
   test('nbConfirmation', async () => {
     await dropDB(chainId);
+    await fastForwardToLastBlock(chainId, rpc);
     const { catid } = await iexec.hub.createCategory({
       name: 'TEST',
       description: 'DESC',
       workClockTimeRef: '300',
     });
+    await fastForwardToLastBlock(chainId, rpc);
     await replayPastOnly({ nbConfirmation: 1 });
     const [notSaved] = await find(chainId, CATEGORIES_COLLECTION, {
       catid: catid.toNumber(),
@@ -3384,6 +3393,7 @@ describe('Replay Past', () => {
       catid: catid.toNumber(),
     });
     expect(notSaved).toBeUndefined();
+    await fastForwardToLastBlock(chainId, rpc);
     await replayPastOnly({ nbConfirmation: 0 });
     const [saved] = await find(chainId, CATEGORIES_COLLECTION, {
       catid: catid.toNumber(),
@@ -3420,6 +3430,7 @@ describe('Replay Past', () => {
       },
       { checkRequest: false },
     );
+    await fastForwardToLastBlock(chainId, rpc);
     const [appHash, datasetHash, workerpoolHash, requestHash] =
       await Promise.all([
         iexec.order.hashApporder(apporder),
@@ -3526,6 +3537,7 @@ describe('Replay Past', () => {
       },
       { checkRequest: false },
     );
+    await fastForwardToLastBlock(chainId, rpc);
     await replayPastOnly({ nbConfirmation: 0 });
     const [
       [savedApporder],
@@ -3631,6 +3643,7 @@ describe('Replay Past', () => {
       },
       { checkRequest: false },
     );
+    await fastForwardToLastBlock(chainId, rpc);
     await replayPastOnly({ nbConfirmation: 0 });
     const [
       [savedApporder],
@@ -3668,6 +3681,7 @@ describe('Replay Past', () => {
       },
       { checkRequest: false },
     );
+    await fastForwardToLastBlock(chainId, rpc);
     await replayPastOnly({ nbConfirmation: 0 });
     const [savedPartiallyMatchedRequestorder] = await find(
       chainId,
@@ -3758,6 +3772,7 @@ describe('Replay Past', () => {
       },
       { checkRequest: false },
     );
+    await fastForwardToLastBlock(chainId, rpc);
     await replayPastOnly({ nbConfirmation: 0 });
     await sleep(PROCESS_TRIGGERED_EVENT_TIMEOUT);
     const [
@@ -3864,6 +3879,7 @@ describe('Replay Past', () => {
       },
       { checkRequest: false },
     );
+    await fastForwardToLastBlock(chainId, rpc);
     await replayPastOnly({ nbConfirmation: 0 });
     await sleep(PROCESS_TRIGGERED_EVENT_TIMEOUT);
     const [
@@ -3969,6 +3985,7 @@ describe('Replay Past', () => {
       },
       { checkRequest: false },
     );
+    await fastForwardToLastBlock(chainId, rpc);
     await replayPastOnly({ nbConfirmation: 0 });
     await sleep(PROCESS_TRIGGERED_EVENT_TIMEOUT);
     const [
@@ -4001,6 +4018,7 @@ describe('Replay Past', () => {
       },
     ]);
     await iexec.order.cancelApporder(apporder);
+    await fastForwardToLastBlock(chainId, rpc);
     await replayPastOnly({ nbConfirmation: 0 });
     const [[savedApporder]] = await Promise.all([
       find(chainId, APPORDERS_COLLECTION, {
@@ -4080,6 +4098,7 @@ describe('Replay Past', () => {
       ]),
     ]);
     await iexec.order.cancelApporder(apporder);
+    await fastForwardToLastBlock(chainId, rpc);
     const [
       [savedApporder],
       [savedDatasetorder],
@@ -4214,6 +4233,7 @@ describe('Replay Past', () => {
       ]),
     ]);
     await iexec.order.cancelApporder(apporderTee);
+    await fastForwardToLastBlock(chainId, rpc);
     await replayPastOnly({ nbConfirmation: 0 });
     await sleep(PROCESS_TRIGGERED_EVENT_TIMEOUT);
     const [
@@ -4254,6 +4274,7 @@ describe('Replay Past', () => {
       },
     ]);
     await iexec.order.cancelDatasetorder(datasetorder);
+    await fastForwardToLastBlock(chainId, rpc);
     await replayPastOnly({ nbConfirmation: 0 });
     const [[savedDatasetorder]] = await Promise.all([
       find(chainId, DATASETORDERS_COLLECTION, {
@@ -4365,6 +4386,7 @@ describe('Replay Past', () => {
     expect(savedApporder.status).toBe(STATUS_MAP.OPEN);
     expect(savedRequestorder.status).toBe(STATUS_MAP.OPEN);
     expect(savedIndependentRequestorder.status).toBe(STATUS_MAP.OPEN);
+    await fastForwardToLastBlock(chainId, rpc);
     await replayPastOnly({ nbConfirmation: 0 });
     await sleep(PROCESS_TRIGGERED_EVENT_TIMEOUT);
     const [
@@ -4412,6 +4434,7 @@ describe('Replay Past', () => {
       ]),
     ]);
     await iexec.order.cancelWorkerpoolorder(workerpoolorder);
+    await fastForwardToLastBlock(chainId, rpc);
     await replayPastOnly({ nbConfirmation: 0 });
     const [[savedWorkerpoolorder]] = await Promise.all([
       find(chainId, WORKERPOOLORDERS_COLLECTION, {
@@ -4442,6 +4465,7 @@ describe('Replay Past', () => {
       ]),
     ]);
     await iexec.order.cancelRequestorder(requestorder);
+    await fastForwardToLastBlock(chainId, rpc);
     await replayPastOnly({ nbConfirmation: 0 });
     const [[savedRequestorder]] = await Promise.all([
       find(chainId, REQUESTORDERS_COLLECTION, {
@@ -4545,6 +4569,7 @@ describe('Replay Past', () => {
     expect(savedWorkerpoolorderCumulativeTooExpensive.status).toBe(
       STATUS_MAP.OPEN,
     );
+    await fastForwardToLastBlock(chainId, rpc);
     await replayPastOnly({ nbConfirmation: 0 });
     await sleep(PROCESS_TRIGGERED_EVENT_TIMEOUT);
     const [
@@ -4729,6 +4754,7 @@ describe('Replay Past', () => {
     expect(savedRequestorderCumulativeTooExpensive.status).toBe(
       STATUS_MAP.OPEN,
     );
+    await fastForwardToLastBlock(chainId, rpc);
     await replayPastOnly({ nbConfirmation: 0 });
     await sleep(PROCESS_TRIGGERED_EVENT_TIMEOUT);
     const [
@@ -4786,6 +4812,7 @@ describe('Replay Past', () => {
       order.app,
       '0x000000000000000000000000000000000000dead',
     );
+    await fastForwardToLastBlock(chainId, rpc);
     await replayPastOnly({ nbConfirmation: 0 });
     const [savedOrder] = await find(chainId, APPORDERS_COLLECTION, {
       orderHash,
@@ -4809,6 +4836,7 @@ describe('Replay Past', () => {
       order.dataset,
       '0x000000000000000000000000000000000000dead',
     );
+    await fastForwardToLastBlock(chainId, rpc);
     await replayPastOnly({ nbConfirmation: 0 });
     const [savedOrder] = await find(chainId, DATASETORDERS_COLLECTION, {
       orderHash,
@@ -4832,6 +4860,7 @@ describe('Replay Past', () => {
       order.workerpool,
       '0x000000000000000000000000000000000000dead',
     );
+    await fastForwardToLastBlock(chainId, rpc);
     await replayPastOnly({ nbConfirmation: 0 });
     const [savedOrder] = await find(chainId, WORKERPOOLORDERS_COLLECTION, {
       orderHash,
