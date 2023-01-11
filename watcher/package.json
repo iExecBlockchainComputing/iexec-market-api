@@ -38,8 +38,6 @@
     "socket.io": "^4.4.0"
   },
   "devDependencies": {
-    "@babel/preset-env": "^7.16.4",
-    "@babel/register": "^7.16.0",
     "eslint": "^8.4.1",
     "eslint-config-airbnb-base": "^15.0.0",
     "eslint-config-prettier": "^8.3.0",
@@ -47,18 +45,6 @@
     "iexec": "^6.0.0",
     "jest": "^27.4.3",
     "prettier": "^2.5.1"
-  },
-  "babel": {
-    "presets": [
-      [
-        "@babel/env",
-        {
-          "targets": {
-            "node": "14"
-          }
-        }
-      ]
-    ]
   },
   "jest": {
     "testEnvironment": "node"
