@@ -1788,6 +1788,7 @@ describe('Watcher', () => {
       order.app,
       '0x000000000000000000000000000000000000dead',
     );
+    await sleep(PROCESS_TRIGGERED_EVENT_TIMEOUT);
     const [savedOrder] = await find(chainId, APPORDERS_COLLECTION, {
       orderHash,
     });
@@ -1816,6 +1817,7 @@ describe('Watcher', () => {
       order.dataset,
       '0x000000000000000000000000000000000000dead',
     );
+    await sleep(PROCESS_TRIGGERED_EVENT_TIMEOUT);
     const [savedOrder] = await find(chainId, DATASETORDERS_COLLECTION, {
       orderHash,
     });
@@ -1846,6 +1848,7 @@ describe('Watcher', () => {
       order.workerpool,
       '0x000000000000000000000000000000000000dead',
     );
+    await sleep(PROCESS_TRIGGERED_EVENT_TIMEOUT);
     const [savedOrder] = await find(chainId, WORKERPOOLORDERS_COLLECTION, {
       orderHash,
     });
