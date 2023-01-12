@@ -328,6 +328,16 @@ const fastForwardToLastBlock = async (dbName, provider) => {
   );
 };
 
+const setCheckpointToLastBlock = async (dbName) => {
+  const CounterModel = await counterModel.getModel(dbName);
+  const lastBlock = await CounterModel.findOne({ name: 'lastBlock' });
+  await CounterModel.findOneAndUpdate(
+    { name: 'checkpointBlock' },
+    { value: lastBlock.value },
+    { new: true, upsert: true },
+  );
+};
+
 module.exports = {
   addApporders,
   addDatasetorders,
@@ -336,6 +346,7 @@ module.exports = {
   find,
   dropDB,
   fastForwardToLastBlock,
+  setCheckpointToLastBlock,
   getId,
   deployAndGetApporder,
   deployAndGetDatasetorder,

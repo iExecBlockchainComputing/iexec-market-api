@@ -29,6 +29,7 @@ const {
   DEALS_COLLECTION,
   CATEGORIES_COLLECTION,
   fastForwardToLastBlock,
+  setCheckpointToLastBlock,
 } = require('./test-utils');
 const { init: ethereumInit } = require('../src/loaders/ethereum');
 
@@ -1861,8 +1862,9 @@ describe('Watcher', () => {
 });
 
 describe('Recover on start', () => {
-  beforeAll(async () => {
+  beforeEach(async () => {
     await dropDB(chainId);
+    await fastForwardToLastBlock(chainId, rpc);
   });
 
   afterEach(async () => {
@@ -3337,9 +3339,66 @@ describe('Replay Past', () => {
 
   beforeEach(async () => {
     await fastForwardToLastBlock(chainId, rpc);
+    await setCheckpointToLastBlock(chainId);
   });
 
   test('checkpoints', async () => {
+    await iexec.hub.createCategory({
+      name: 'TEST',
+      description: 'DESC',
+      workClockTimeRef: '300',
+    });
+    await iexec.hub.createCategory({
+      name: 'TEST',
+      description: 'DESC',
+      workClockTimeRef: '300',
+    });
+    await iexec.hub.createCategory({
+      name: 'TEST',
+      description: 'DESC',
+      workClockTimeRef: '300',
+    });
+    await iexec.hub.createCategory({
+      name: 'TEST',
+      description: 'DESC',
+      workClockTimeRef: '300',
+    });
+    await iexec.hub.createCategory({
+      name: 'TEST',
+      description: 'DESC',
+      workClockTimeRef: '300',
+    });
+    await iexec.hub.createCategory({
+      name: 'TEST',
+      description: 'DESC',
+      workClockTimeRef: '300',
+    });
+    await iexec.hub.createCategory({
+      name: 'TEST',
+      description: 'DESC',
+      workClockTimeRef: '300',
+    });
+    await iexec.hub.createCategory({
+      name: 'TEST',
+      description: 'DESC',
+      workClockTimeRef: '300',
+    });
+    await iexec.hub.createCategory({
+      name: 'TEST',
+      description: 'DESC',
+      workClockTimeRef: '300',
+    });
+    await iexec.hub.createCategory({
+      name: 'TEST',
+      description: 'DESC',
+      workClockTimeRef: '300',
+    });
+    await iexec.hub.createCategory({
+      name: 'TEST',
+      description: 'DESC',
+      workClockTimeRef: '300',
+    });
+    await fastForwardToLastBlock(chainId, rpc);
     await replayPastOnly();
     const [initialCheckPoint] = await find(chainId, 'counters', {
       name: 'checkpointBlock',

@@ -26,6 +26,7 @@ const {
   WORKERPOOLORDERS_COLLECTION,
   REQUESTORDERS_COLLECTION,
   fastForwardToLastBlock,
+  setCheckpointToLastBlock,
 } = require('./test-utils');
 const { init: ethereumInit } = require('../src/loaders/ethereum');
 
@@ -925,19 +926,9 @@ describe('Watcher enterprise specific', () => {
 });
 
 describe('Recover on start enterprise specific', () => {
-  beforeAll(async () => {
-    await dropDB(chainId);
-    await start({ syncWatcher: false, replayer: false });
-    await stop();
-  });
-
   beforeEach(async () => {
-    await dropDB(chainId, [
-      APPORDERS_COLLECTION,
-      DATASETORDERS_COLLECTION,
-      WORKERPOOLORDERS_COLLECTION,
-      REQUESTORDERS_COLLECTION,
-    ]);
+    await dropDB(chainId);
+    await fastForwardToLastBlock(chainId, rpc);
     jest.clearAllMocks();
   });
 
@@ -1889,6 +1880,7 @@ describe('Replay Past enterprise specific', () => {
       REQUESTORDERS_COLLECTION,
     ]);
     await fastForwardToLastBlock(chainId, rpc);
+    await setCheckpointToLastBlock(chainId);
     jest.clearAllMocks();
   });
 
