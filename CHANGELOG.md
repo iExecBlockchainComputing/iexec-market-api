@@ -7,6 +7,7 @@
 - start replayer before initial synchro's end to achieve faster checkpoint sync
 - fix avoid checkpoint further than last indexed block
 - fix typos
+- update dependencies
 
 ## v5.3.1
 
