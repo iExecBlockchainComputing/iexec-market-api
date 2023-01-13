@@ -19,6 +19,7 @@
 - added custom value for maximum orders per wallet with env `MAX_OPEN_ORDERS_PER_WALLET`
 - added custom value for server port with env `PORT`
 - dependencies update
+- upgrade to node 16 & npm 8
 
 ## v5.2.1
 
