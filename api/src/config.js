@@ -25,12 +25,8 @@ const {
   MAX_OPEN_ORDERS_PER_WALLET,
   RATE_LIMIT_MAX,
   RATE_LIMIT_PERIOD,
-  MAINNET_ETH_RPC_HOST,
-  MAINNET_IEXEC_ADDRESS,
   BELLECOUR_ETH_RPC_HOST,
   BELLECOUR_IEXEC_ADDRESS,
-  INFURA_PROJECT_ID,
-  MAINNET_ALCHEMY_API_KEY,
   CREATE_INDEX,
 } = process.env;
 
@@ -62,21 +58,6 @@ const nativeAbis = {
 };
 
 const DEFAULT_CHAINS_CONFIG = {
-  MAINNET: {
-    id: '1',
-    isNative: false,
-    host:
-      MAINNET_ETH_RPC_HOST ||
-      (INFURA_PROJECT_ID &&
-        `https://mainnet.infura.io/v3/${INFURA_PROJECT_ID}`) ||
-      (MAINNET_ALCHEMY_API_KEY &&
-        `https://eth-mainnet.alchemyapi.io/v2/${MAINNET_ALCHEMY_API_KEY}`),
-    hubAddress:
-      MAINNET_IEXEC_ADDRESS ||
-      (!isEnterpriseFlavour(flavour)
-        ? '0x3eca1B216A7DF1C7689aEb259fFB83ADFB894E7f'
-        : undefined),
-  },
   BELLECOUR: {
     id: '134',
     isNative: true,

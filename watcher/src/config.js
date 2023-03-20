@@ -16,8 +16,6 @@ const {
   MONGO_HOST,
   REDIS_HOST,
   FLAVOUR,
-  INFURA_PROJECT_ID,
-  ALCHEMY_API_KEY,
   ETH_WS_HOST,
   ETH_RPC_HOST,
   CHAIN,
@@ -55,20 +53,6 @@ const stringToBoolean = (string) => {
 };
 
 const DEFAULT_CHAINS_CONFIG = {
-  MAINNET: {
-    httpHost:
-      (INFURA_PROJECT_ID &&
-        `https://mainnet.infura.io/v3/${INFURA_PROJECT_ID}`) ||
-      (ALCHEMY_API_KEY &&
-        `https://eth-mainnet.alchemyapi.io/v2/${ALCHEMY_API_KEY}`),
-    wsHost:
-      (INFURA_PROJECT_ID &&
-        `wss://mainnet.infura.io/ws/v3/${INFURA_PROJECT_ID}`) ||
-      (ALCHEMY_API_KEY &&
-        `wss://eth-mainnet.ws.alchemyapi.io/v2/${ALCHEMY_API_KEY}`),
-    chainId: '1',
-    hubAddress: '0x3eca1B216A7DF1C7689aEb259fFB83ADFB894E7f',
-  },
   BELLECOUR: {
     httpHost: 'https://bellecour.iex.ec',
     wsHost: 'wss://bellecour-ws.iex.ec',

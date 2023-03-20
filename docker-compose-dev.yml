@@ -39,8 +39,6 @@ services:
       - CHAINS=BELLECOUR
       - MONGO_HOST=mongo
       - REDIS_HOST=redis
-      - INFURA_PROJECT_ID=${INFURA_PROJECT_ID}
-      - ALCHEMY_API_KEY=${ALCHEMY_API_KEY}
       - CREATE_INDEX=${CREATE_INDEX}
     depends_on:
       - mongo
@@ -48,27 +46,6 @@ services:
     networks:
       - webproxy
       - database
-
-  # mainnet-watcher:
-  #   restart: unless-stopped
-  #   image: iexechub/iexec-market-watcher
-  #   build:
-  #     context: ./watcher
-  #     dockerfile: Dockerfile
-  #   environment:
-  #     - DEBUG=iexec-watcher:app
-  #     - DEBUG_COLORS=true
-  #     - CHAIN=MAINNET
-  #     - MONGO_HOST=mongo
-  #     - REDIS_HOST=redis
-  #     - INFURA_PROJECT_ID=${INFURA_PROJECT_ID}
-  #     - ALCHEMY_API_KEY=${ALCHEMY_API_KEY}
-  #     - CREATE_INDEX=${CREATE_INDEX}
-  #   depends_on:
-  #     - mongo
-  #     - redis
-  #   networks:
-  #     - database
 
   bellecour-watcher:
     restart: unless-stopped
