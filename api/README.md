@@ -75,7 +75,7 @@ npm test
 
   - header authorization\*
   - query chainId\*
-  - body {taget:"unpublish_orderHash"|"unpublish_all"|"unpublish_last", orderHash|app}
+  - body {target:"unpublish_orderHash"|"unpublish_all"|"unpublish_last", orderHash|app}
   - response {ok, target, unpublished: [...orderHash]}
 
 - GET /datasetorders/:orderHash
@@ -102,7 +102,7 @@ npm test
 
   - header authorization\*
   - query chainId\*
-  - body {taget:"unpublish_orderHash"|"unpublish_all"|"unpublish_last", orderHash|dataset}
+  - body {target:"unpublish_orderHash"|"unpublish_all"|"unpublish_last", orderHash|dataset}
   - response {ok, target, unpublished: [...orderHash]}
 
 - GET /workerpoolorders/:orderHash
@@ -129,7 +129,7 @@ npm test
 
   - header authorization\*
   - query chainId\*
-  - body {taget:"unpublish_orderHash"|"unpublish_all"|"unpublish_last", orderHash|workerpool}
+  - body {target:"unpublish_orderHash"|"unpublish_all"|"unpublish_last", orderHash|workerpool}
   - response {ok, target, unpublished: [...orderHash]}
 
 - GET /requestorders/:orderHash
@@ -156,7 +156,7 @@ npm test
 
   - header authorization\*
   - query chainId\*
-  - body {taget:"unpublish_orderHash"|"unpublish_all"|"unpublish_last", orderHash|requester}
+  - body {target:"unpublish_orderHash"|"unpublish_all"|"unpublish_last", orderHash|requester}
   - response {ok, target, unpublished: [...orderHash]}
 
 - GET /categories/:catid
