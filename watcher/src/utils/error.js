@@ -1,5 +1,7 @@
-const { logError } = require('./logger');
+const { getLogger, APP_NAMESPACE } = require('./logger');
 const { sleep } = require('./utils');
+
+const logError = getLogger(APP_NAMESPACE).error;
 
 const getPropsToCopy = (error) => {
   const {
@@ -53,7 +55,7 @@ const throwIfMissing = () => {
 
 const recoverOnCriticalError = () => {
   logError(
-    'A critical error has occured - Stopping process to recover on next sartup',
+    'A critical error has occurred - Stopping process to recover on next sartup',
   );
   process.exit(1);
 };

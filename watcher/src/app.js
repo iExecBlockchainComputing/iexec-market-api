@@ -18,10 +18,10 @@ const {
 } = require('./controllers/syncWatcher');
 const { startReplayer, stopReplayer } = require('./controllers/replayer');
 const { getNextBlockToProcess, setLastBlock } = require('./services/counter');
-const { getLogger } = require('./utils/logger');
+const { getLogger, APP_NAMESPACE } = require('./utils/logger');
 const { errorHandler } = require('./utils/error');
 
-const logger = getLogger('app');
+const logger = getLogger(APP_NAMESPACE);
 
 const { wsHost, httpHost, chainId, hubAddress } = config.chain;
 if (!chainId) throw Error('missing chainId');
