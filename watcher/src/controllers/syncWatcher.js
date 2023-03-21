@@ -1,7 +1,7 @@
 const config = require('../config');
 const { getAgenda } = require('../loaders/agenda');
 const { getProvider, getRpcProvider } = require('../loaders/ethereum');
-const { logger } = require('../utils/logger');
+const { getLogger } = require('../utils/logger');
 const { sleep } = require('../utils/utils');
 const { errorHandler } = require('../utils/error');
 const { getBlockNumber } = require('../utils/eth-utils');
@@ -9,7 +9,7 @@ const { getBlockNumber } = require('../utils/eth-utils');
 const { chainId } = config.chain;
 const { checkSyncInterval } = config.runtime;
 
-const log = logger.extend('controllers:syncWatcher');
+const logger = getLogger('controllers:syncWatcher');
 
 const SYNC_WATCHER_JOB = 'watch-eth-node';
 
@@ -28,7 +28,7 @@ const checkSync = () => async () => {
         getBlockNumber(wsProvider),
         getBlockNumber(rpcProvider),
       ]);
-      log('Sync - RPC:', rpcBlock, 'WS:', wsBlock);
+      logger.log('Sync - RPC:', rpcBlock, 'WS:', wsBlock);
       if (
         rpcBlock > wsBlock + config.runtime.outOfSyncThreshold ||
         wsBlock > rpcBlock + config.runtime.outOfSyncThreshold
@@ -43,9 +43,9 @@ const checkSync = () => async () => {
       isSync = true;
     } catch (error) {
       errorCount += 1;
-      log(`syncWatcher() (${errorCount} error)`, error);
+      logger.log(`syncWatcher() (${errorCount} error)`, error);
       if (errorCount >= MAX_ERROR_COUNT) {
-        log(`syncWatcher() max error reached (${MAX_ERROR_COUNT})`);
+        logger.log(`syncWatcher() max error reached (${MAX_ERROR_COUNT})`);
         errorHandler(error, {
           type: 'too-much-sync-error',
           errorCount,
@@ -61,7 +61,7 @@ const startSyncWatcher = async () => {
   const agenda = await getAgenda(chainId);
   agenda.define(SYNC_WATCHER_JOB, { lockLifetime: 16000 }, checkSync());
   await agenda.every(`${checkSyncInterval} seconds`, SYNC_WATCHER_JOB);
-  log(
+  logger.log(
     `${SYNC_WATCHER_JOB} jobs added (run every ${checkSyncInterval} seconds)`,
   );
 };

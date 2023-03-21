@@ -2,15 +2,15 @@ const config = require('../config');
 const { getProvider, getHub } = require('../loaders/ethereum');
 const { eventEmitter } = require('../loaders/eventEmitter');
 const dealModel = require('../models/dealModel');
-const { logger } = require('../utils/logger');
+const { getLogger } = require('../utils/logger');
 const { throwIfMissing } = require('../utils/error');
 const { waitForGetBlock, callAtBlock } = require('../utils/eth-utils');
 
 const { chainId } = config.chain;
 
-const log = logger.extend('services:deal');
+const logger = getLogger('services:deal');
 
-log('instantiating service');
+logger.log('instantiating service');
 
 const addDeal = async ({
   dealid = throwIfMissing(),
@@ -87,7 +87,7 @@ const addDeal = async ({
       eventEmitter.emit('deal_created', saved.toJSON());
     }
   } catch (e) {
-    log('addDeal() error', e);
+    logger.log('addDeal() error', e);
     throw e;
   }
 };

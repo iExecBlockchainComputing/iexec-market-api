@@ -16,7 +16,7 @@ const apporderModel = require('../models/apporderModel');
 const datasetorderModel = require('../models/datasetorderModel');
 const workerpoolorderModel = require('../models/workerpoolorderModel');
 const requestorderModel = require('../models/requestorderModel');
-const { logger } = require('../utils/logger');
+const { getLogger } = require('../utils/logger');
 const { throwIfMissing } = require('../utils/error');
 const { STATUS_MAP, TAG_MAP, tagToArray } = require('../utils/order-utils');
 const {
@@ -29,9 +29,9 @@ const { tokenIdToAddress, KYC_MEMBER_ROLE } = require('../utils/iexec-utils');
 
 const { chainId } = config.chain;
 
-const log = logger.extend('services:order');
+const logger = getLogger('services:order');
 
-log('instantiating service');
+logger.log('instantiating service');
 
 const cleanApporders = async ({
   orders = throwIfMissing(),
@@ -54,7 +54,7 @@ const cleanApporders = async ({
     .filter((e) => !!e)
     .map((e) => e.toJSON())
     .forEach((e) => {
-      log('apporder cleaned', e.orderHash, reason);
+      logger.log('apporder cleaned', e.orderHash, reason);
       eventEmitter.emit('apporder_cleaned', e);
     });
 };
@@ -80,7 +80,7 @@ const cleanDatasetorders = async ({
     .filter((e) => !!e)
     .map((e) => e.toJSON())
     .forEach((e) => {
-      log('datasetorder cleaned', e.orderHash, reason);
+      logger.log('datasetorder cleaned', e.orderHash, reason);
       eventEmitter.emit('datasetorder_cleaned', e);
     });
 };
@@ -106,7 +106,7 @@ const cleanWorkerpoolorders = async ({
     .filter((e) => !!e)
     .map((e) => e.toJSON())
     .forEach((e) => {
-      log('workerpoolorder cleaned', e.orderHash, reason);
+      logger.log('workerpoolorder cleaned', e.orderHash, reason);
       eventEmitter.emit('workerpoolorder_cleaned', e);
     });
 };
@@ -132,7 +132,7 @@ const cleanRequestorders = async ({
     .filter((e) => !!e)
     .map((e) => e.toJSON())
     .forEach((e) => {
-      log('requestorder cleaned', e.orderHash, reason);
+      logger.log('requestorder cleaned', e.orderHash, reason);
       eventEmitter.emit('requestorder_cleaned', e);
     });
 };
@@ -290,7 +290,7 @@ const cleanApporderDependantOrders = async ({
       reason: 'apporder dependant requestorder',
     });
   } catch (e) {
-    log('cleanApporderDependantOrders() error', e);
+    logger.log('cleanApporderDependantOrders() error', e);
     throw e;
   }
 };
@@ -346,7 +346,7 @@ const cleanDatasetorderDependantOrders = async ({
       reason: 'datasetorder dependant requestorder',
     });
   } catch (e) {
-    log('cleanDatasetorderDependantOrders() error', e);
+    logger.log('cleanDatasetorderDependantOrders() error', e);
     throw e;
   }
 };
@@ -418,7 +418,7 @@ const cleanBalanceDependantOrders = async ({
       }),
     ]);
   } catch (e) {
-    log('cleanBalanceDependantOrders()', e);
+    logger.log('cleanBalanceDependantOrders()', e);
     throw e;
   }
 };
@@ -450,7 +450,7 @@ const cleanTransferredAppOrders = async ({
       });
     }
   } catch (e) {
-    log('cleanTransferredAppOrders()', e);
+    logger.log('cleanTransferredAppOrders()', e);
     throw e;
   }
 };
@@ -481,7 +481,7 @@ const cleanTransferredDatasetOrders = async ({
       });
     }
   } catch (e) {
-    log('cleanTransferredDatasetOrders()', e);
+    logger.log('cleanTransferredDatasetOrders()', e);
     throw e;
   }
 };
@@ -513,7 +513,7 @@ const cleanTransferredWorkerpoolOrders = async ({
       });
     }
   } catch (e) {
-    log('cleanTransferredWorkerpoolOrders()', e);
+    logger.log('cleanTransferredWorkerpoolOrders()', e);
     throw e;
   }
 };
@@ -524,7 +524,7 @@ const cleanRevokedUserOrders = async ({
   blockNumber,
 }) => {
   if (role !== KYC_MEMBER_ROLE) {
-    log(`user ${address} revoked role is not KYC`);
+    logger.log(`user ${address} revoked role is not KYC`);
     return;
   }
   // check user  isKYC
@@ -535,10 +535,10 @@ const cleanRevokedUserOrders = async ({
     blockNumber,
   );
   if (isKYC) {
-    log(`user ${address} is KYC`);
+    logger.log(`user ${address} is KYC`);
     return;
   }
-  log(`user ${address} KYC revoked`);
+  logger.log(`user ${address} KYC revoked`);
 
   // fix block height to prevent the risk of moving indexes in registries
   const blockNumberOverride =
@@ -614,7 +614,7 @@ const cleanRevokedUserOrders = async ({
           const resourceAddress = tokenIdToAddress(resourceId);
           return resourceAddress;
         } catch (err) {
-          log(
+          logger.log(
             `failed to get app ${i} for owner ${address}${
               blockNumberOverride && ` at block ${blockNumberOverride}`
             } : ${err}`,
@@ -624,7 +624,7 @@ const cleanRevokedUserOrders = async ({
       })
       .filter((e) => e !== null),
   );
-  log('deadApps (owner KYC revoked)', deadApps);
+  logger.log('deadApps (owner KYC revoked)', deadApps);
   // list orders depending on user apps
   const [
     userAppDependantDatasetorders,
@@ -699,7 +699,7 @@ const cleanRevokedUserOrders = async ({
           const resourceAddress = tokenIdToAddress(resourceId);
           return resourceAddress;
         } catch (err) {
-          log(
+          logger.log(
             `failed to get dataset ${i} for owner ${address}${
               blockNumberOverride && ` at block ${blockNumberOverride}`
             } : ${err}`,
@@ -709,7 +709,7 @@ const cleanRevokedUserOrders = async ({
       })
       .filter((e) => e !== null),
   );
-  log('deadDatasets (owner KYC revoked)', deadDatasets);
+  logger.log('deadDatasets (owner KYC revoked)', deadDatasets);
   // list orders depending on user datasets
   const [
     userDatasetDependantApporders,
@@ -784,7 +784,7 @@ const cleanRevokedUserOrders = async ({
           const resourceAddress = tokenIdToAddress(resourceId);
           return resourceAddress;
         } catch (err) {
-          log(
+          logger.log(
             `failed to get workerpool ${i} for owner ${address}${
               blockNumberOverride && ` at block ${blockNumberOverride}`
             } : ${err}`,
@@ -794,7 +794,7 @@ const cleanRevokedUserOrders = async ({
       })
       .filter((e) => e !== null),
   );
-  log('deadWorkerpools (owner KYC revoked)', deadWorkerpools);
+  logger.log('deadWorkerpools (owner KYC revoked)', deadWorkerpools);
   // list orders depending on user workerpools
   const [
     userWorkerpoolDependantApporders,
@@ -884,16 +884,16 @@ const updateApporder = async ({
         { returnOriginal: false },
       );
       if (saved && saved.status === STATUS_MAP.OPEN) {
-        log('apporder updated', orderHash);
+        logger.log('apporder updated', orderHash);
         eventEmitter.emit('apporder_updated', saved.toJSON());
       }
       if (saved && saved.status === STATUS_MAP.FILLED) {
-        log('apporder filled', orderHash);
+        logger.log('apporder filled', orderHash);
         eventEmitter.emit('apporder_filled', saved.toJSON());
       }
     }
   } catch (e) {
-    log('updateApporder()', e);
+    logger.log('updateApporder()', e);
     throw e;
   }
 };
@@ -933,16 +933,16 @@ const updateDatasetorder = async ({
         { returnOriginal: false },
       );
       if (saved && saved.status === STATUS_MAP.OPEN) {
-        log('datasetorder updated', orderHash);
+        logger.log('datasetorder updated', orderHash);
         eventEmitter.emit('datasetorder_updated', saved.toJSON());
       }
       if (saved && saved.status === STATUS_MAP.FILLED) {
-        log('datasetorder filled', orderHash);
+        logger.log('datasetorder filled', orderHash);
         eventEmitter.emit('datasetorder_filled', saved.toJSON());
       }
     }
   } catch (e) {
-    log('updateDatasetorder()', e);
+    logger.log('updateDatasetorder()', e);
     throw e;
   }
 };
@@ -982,16 +982,16 @@ const updateWorkerpoolorder = async ({
         { returnOriginal: false },
       );
       if (saved && saved.status === STATUS_MAP.OPEN) {
-        log('workerpoolorder updated', orderHash);
+        logger.log('workerpoolorder updated', orderHash);
         eventEmitter.emit('workerpoolorder_updated', saved.toJSON());
       }
       if (saved && saved.status === STATUS_MAP.FILLED) {
-        log('workerpoolorder filled', orderHash);
+        logger.log('workerpoolorder filled', orderHash);
         eventEmitter.emit('workerpoolorder_filled', saved.toJSON());
       }
     }
   } catch (e) {
-    log('updateWorkerpoolorder()', e);
+    logger.log('updateWorkerpoolorder()', e);
     throw e;
   }
 };
@@ -1031,16 +1031,16 @@ const updateRequestorder = async ({
         { returnOriginal: false },
       );
       if (saved && saved.status === STATUS_MAP.OPEN) {
-        log('requestorder updated', orderHash);
+        logger.log('requestorder updated', orderHash);
         eventEmitter.emit('requestorder_updated', saved.toJSON());
       }
       if (saved && saved.status === STATUS_MAP.FILLED) {
-        log('requestorder filled', orderHash);
+        logger.log('requestorder filled', orderHash);
         eventEmitter.emit('requestorder_filled', saved.toJSON());
       }
     }
   } catch (e) {
-    log('updateRequestorder()', e);
+    logger.log('updateRequestorder()', e);
     throw e;
   }
 };
@@ -1059,11 +1059,11 @@ const cancelApporder = async ({ orderHash = throwIfMissing() } = {}) => {
       { returnOriginal: true, upsert: false },
     );
     if (published && published.status === STATUS_MAP.OPEN) {
-      log('apporder canceled', orderHash);
+      logger.log('apporder canceled', orderHash);
       eventEmitter.emit('apporder_canceled', published.toJSON());
     }
   } catch (e) {
-    log('cancelApporder() error', e);
+    logger.log('cancelApporder() error', e);
     throw e;
   }
 };
@@ -1082,11 +1082,11 @@ const cancelDatasetorder = async ({ orderHash = throwIfMissing() } = {}) => {
       { returnOriginal: true, upsert: false },
     );
     if (published && published.status === STATUS_MAP.OPEN) {
-      log('datasetorder canceled', orderHash);
+      logger.log('datasetorder canceled', orderHash);
       eventEmitter.emit('datasetorder_canceled', published.toJSON());
     }
   } catch (e) {
-    log('cancelDatasetorder() error', e);
+    logger.log('cancelDatasetorder() error', e);
     throw e;
   }
 };
@@ -1105,11 +1105,11 @@ const cancelWorkerpoolorder = async ({ orderHash = throwIfMissing() } = {}) => {
       { returnOriginal: true, upsert: false },
     );
     if (published && published.status === STATUS_MAP.OPEN) {
-      log('workerpoolorder canceled', orderHash);
+      logger.log('workerpoolorder canceled', orderHash);
       eventEmitter.emit('workerpoolorder_canceled', published.toJSON());
     }
   } catch (e) {
-    log('cancelWorkerpoolorder() error', e);
+    logger.log('cancelWorkerpoolorder() error', e);
     throw e;
   }
 };
@@ -1128,11 +1128,11 @@ const cancelRequestorder = async ({ orderHash = throwIfMissing() } = {}) => {
       { returnOriginal: true, upsert: false },
     );
     if (published && published.status === STATUS_MAP.OPEN) {
-      log('requestorder canceled', orderHash);
+      logger.log('requestorder canceled', orderHash);
       eventEmitter.emit('requestorder_canceled', published.toJSON());
     }
   } catch (e) {
-    log('cancelRequestorder() error', e);
+    logger.log('cancelRequestorder() error', e);
     throw e;
   }
 };

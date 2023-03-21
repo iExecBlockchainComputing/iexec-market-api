@@ -1,8 +1,8 @@
 const { Schema } = require('mongoose');
 const { getMongoose } = require('../loaders/mongoose');
-const { logger } = require('../utils/logger');
+const { getLogger } = require('../utils/logger');
 
-const log = logger.extend('models:counterModel');
+const logger = getLogger('models:counterModel');
 
 const connectedModels = {};
 
@@ -23,16 +23,16 @@ const getModel = async (db) => {
       return model;
     }
     connectedModels[db] = new Promise((resolve, reject) => {
-      log('getting connection');
+      logger.log('getting connection');
       getMongoose({ db })
         .then((mongoose) => {
-          log('instantiating model');
+          logger.log('instantiating model');
           const CounterModel = mongoose.model('Counter', counterSchema);
           CounterModel.on('index', (err) => {
             if (err) {
-              log(`error creating index: ${err}`);
+              logger.log(`error creating index: ${err}`);
             } else {
-              log('index created');
+              logger.log('index created');
             }
           });
           resolve(CounterModel);
@@ -42,7 +42,7 @@ const getModel = async (db) => {
     const model = await connectedModels[db];
     return model;
   } catch (e) {
-    log('getModel() error', e);
+    logger.log('getModel() error', e);
     throw e;
   }
 };

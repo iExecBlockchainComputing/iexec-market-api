@@ -3,10 +3,10 @@ const socketIo = require('socket.io');
 const { createClient } = require('redis');
 const { createAdapter } = require('@socket.io/redis-adapter');
 const config = require('../config');
-const { logger } = require('../utils/logger');
+const { getLogger } = require('../utils/logger');
 const { throwIfMissing, errorHandler } = require('../utils/error');
 
-const log = logger.extend('socket');
+const logger = getLogger('socket');
 
 const server = http.createServer();
 
@@ -19,21 +19,21 @@ const getWs = () => {
 
 const init = async () => {
   try {
-    log('init socket');
+    logger.log('init socket');
     const redisConfig = config.redis;
     const pubClient = createClient(redisConfig);
     const subClient = pubClient.duplicate();
-    pubClient.on('error', (err) => log('pubClient', 'Error', err));
-    subClient.on('error', (err) => log('subClient', 'Error', err));
-    pubClient.on('connect', () => log('pubClient connect'));
-    subClient.on('connect', () => log('subClient connect'));
-    pubClient.on('end', () => log('pubClient end'));
-    subClient.on('end', () => log('subClient end'));
+    pubClient.on('error', (err) => logger.log('pubClient', 'Error', err));
+    subClient.on('error', (err) => logger.log('subClient', 'Error', err));
+    pubClient.on('connect', () => logger.log('pubClient connect'));
+    subClient.on('connect', () => logger.log('subClient connect'));
+    pubClient.on('end', () => logger.log('pubClient end'));
+    subClient.on('end', () => logger.log('subClient end'));
     await Promise.all[(pubClient.connect(), subClient.connect())];
     const redisAdapter = createAdapter(pubClient, subClient);
     ws = socketIo(server);
     ws.adapter(redisAdapter);
-    log('socket initialized');
+    logger.log('socket initialized');
   } catch (error) {
     errorHandler(error, {
       type: 'init-socket',
@@ -48,7 +48,7 @@ const emit = async (
 ) => {
   try {
     await getWs().to(channel).emit(object, message);
-    log(`emitted to ${channel}`, object, message);
+    logger.log(`emitted to ${channel}`, object, message);
   } catch (error) {
     errorHandler(error, {
       type: 'socket-emit',

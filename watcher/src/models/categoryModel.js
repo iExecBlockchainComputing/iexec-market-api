@@ -1,6 +1,6 @@
 const { Schema } = require('mongoose');
 const { getMongoose } = require('../loaders/mongoose');
-const { logger } = require('../utils/logger');
+const { getLogger } = require('../utils/logger');
 const { Bytes32Schema, SafeUintSchema, TimestampSchema, ChainIdSchema } =
   require('./common').schema;
 const { toJsonOption } = require('./common').option;
@@ -8,7 +8,7 @@ const { toJsonOption } = require('./common').option;
 // fix mongoose String required (https://github.com/Automattic/mongoose/issues/7150)
 Schema.Types.String.checkRequired((v) => v != null);
 
-const log = logger.extend('models:categoryModel');
+const logger = getLogger('models:categoryModel');
 
 const connectedModels = {};
 
@@ -33,16 +33,16 @@ const getModel = async (db) => {
       return model;
     }
     connectedModels[db] = new Promise((resolve, reject) => {
-      log('getting connection');
+      logger.log('getting connection');
       getMongoose({ db })
         .then((mongoose) => {
-          log('instantiating model');
+          logger.log('instantiating model');
           const CategoryModel = mongoose.model('Category', categorySchema);
           CategoryModel.on('index', (err) => {
             if (err) {
-              log(`error creating index: ${err}`);
+              logger.log(`error creating index: ${err}`);
             } else {
-              log('index created');
+              logger.log('index created');
             }
           });
           resolve(CategoryModel);
@@ -52,7 +52,7 @@ const getModel = async (db) => {
     const model = await connectedModels[db];
     return model;
   } catch (e) {
-    log('getModel() error', e);
+    logger.log('getModel() error', e);
     throw e;
   }
 };

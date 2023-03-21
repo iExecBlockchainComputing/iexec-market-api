@@ -7,14 +7,14 @@ const {
   setCheckpointBlock,
   getLastBlock,
 } = require('../services/counter');
-const { logger } = require('../utils/logger');
+const { getLogger } = require('../utils/logger');
 const { getBlockNumber } = require('../utils/eth-utils');
 const { errorHandler } = require('../utils/error');
 
 const { chainId } = config.chain;
 const { replayInterval } = config.runtime;
 
-const log = logger.extend('controllers:replayer');
+const logger = getLogger('controllers:replayer');
 
 const EVENT_REPLAY_JOB = 'replay-past-events';
 
@@ -26,7 +26,7 @@ const replayPastOnly = async ({ nbConfirmation = 10 } = {}) => {
         getLastBlock(),
         getBlockNumber(ethereum.getProvider()),
       ]);
-    log(
+    logger.log(
       'current block:',
       currentBlock,
       'current checkpoint:',
@@ -36,9 +36,9 @@ const replayPastOnly = async ({ nbConfirmation = 10 } = {}) => {
       currentBlock - nbConfirmation,
       lastIndexedBlock,
     );
-    log('next checkpoint:', nextCheckpoint);
+    logger.log('next checkpoint:', nextCheckpoint);
     if (nextCheckpoint > currentCheckpoint) {
-      log(
+      logger.log(
         `checking past events from block ${currentCheckpoint} to ${nextCheckpoint}`,
       );
       await replayPastEvents(currentCheckpoint, {
@@ -46,11 +46,11 @@ const replayPastOnly = async ({ nbConfirmation = 10 } = {}) => {
         handleIndexedBlock: setCheckpointBlock,
       });
     } else {
-      log('nothing to replay skipping');
+      logger.log('nothing to replay skipping');
     }
     return;
   } catch (error) {
-    log('replayPastOnly()', error);
+    logger.log('replayPastOnly()', error);
     throw error;
   }
 };
@@ -70,7 +70,9 @@ const startReplayer = async () => {
     },
   );
   await agenda.every(`${replayInterval} seconds`, EVENT_REPLAY_JOB);
-  log(`${EVENT_REPLAY_JOB} jobs added (run every ${replayInterval} seconds)`);
+  logger.log(
+    `${EVENT_REPLAY_JOB} jobs added (run every ${replayInterval} seconds)`,
+  );
 };
 
 const stopReplayer = async () => {

@@ -19,14 +19,18 @@ const {
 const { tokenIdToAddress } = require('../utils/iexec-utils');
 const { NULL_ADDRESS, cleanRPC } = require('../utils/eth-utils');
 const { errorHandler } = require('../utils/error');
-const { logger } = require('../utils/logger');
+const { getLogger } = require('../utils/logger');
 
-const log = logger.extend('controllers:ethEventsProcessor');
+const logger = getLogger('controllers:ethEventsProcessor');
 
 const processCreateCategory = async (event, { isReplay = false } = {}) => {
   try {
     const { transactionHash, blockNumber } = event;
-    log('processCreateCategory', isReplay ? 'replay' : '', transactionHash);
+    logger.log(
+      'processCreateCategory',
+      isReplay ? 'replay' : '',
+      transactionHash,
+    );
     const { catid } = cleanRPC(event.args);
     await addCategory({
       catid,
@@ -46,7 +50,11 @@ const processCreateCategory = async (event, { isReplay = false } = {}) => {
 const processOrdersMatched = async (event, { isReplay = false } = {}) => {
   try {
     const { transactionHash, blockNumber } = event;
-    log('processOrdersMatched', isReplay ? 'replay' : '', transactionHash);
+    logger.log(
+      'processOrdersMatched',
+      isReplay ? 'replay' : '',
+      transactionHash,
+    );
     const {
       dealid,
       appHash,
@@ -98,7 +106,7 @@ const processOrdersMatched = async (event, { isReplay = false } = {}) => {
 
 const processClosedAppOrder = async (event, { isReplay = false } = {}) => {
   try {
-    log(
+    logger.log(
       'processClosedAppOrder',
       isReplay ? 'replay' : '',
       event.transactionHash,
@@ -117,7 +125,7 @@ const processClosedAppOrder = async (event, { isReplay = false } = {}) => {
 
 const processClosedDatasetOrder = async (event, { isReplay = false } = {}) => {
   try {
-    log(
+    logger.log(
       'processClosedDatasetOrder',
       isReplay ? 'replay' : '',
       event.transactionHash,
@@ -139,7 +147,7 @@ const processClosedWorkerpoolOrder = async (
   { isReplay = false } = {},
 ) => {
   try {
-    log(
+    logger.log(
       'processClosedWorkerpoolOrder',
       isReplay ? 'replay' : '',
       event.transactionHash,
@@ -158,7 +166,7 @@ const processClosedWorkerpoolOrder = async (
 
 const processClosedRequestOrder = async (event, { isReplay = false } = {}) => {
   try {
-    log(
+    logger.log(
       'processClosedRequestOrder',
       isReplay ? 'replay' : '',
       event.transactionHash,
@@ -178,7 +186,7 @@ const processClosedRequestOrder = async (event, { isReplay = false } = {}) => {
 const processStakeLoss = async (event, { isReplay = false } = {}) => {
   // account withdraw & lock
   try {
-    log(
+    logger.log(
       'processTransferStake',
       isReplay ? 'replay' : '',
       event.transactionHash,
@@ -202,7 +210,11 @@ const processStakeLoss = async (event, { isReplay = false } = {}) => {
 
 const processTransferApp = async (event, { isReplay = false } = {}) => {
   try {
-    log('processTransferApp', isReplay ? 'replay' : '', event.transactionHash);
+    logger.log(
+      'processTransferApp',
+      isReplay ? 'replay' : '',
+      event.transactionHash,
+    );
     const { from, tokenId } = cleanRPC(event.args);
     if (from !== NULL_ADDRESS) {
       await cleanTransferredAppOrders({
@@ -223,7 +235,7 @@ const processTransferApp = async (event, { isReplay = false } = {}) => {
 
 const processTransferDataset = async (event, { isReplay = false } = {}) => {
   try {
-    log(
+    logger.log(
       'processTransferDataset',
       isReplay ? 'replay' : '',
       event.transactionHash,
@@ -248,7 +260,7 @@ const processTransferDataset = async (event, { isReplay = false } = {}) => {
 
 const processTransferWorkerpool = async (event, { isReplay = false } = {}) => {
   try {
-    log(
+    logger.log(
       'processTransferWorkerpool',
       isReplay ? 'replay' : '',
       event.transactionHash,
@@ -273,7 +285,11 @@ const processTransferWorkerpool = async (event, { isReplay = false } = {}) => {
 
 const processRoleRevoked = async (event, { isReplay = false } = {}) => {
   try {
-    log('processRoleRevoked', isReplay ? 'replay' : '', event.transactionHash);
+    logger.log(
+      'processRoleRevoked',
+      isReplay ? 'replay' : '',
+      event.transactionHash,
+    );
     const { account, role } = cleanRPC(event.args);
     await cleanRevokedUserOrders({
       address: account,
@@ -292,7 +308,7 @@ const processRoleRevoked = async (event, { isReplay = false } = {}) => {
 
 const processNewBlock = async (blockNumber) => {
   try {
-    log('Block', blockNumber);
+    logger.log('Block', blockNumber);
     await setLastBlock(blockNumber);
   } catch (error) {
     errorHandler(error, {

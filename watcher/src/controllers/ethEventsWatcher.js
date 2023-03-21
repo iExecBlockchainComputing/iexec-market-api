@@ -1,4 +1,4 @@
-const { logger } = require('../utils/logger');
+const { getLogger } = require('../utils/logger');
 const {
   getProvider,
   getHub,
@@ -30,7 +30,7 @@ const {
 const { isEnterpriseFlavour } = require('../utils/iexec-utils');
 const config = require('../config');
 
-const log = logger.extend('controllers:ethEventsWatcher');
+const logger = getLogger('controllers:ethEventsWatcher');
 
 const extractEvent =
   (processCallback) =>
@@ -40,13 +40,13 @@ const extractEvent =
   };
 
 const registerNewBlock = () => {
-  log('registering block events');
+  logger.log('registering block events');
   const provider = getProvider();
   provider.on('block', processNewBlock);
 };
 
 const registerHubEvents = () => {
-  log('registering Hub events');
+  logger.log('registering Hub events');
   const hubContract = getHub();
   hubContract.on('CreateCategory', extractEvent(processCreateCategory));
   hubContract.on('OrdersMatched', extractEvent(processOrdersMatched));
@@ -62,28 +62,28 @@ const registerHubEvents = () => {
 
 const registerERlcEvents = async () => {
   if (isEnterpriseFlavour(config.flavour)) {
-    log('registering ERlc events');
+    logger.log('registering ERlc events');
     const eRlcContract = getERlc();
     eRlcContract.on('RoleRevoked', extractEvent(processRoleRevoked));
   } else {
-    log('skipping register ERlc events');
+    logger.log('skipping register ERlc events');
   }
 };
 
 const registerAppRegistryEvents = () => {
-  log('registering AppRegistry events');
+  logger.log('registering AppRegistry events');
   const appRegistryContract = getAppRegistry();
   appRegistryContract.on('Transfer', extractEvent(processTransferApp));
 };
 
 const registerDatasetRegistryEvents = () => {
-  log('registering DatasetRegistry events');
+  logger.log('registering DatasetRegistry events');
   const datasetRegistryContract = getDatasetRegistry();
   datasetRegistryContract.on('Transfer', extractEvent(processTransferDataset));
 };
 
 const registerWorkerpoolRegistryEvents = () => {
-  log('registering WorkerpoolRegistry events');
+  logger.log('registering WorkerpoolRegistry events');
   const workerpoolRegistryContract = getWorkerpoolRegistry();
   workerpoolRegistryContract.on(
     'Transfer',
@@ -92,31 +92,31 @@ const registerWorkerpoolRegistryEvents = () => {
 };
 
 const unsubscribeHubEvents = () => {
-  log('unsubscribe Hub events');
+  logger.log('unsubscribe Hub events');
   getHub().removeAllListeners();
 };
 
 const unsubscribeERlcEvents = async () => {
   if (isEnterpriseFlavour(config.flavour)) {
-    log('unsubscribe ERlc events');
+    logger.log('unsubscribe ERlc events');
     getERlc().removeAllListeners();
   } else {
-    log('skipping unsubscribe ERlc events');
+    logger.log('skipping unsubscribe ERlc events');
   }
 };
 
 const unsubscribeAppRegistryEvents = () => {
-  log('unsubscribe AppRegistry events');
+  logger.log('unsubscribe AppRegistry events');
   getAppRegistry().removeAllListeners();
 };
 
 const unsubscribeDatasetRegistryEvents = () => {
-  log('unsubscribe DatasetRegistry events');
+  logger.log('unsubscribe DatasetRegistry events');
   getDatasetRegistry().removeAllListeners();
 };
 
 const unsubscribeWorkerpoolRegistryEvents = () => {
-  log('unsubscribe WorkerpoolRegistry events');
+  logger.log('unsubscribe WorkerpoolRegistry events');
   getWorkerpoolRegistry().removeAllListeners();
 };
 
@@ -142,7 +142,7 @@ const getContractPastEvent = async (
     ]);
     return eventsArray;
   } catch (error) {
-    log(`getContractPastEvent() ${eventName}`, error);
+    logger.log(`getContractPastEvent() ${eventName}`, error);
     throw error;
   }
 };
@@ -169,7 +169,7 @@ const replayPastEventBatch = async (
     iterate = false;
   }
 
-  log('replay batch from block', firstBlock, 'to block', toBlock);
+  logger.log('replay batch from block', firstBlock, 'to block', toBlock);
 
   const hubContract = getHub();
   const appRegistryContract = getAppRegistry();
@@ -313,7 +313,7 @@ const replayPastEventBatch = async (
       })),
     );
 
-  log('batch events count', eventsArray.length);
+  logger.log('batch events count', eventsArray.length);
 
   const EVENTS_BATCH_SIZE = 200;
 
@@ -351,7 +351,7 @@ const replayPastEvents = async (
   } = {},
 ) => {
   try {
-    log(
+    logger.log(
       'replaying events from block',
       startingBlockNumber,
       'to block',
@@ -359,7 +359,7 @@ const replayPastEvents = async (
     );
     const currentBlock = await getBlockNumber(getProvider());
     if (startingBlockNumber > currentBlock) {
-      log('no new block');
+      logger.log('no new block');
       return;
     }
     const eventsCount = await replayPastEventBatch(
@@ -370,7 +370,7 @@ const replayPastEvents = async (
         batch: config.runtime.blocksBatchSize,
       },
     );
-    log(
+    logger.log(
       'replayed events from block',
       startingBlockNumber,
       'to block',
@@ -379,7 +379,7 @@ const replayPastEvents = async (
       eventsCount,
     );
   } catch (error) {
-    log('replayPastEvents()', error);
+    logger.log('replayPastEvents()', error);
     throw error;
   }
 };

@@ -1,12 +1,12 @@
 const config = require('../config');
 const counterModel = require('../models/counterModel');
-const { logger } = require('../utils/logger');
+const { getLogger } = require('../utils/logger');
 
 const { chainId } = config.chain;
 
-const log = logger.extend('services:counter');
+const logger = getLogger('services:counter');
 
-log('instantiating service');
+logger.log('instantiating service');
 
 const getNextBlockToProcess = async () => {
   try {
@@ -15,7 +15,7 @@ const getNextBlockToProcess = async () => {
     if (lastBlockCounter !== null) return lastBlockCounter.value + 1;
     return config.runtime.startBlock;
   } catch (e) {
-    log('getNextBlockToProcess()', e);
+    logger.log('getNextBlockToProcess()', e);
     throw e;
   }
 };
@@ -27,7 +27,7 @@ const getLastBlock = async () => {
     if (lastBlockCounter !== null) return lastBlockCounter.value;
     return config.runtime.startBlock;
   } catch (e) {
-    log('getLastBlock()', e);
+    logger.log('getLastBlock()', e);
     throw e;
   }
 };
@@ -40,9 +40,9 @@ const setLastBlock = async (blockNumber) => {
       { $max: { value: blockNumber } },
       { new: true, upsert: true },
     );
-    log('lastBlockCounter', lastBlockCounter.value);
+    logger.log('lastBlockCounter', lastBlockCounter.value);
   } catch (e) {
-    log('setLastBlock()', e);
+    logger.log('setLastBlock()', e);
     throw e;
   }
 };
@@ -56,7 +56,7 @@ const getCheckpointBlock = async () => {
     if (checkpointBlockCounter !== null) return checkpointBlockCounter.value;
     return config.runtime.startBlock;
   } catch (e) {
-    log('getCheckpointBlock()', e);
+    logger.log('getCheckpointBlock()', e);
     throw e;
   }
 };
@@ -69,9 +69,9 @@ const setCheckpointBlock = async (blockNumber) => {
       { value: blockNumber },
       { new: true, upsert: true },
     );
-    log('checkpointBlockCounter', checkpointBlockCounter.value);
+    logger.log('checkpointBlockCounter', checkpointBlockCounter.value);
   } catch (e) {
-    log('setCheckpointBlock()', e);
+    logger.log('setCheckpointBlock()', e);
     throw e;
   }
 };
