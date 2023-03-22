@@ -55,7 +55,7 @@ const throwIfMissing = () => {
 
 const recoverOnCriticalError = () => {
   logError(
-    'A critical error has occurred - Stopping process to recover on next sartup',
+    'A critical error has occurred - Stopping process to recover on next startup',
   );
   process.exit(1);
 };
