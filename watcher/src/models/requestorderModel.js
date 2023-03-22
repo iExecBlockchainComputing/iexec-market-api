@@ -1,6 +1,7 @@
 const { Schema } = require('mongoose');
 const { getMongoose } = require('../loaders/mongoose');
 const { getLogger } = require('../utils/logger');
+const { traceAll } = require('../utils/trace');
 const {
   AddressSchema,
   Bytes32Schema,
@@ -85,5 +86,5 @@ const getModel = async (db) => {
 };
 
 module.exports = {
-  getModel,
+  getModel: traceAll(getModel, { logger }),
 };

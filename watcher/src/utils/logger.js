@@ -78,4 +78,6 @@ const getLogger = (loggerNamespace) => {
 module.exports = {
   getLogger,
   APP_NAMESPACE,
+  LOG_LEVEL,
+  TRACE,
 };

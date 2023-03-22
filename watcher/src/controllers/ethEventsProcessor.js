@@ -20,6 +20,7 @@ const { tokenIdToAddress } = require('../utils/iexec-utils');
 const { NULL_ADDRESS, cleanRPC } = require('../utils/eth-utils');
 const { errorHandler } = require('../utils/error');
 const { getLogger } = require('../utils/logger');
+const { traceAll } = require('../utils/trace');
 
 const logger = getLogger('controllers:ethEventsProcessor');
 
@@ -320,16 +321,18 @@ const processNewBlock = async (blockNumber) => {
 };
 
 module.exports = {
-  processStakeLoss,
-  processCreateCategory,
-  processTransferApp,
-  processTransferDataset,
-  processTransferWorkerpool,
-  processOrdersMatched,
-  processClosedAppOrder,
-  processClosedDatasetOrder,
-  processClosedWorkerpoolOrder,
-  processClosedRequestOrder,
-  processRoleRevoked,
-  processNewBlock,
+  processStakeLoss: traceAll(processStakeLoss, { logger }),
+  processCreateCategory: traceAll(processCreateCategory, { logger }),
+  processTransferApp: traceAll(processTransferApp, { logger }),
+  processTransferDataset: traceAll(processTransferDataset, { logger }),
+  processTransferWorkerpool: traceAll(processTransferWorkerpool, { logger }),
+  processOrdersMatched: traceAll(processOrdersMatched, { logger }),
+  processClosedAppOrder: traceAll(processClosedAppOrder, { logger }),
+  processClosedDatasetOrder: traceAll(processClosedDatasetOrder, { logger }),
+  processClosedWorkerpoolOrder: traceAll(processClosedWorkerpoolOrder, {
+    logger,
+  }),
+  processClosedRequestOrder: traceAll(processClosedRequestOrder, { logger }),
+  processRoleRevoked: traceAll(processRoleRevoked, { logger }),
+  processNewBlock: traceAll(processNewBlock, { logger }),
 };

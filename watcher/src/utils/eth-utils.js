@@ -1,5 +1,6 @@
 const config = require('../config');
 const { getLogger } = require('./logger');
+const { traceAll } = require('./trace');
 const { sleep } = require('./utils');
 
 const logger = getLogger('utils:eth-utils');
@@ -163,8 +164,8 @@ const waitForGetBlock = async (provider, blockNumber) => {
 module.exports = {
   NULL_ADDRESS,
   cleanRPC,
-  callAtBlock,
-  waitForGetBlock,
-  getBlockNumber,
-  queryFilter,
+  callAtBlock: traceAll(callAtBlock, { logger }),
+  waitForGetBlock: traceAll(waitForGetBlock, { logger }),
+  getBlockNumber: traceAll(getBlockNumber, { logger }),
+  queryFilter: traceAll(queryFilter, { logger }),
 };

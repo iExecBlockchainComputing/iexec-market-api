@@ -5,6 +5,7 @@ const dealModel = require('../models/dealModel');
 const { getLogger } = require('../utils/logger');
 const { throwIfMissing } = require('../utils/error');
 const { waitForGetBlock, callAtBlock } = require('../utils/eth-utils');
+const { traceAll } = require('../utils/trace');
 
 const { chainId } = config.chain;
 
@@ -93,5 +94,5 @@ const addDeal = async ({
 };
 
 module.exports = {
-  addDeal,
+  addDeal: traceAll(addDeal, { logger }),
 };

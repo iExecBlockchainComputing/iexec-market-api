@@ -4,6 +4,7 @@ const categoryModel = require('../models/categoryModel');
 const { getLogger } = require('../utils/logger');
 const { throwIfMissing } = require('../utils/error');
 const { waitForGetBlock, callAtBlock } = require('../utils/eth-utils');
+const { traceAll } = require('../utils/trace');
 
 const { chainId } = config.chain;
 
@@ -50,5 +51,5 @@ const addCategory = async ({
 };
 
 module.exports = {
-  addCategory,
+  addCategory: traceAll(addCategory, { logger }),
 };

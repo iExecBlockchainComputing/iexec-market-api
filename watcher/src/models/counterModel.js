@@ -1,6 +1,7 @@
 const { Schema } = require('mongoose');
 const { getMongoose } = require('../loaders/mongoose');
 const { getLogger } = require('../utils/logger');
+const { traceAll } = require('../utils/trace');
 
 const logger = getLogger('models:counterModel');
 
@@ -48,5 +49,5 @@ const getModel = async (db) => {
 };
 
 module.exports = {
-  getModel,
+  getModel: traceAll(getModel, { logger }),
 };

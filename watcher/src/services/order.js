@@ -26,6 +26,7 @@ const {
   NULL_ADDRESS,
 } = require('../utils/eth-utils');
 const { tokenIdToAddress, KYC_MEMBER_ROLE } = require('../utils/iexec-utils');
+const { traceAll } = require('../utils/trace');
 
 const { chainId } = config.chain;
 
@@ -1138,19 +1139,29 @@ const cancelRequestorder = async ({ orderHash = throwIfMissing() } = {}) => {
 };
 
 module.exports = {
-  cleanApporderDependantOrders,
-  cleanDatasetorderDependantOrders,
-  cleanBalanceDependantOrders,
-  cleanTransferredAppOrders,
-  cleanTransferredDatasetOrders,
-  cleanTransferredWorkerpoolOrders,
-  cleanRevokedUserOrders,
-  updateApporder,
-  updateDatasetorder,
-  updateWorkerpoolorder,
-  updateRequestorder,
-  cancelApporder,
-  cancelDatasetorder,
-  cancelWorkerpoolorder,
-  cancelRequestorder,
+  cleanApporderDependantOrders: traceAll(cleanApporderDependantOrders, {
+    logger,
+  }),
+  cleanDatasetorderDependantOrders: traceAll(cleanDatasetorderDependantOrders, {
+    logger,
+  }),
+  cleanBalanceDependantOrders: traceAll(cleanBalanceDependantOrders, {
+    logger,
+  }),
+  cleanTransferredAppOrders: traceAll(cleanTransferredAppOrders, { logger }),
+  cleanTransferredDatasetOrders: traceAll(cleanTransferredDatasetOrders, {
+    logger,
+  }),
+  cleanTransferredWorkerpoolOrders: traceAll(cleanTransferredWorkerpoolOrders, {
+    logger,
+  }),
+  cleanRevokedUserOrders: traceAll(cleanRevokedUserOrders, { logger }),
+  updateApporder: traceAll(updateApporder, { logger }),
+  updateDatasetorder: traceAll(updateDatasetorder, { logger }),
+  updateWorkerpoolorder: traceAll(updateWorkerpoolorder, { logger }),
+  updateRequestorder: traceAll(updateRequestorder, { logger }),
+  cancelApporder: traceAll(cancelApporder, { logger }),
+  cancelDatasetorder: traceAll(cancelDatasetorder, { logger }),
+  cancelWorkerpoolorder: traceAll(cancelWorkerpoolorder, { logger }),
+  cancelRequestorder: traceAll(cancelRequestorder, { logger }),
 };

@@ -1,6 +1,7 @@
 const { Schema } = require('mongoose');
 const { getMongoose } = require('../loaders/mongoose');
 const { getLogger } = require('../utils/logger');
+const { traceAll } = require('../utils/trace');
 const { Bytes32Schema, SafeUintSchema, TimestampSchema, ChainIdSchema } =
   require('./common').schema;
 const { toJsonOption } = require('./common').option;
@@ -58,5 +59,5 @@ const getModel = async (db) => {
 };
 
 module.exports = {
-  getModel,
+  getModel: traceAll(getModel, { logger }),
 };

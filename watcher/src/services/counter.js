@@ -1,6 +1,7 @@
 const config = require('../config');
 const counterModel = require('../models/counterModel');
 const { getLogger } = require('../utils/logger');
+const { traceAll } = require('../utils/trace');
 
 const { chainId } = config.chain;
 
@@ -77,9 +78,9 @@ const setCheckpointBlock = async (blockNumber) => {
 };
 
 module.exports = {
-  getNextBlockToProcess,
-  getLastBlock,
-  setLastBlock,
-  getCheckpointBlock,
-  setCheckpointBlock,
+  getNextBlockToProcess: traceAll(getNextBlockToProcess, { logger }),
+  getLastBlock: traceAll(getLastBlock, { logger }),
+  setLastBlock: traceAll(setLastBlock, { logger }),
+  getCheckpointBlock: traceAll(getCheckpointBlock, { logger }),
+  setCheckpointBlock: traceAll(setCheckpointBlock, { logger }),
 };

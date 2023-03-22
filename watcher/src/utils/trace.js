@@ -1,9 +1,12 @@
-const { getLogger } = require('./logger');
+const { getLogger, TRACE, LOG_LEVEL } = require('./logger');
 
 const defaultTraceLogger = getLogger('default-trace-logger');
 
-const traceExecutionTime = (obj, { logger = defaultTraceLogger } = {}) =>
-  new Proxy(obj, {
+const traceExecutionTime = (obj, { logger = defaultTraceLogger } = {}) => {
+  if (TRACE !== LOG_LEVEL) {
+    return obj;
+  }
+  return new Proxy(obj, {
     apply(target, thisArg, args) {
       const startHRTime = process.hrtime();
       const res = target.apply(thisArg, args);
@@ -21,11 +24,15 @@ const traceExecutionTime = (obj, { logger = defaultTraceLogger } = {}) =>
       return res;
     },
   });
+};
 
 const traceConcurrentExecutions = (
   obj,
   { logger = defaultTraceLogger } = {},
 ) => {
+  if (TRACE !== LOG_LEVEL) {
+    return obj;
+  }
   let started = 0;
   let ended = 0;
   return new Proxy(obj, {
