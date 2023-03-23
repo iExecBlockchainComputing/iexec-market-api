@@ -10,6 +10,7 @@ const {
 const { getLogger } = require('../utils/logger');
 const { getBlockNumber } = require('../utils/eth-utils');
 const { errorHandler } = require('../utils/error');
+const { traceAll } = require('../utils/trace');
 
 const { chainId } = config.chain;
 const { replayInterval } = config.runtime;
@@ -80,4 +81,8 @@ const stopReplayer = async () => {
   await agenda.cancel({ name: EVENT_REPLAY_JOB });
 };
 
-module.exports = { replayPastOnly, startReplayer, stopReplayer };
+module.exports = {
+  replayPastOnly: traceAll(replayPastOnly, { logger }),
+  startReplayer,
+  stopReplayer,
+};
