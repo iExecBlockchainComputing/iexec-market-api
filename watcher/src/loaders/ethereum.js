@@ -37,7 +37,7 @@ const init = async (wsClosedCallback) => {
     });
     wsProvider._websocket.on('close', async (code, reason) => {
       initialized = false;
-      logger.log('ws closed', code, reason);
+      logger.warn('ws closed', code, reason);
       const tryRecover =
         wsClosedCallback && typeof wsClosedCallback === 'function';
       errorHandler(Error('ws closed'), {
@@ -54,7 +54,7 @@ const init = async (wsClosedCallback) => {
       }
     });
 
-    logger.log('hubAddress', hubAddress);
+    logger.debug('hubAddress', hubAddress);
     hubContract = new ethers.Contract(hubAddress, config.abi.hub, wsProvider);
     const [
       [appRegistryAddress],
@@ -67,10 +67,10 @@ const init = async (wsClosedCallback) => {
       hubContract.functions.workerpoolregistry(),
       hubContract.functions.token(),
     ]);
-    logger.log('appRegistryAddress', appRegistryAddress);
-    logger.log('datasetRegistryAddress', datasetRegistryAddress);
-    logger.log('workerpoolRegistryAddress', workerpoolRegistryAddress);
-    logger.log('tokenAddress', tokenAddress);
+    logger.debug('appRegistryAddress', appRegistryAddress);
+    logger.debug('datasetRegistryAddress', datasetRegistryAddress);
+    logger.debug('workerpoolRegistryAddress', workerpoolRegistryAddress);
+    logger.debug('tokenAddress', tokenAddress);
 
     appRegistryContract = new ethers.Contract(
       appRegistryAddress,
@@ -96,7 +96,7 @@ const init = async (wsClosedCallback) => {
     }
     initialized = true;
   } catch (e) {
-    logger.log('init()', e);
+    logger.warn('init()', e);
     throw e;
   }
 };

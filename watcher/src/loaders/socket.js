@@ -23,8 +23,8 @@ const init = async () => {
     const redisConfig = config.redis;
     const pubClient = createClient(redisConfig);
     const subClient = pubClient.duplicate();
-    pubClient.on('error', (err) => logger.log('pubClient', 'Error', err));
-    subClient.on('error', (err) => logger.log('subClient', 'Error', err));
+    pubClient.on('error', (err) => logger.warn('pubClient', 'Error', err));
+    subClient.on('error', (err) => logger.warn('subClient', 'Error', err));
     pubClient.on('connect', () => logger.log('pubClient connect'));
     subClient.on('connect', () => logger.log('subClient connect'));
     pubClient.on('end', () => logger.log('pubClient end'));
@@ -48,7 +48,7 @@ const emit = async (
 ) => {
   try {
     await getWs().to(channel).emit(object, message);
-    logger.log(`emitted to ${channel}`, object, message);
+    logger.debug(`emitted to ${channel}`, object, message);
   } catch (error) {
     errorHandler(error, {
       type: 'socket-emit',

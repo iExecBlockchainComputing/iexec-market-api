@@ -36,44 +36,51 @@ const start = async ({ replayer = true, syncWatcher = true } = {}) => {
     logger.log('STARTING WATCHER...');
     await stopReplayer();
     await stopSyncWatcher();
-    logger.log('connecting ethereum node');
 
+    logger.log('connecting ethereum node');
     await ethereum.init(() => {
       logger.log('restarting on ethereum connection lost');
-      start();
+      start({ replayer: false, syncWatcher: false });
     });
-    logger.log('done');
+    logger.log('ethereum node connected');
 
     if (replayer) {
       logger.log('starting event replayer...');
       await startReplayer();
-      logger.log('done');
+      logger.log('event replayer started');
+    } else {
+      logger.log('skip starting replayer');
     }
 
-    logger.log('checking last block seen');
+    logger.log('checking last block seen...');
     const startBlock = await getNextBlockToProcess();
-    logger.log('done');
+    logger.log('got last block');
 
-    logger.log(`replaying past events from block ${startBlock} to latest...`);
+    logger.log(
+      `start replaying past events from block ${startBlock} to latest...`,
+    );
     await replayPastEvents(startBlock, {
       handleIndexedBlock: setLastBlock,
     });
-    logger.log('done');
+    logger.log(`replayed past events from block ${startBlock} to latest`);
 
-    logger.log('starting listening to new events...');
+    logger.log('starting new events listeners...');
     registerHubEvents();
     registerERlcEvents();
     registerAppRegistryEvents();
     registerDatasetRegistryEvents();
     registerWorkerpoolRegistryEvents();
     registerNewBlock();
-    logger.log('done');
+    logger.log('listening to new events');
 
     if (syncWatcher) {
       logger.log('starting sync watcher...');
       await startSyncWatcher();
-      logger.log('done');
+      logger.log('sync watcher started');
+    } else {
+      logger.log('skip starting sync watcher');
     }
+
     logger.log('WATCHER SUCCESSFULLY STARTED');
   } catch (error) {
     errorHandler(error, {

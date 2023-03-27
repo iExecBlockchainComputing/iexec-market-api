@@ -45,7 +45,7 @@ const addCategory = async ({
       },
     );
   } catch (e) {
-    logger.log('addCategory() error', e);
+    logger.warn('addCategory() error', e);
     throw e;
   }
 };

@@ -59,14 +59,14 @@ const getModel = async (db) => {
       return model;
     }
     connectedModels[db] = new Promise((resolve, reject) => {
-      logger.log('getting connection');
+      logger.debug('getting connection');
       getMongoose({ db })
         .then((mongoose) => {
-          logger.log('instantiating model');
+          logger.debug('instantiating model');
           const DealModel = mongoose.model('Deal', dealSchema);
           DealModel.on('index', (err) => {
             if (err) {
-              logger.log(`error creating index: ${err}`);
+              logger.error(`error creating index: ${err}`);
             } else {
               logger.log('index created');
             }
@@ -78,7 +78,7 @@ const getModel = async (db) => {
     const model = await connectedModels[db];
     return model;
   } catch (e) {
-    logger.log('getModel() error', e);
+    logger.warn('getModel() error', e);
     throw e;
   }
 };

@@ -88,7 +88,7 @@ const addDeal = async ({
       eventEmitter.emit('deal_created', saved.toJSON());
     }
   } catch (e) {
-    logger.log('addDeal() error', e);
+    logger.warn('addDeal() error', e);
     throw e;
   }
 };

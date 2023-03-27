@@ -28,7 +28,7 @@ const checkSync = () => async () => {
         getBlockNumber(wsProvider),
         getBlockNumber(rpcProvider),
       ]);
-      logger.log('Sync - RPC:', rpcBlock, 'WS:', wsBlock);
+      logger.debug('Sync - RPC:', rpcBlock, 'WS:', wsBlock);
       if (
         rpcBlock > wsBlock + config.runtime.outOfSyncThreshold ||
         wsBlock > rpcBlock + config.runtime.outOfSyncThreshold
@@ -43,9 +43,9 @@ const checkSync = () => async () => {
       isSync = true;
     } catch (error) {
       errorCount += 1;
-      logger.log(`syncWatcher() (${errorCount} error)`, error);
+      logger.debug(`syncWatcher() (${errorCount} error)`, error);
       if (errorCount >= MAX_ERROR_COUNT) {
-        logger.log(`syncWatcher() max error reached (${MAX_ERROR_COUNT})`);
+        logger.warn(`syncWatcher() max error reached (${MAX_ERROR_COUNT})`);
         errorHandler(error, {
           type: 'too-much-sync-error',
           errorCount,

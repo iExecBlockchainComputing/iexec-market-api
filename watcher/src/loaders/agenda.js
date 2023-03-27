@@ -27,11 +27,14 @@ const getAgenda = async () => {
             resolve(agenda);
           })
           .catch((e) => {
-            logger.log('start failed', e);
+            logger.warn('start failed', e);
             reject(e);
           });
       })
-      .catch((e) => reject(e));
+      .catch((e) => {
+        logger.warn('getAgenda()', e);
+        reject(e);
+      });
   });
   return agendaPromise;
 };

@@ -27,7 +27,7 @@ const logger = getLogger('controllers:ethEventsProcessor');
 const processCreateCategory = async (event, { isReplay = false } = {}) => {
   try {
     const { transactionHash, blockNumber } = event;
-    logger.log(
+    logger.debug(
       'processCreateCategory',
       isReplay ? 'replay' : '',
       transactionHash,
@@ -51,7 +51,7 @@ const processCreateCategory = async (event, { isReplay = false } = {}) => {
 const processOrdersMatched = async (event, { isReplay = false } = {}) => {
   try {
     const { transactionHash, blockNumber } = event;
-    logger.log(
+    logger.debug(
       'processOrdersMatched',
       isReplay ? 'replay' : '',
       transactionHash,
@@ -107,7 +107,7 @@ const processOrdersMatched = async (event, { isReplay = false } = {}) => {
 
 const processClosedAppOrder = async (event, { isReplay = false } = {}) => {
   try {
-    logger.log(
+    logger.debug(
       'processClosedAppOrder',
       isReplay ? 'replay' : '',
       event.transactionHash,
@@ -126,7 +126,7 @@ const processClosedAppOrder = async (event, { isReplay = false } = {}) => {
 
 const processClosedDatasetOrder = async (event, { isReplay = false } = {}) => {
   try {
-    logger.log(
+    logger.debug(
       'processClosedDatasetOrder',
       isReplay ? 'replay' : '',
       event.transactionHash,
@@ -148,7 +148,7 @@ const processClosedWorkerpoolOrder = async (
   { isReplay = false } = {},
 ) => {
   try {
-    logger.log(
+    logger.debug(
       'processClosedWorkerpoolOrder',
       isReplay ? 'replay' : '',
       event.transactionHash,
@@ -167,7 +167,7 @@ const processClosedWorkerpoolOrder = async (
 
 const processClosedRequestOrder = async (event, { isReplay = false } = {}) => {
   try {
-    logger.log(
+    logger.debug(
       'processClosedRequestOrder',
       isReplay ? 'replay' : '',
       event.transactionHash,
@@ -187,7 +187,7 @@ const processClosedRequestOrder = async (event, { isReplay = false } = {}) => {
 const processStakeLoss = async (event, { isReplay = false } = {}) => {
   // account withdraw & lock
   try {
-    logger.log(
+    logger.debug(
       'processTransferStake',
       isReplay ? 'replay' : '',
       event.transactionHash,
@@ -211,7 +211,7 @@ const processStakeLoss = async (event, { isReplay = false } = {}) => {
 
 const processTransferApp = async (event, { isReplay = false } = {}) => {
   try {
-    logger.log(
+    logger.debug(
       'processTransferApp',
       isReplay ? 'replay' : '',
       event.transactionHash,
@@ -236,7 +236,7 @@ const processTransferApp = async (event, { isReplay = false } = {}) => {
 
 const processTransferDataset = async (event, { isReplay = false } = {}) => {
   try {
-    logger.log(
+    logger.debug(
       'processTransferDataset',
       isReplay ? 'replay' : '',
       event.transactionHash,
@@ -261,7 +261,7 @@ const processTransferDataset = async (event, { isReplay = false } = {}) => {
 
 const processTransferWorkerpool = async (event, { isReplay = false } = {}) => {
   try {
-    logger.log(
+    logger.debug(
       'processTransferWorkerpool',
       isReplay ? 'replay' : '',
       event.transactionHash,
@@ -286,7 +286,7 @@ const processTransferWorkerpool = async (event, { isReplay = false } = {}) => {
 
 const processRoleRevoked = async (event, { isReplay = false } = {}) => {
   try {
-    logger.log(
+    logger.debug(
       'processRoleRevoked',
       isReplay ? 'replay' : '',
       event.transactionHash,
@@ -309,7 +309,7 @@ const processRoleRevoked = async (event, { isReplay = false } = {}) => {
 
 const processNewBlock = async (blockNumber) => {
   try {
-    logger.log('Block', blockNumber);
+    logger.debug('Block', blockNumber);
     await setLastBlock(blockNumber);
   } catch (error) {
     errorHandler(error, {

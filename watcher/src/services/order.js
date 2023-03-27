@@ -55,7 +55,7 @@ const cleanApporders = async ({
     .filter((e) => !!e)
     .map((e) => e.toJSON())
     .forEach((e) => {
-      logger.log('apporder cleaned', e.orderHash, reason);
+      logger.debug('apporder cleaned', e.orderHash, reason);
       eventEmitter.emit('apporder_cleaned', e);
     });
 };
@@ -81,7 +81,7 @@ const cleanDatasetorders = async ({
     .filter((e) => !!e)
     .map((e) => e.toJSON())
     .forEach((e) => {
-      logger.log('datasetorder cleaned', e.orderHash, reason);
+      logger.debug('datasetorder cleaned', e.orderHash, reason);
       eventEmitter.emit('datasetorder_cleaned', e);
     });
 };
@@ -107,7 +107,7 @@ const cleanWorkerpoolorders = async ({
     .filter((e) => !!e)
     .map((e) => e.toJSON())
     .forEach((e) => {
-      logger.log('workerpoolorder cleaned', e.orderHash, reason);
+      logger.debug('workerpoolorder cleaned', e.orderHash, reason);
       eventEmitter.emit('workerpoolorder_cleaned', e);
     });
 };
@@ -133,7 +133,7 @@ const cleanRequestorders = async ({
     .filter((e) => !!e)
     .map((e) => e.toJSON())
     .forEach((e) => {
-      logger.log('requestorder cleaned', e.orderHash, reason);
+      logger.debug('requestorder cleaned', e.orderHash, reason);
       eventEmitter.emit('requestorder_cleaned', e);
     });
 };
@@ -291,7 +291,7 @@ const cleanApporderDependantOrders = async ({
       reason: 'apporder dependant requestorder',
     });
   } catch (e) {
-    logger.log('cleanApporderDependantOrders() error', e);
+    logger.warn('cleanApporderDependantOrders() error', e);
     throw e;
   }
 };
@@ -347,7 +347,7 @@ const cleanDatasetorderDependantOrders = async ({
       reason: 'datasetorder dependant requestorder',
     });
   } catch (e) {
-    logger.log('cleanDatasetorderDependantOrders() error', e);
+    logger.warn('cleanDatasetorderDependantOrders() error', e);
     throw e;
   }
 };
@@ -419,7 +419,7 @@ const cleanBalanceDependantOrders = async ({
       }),
     ]);
   } catch (e) {
-    logger.log('cleanBalanceDependantOrders()', e);
+    logger.warn('cleanBalanceDependantOrders()', e);
     throw e;
   }
 };
@@ -451,7 +451,7 @@ const cleanTransferredAppOrders = async ({
       });
     }
   } catch (e) {
-    logger.log('cleanTransferredAppOrders()', e);
+    logger.warn('cleanTransferredAppOrders()', e);
     throw e;
   }
 };
@@ -482,7 +482,7 @@ const cleanTransferredDatasetOrders = async ({
       });
     }
   } catch (e) {
-    logger.log('cleanTransferredDatasetOrders()', e);
+    logger.warn('cleanTransferredDatasetOrders()', e);
     throw e;
   }
 };
@@ -514,7 +514,7 @@ const cleanTransferredWorkerpoolOrders = async ({
       });
     }
   } catch (e) {
-    logger.log('cleanTransferredWorkerpoolOrders()', e);
+    logger.warn('cleanTransferredWorkerpoolOrders()', e);
     throw e;
   }
 };
@@ -525,7 +525,7 @@ const cleanRevokedUserOrders = async ({
   blockNumber,
 }) => {
   if (role !== KYC_MEMBER_ROLE) {
-    logger.log(`user ${address} revoked role is not KYC`);
+    logger.debug(`user ${address} revoked role is not KYC`);
     return;
   }
   // check user  isKYC
@@ -536,10 +536,10 @@ const cleanRevokedUserOrders = async ({
     blockNumber,
   );
   if (isKYC) {
-    logger.log(`user ${address} is KYC`);
+    logger.debug(`user ${address} is KYC`);
     return;
   }
-  logger.log(`user ${address} KYC revoked`);
+  logger.debug(`user ${address} KYC revoked`);
 
   // fix block height to prevent the risk of moving indexes in registries
   const blockNumberOverride =
@@ -615,7 +615,7 @@ const cleanRevokedUserOrders = async ({
           const resourceAddress = tokenIdToAddress(resourceId);
           return resourceAddress;
         } catch (err) {
-          logger.log(
+          logger.warn(
             `failed to get app ${i} for owner ${address}${
               blockNumberOverride && ` at block ${blockNumberOverride}`
             } : ${err}`,
@@ -625,7 +625,7 @@ const cleanRevokedUserOrders = async ({
       })
       .filter((e) => e !== null),
   );
-  logger.log('deadApps (owner KYC revoked)', deadApps);
+  logger.debug('deadApps (owner KYC revoked)', deadApps);
   // list orders depending on user apps
   const [
     userAppDependantDatasetorders,
@@ -700,7 +700,7 @@ const cleanRevokedUserOrders = async ({
           const resourceAddress = tokenIdToAddress(resourceId);
           return resourceAddress;
         } catch (err) {
-          logger.log(
+          logger.warn(
             `failed to get dataset ${i} for owner ${address}${
               blockNumberOverride && ` at block ${blockNumberOverride}`
             } : ${err}`,
@@ -710,7 +710,7 @@ const cleanRevokedUserOrders = async ({
       })
       .filter((e) => e !== null),
   );
-  logger.log('deadDatasets (owner KYC revoked)', deadDatasets);
+  logger.debug('deadDatasets (owner KYC revoked)', deadDatasets);
   // list orders depending on user datasets
   const [
     userDatasetDependantApporders,
@@ -785,7 +785,7 @@ const cleanRevokedUserOrders = async ({
           const resourceAddress = tokenIdToAddress(resourceId);
           return resourceAddress;
         } catch (err) {
-          logger.log(
+          logger.warn(
             `failed to get workerpool ${i} for owner ${address}${
               blockNumberOverride && ` at block ${blockNumberOverride}`
             } : ${err}`,
@@ -795,7 +795,7 @@ const cleanRevokedUserOrders = async ({
       })
       .filter((e) => e !== null),
   );
-  logger.log('deadWorkerpools (owner KYC revoked)', deadWorkerpools);
+  logger.debug('deadWorkerpools (owner KYC revoked)', deadWorkerpools);
   // list orders depending on user workerpools
   const [
     userWorkerpoolDependantApporders,
@@ -885,16 +885,16 @@ const updateApporder = async ({
         { returnOriginal: false },
       );
       if (saved && saved.status === STATUS_MAP.OPEN) {
-        logger.log('apporder updated', orderHash);
+        logger.debug('apporder updated', orderHash);
         eventEmitter.emit('apporder_updated', saved.toJSON());
       }
       if (saved && saved.status === STATUS_MAP.FILLED) {
-        logger.log('apporder filled', orderHash);
+        logger.debug('apporder filled', orderHash);
         eventEmitter.emit('apporder_filled', saved.toJSON());
       }
     }
   } catch (e) {
-    logger.log('updateApporder()', e);
+    logger.warn('updateApporder()', e);
     throw e;
   }
 };
@@ -934,16 +934,16 @@ const updateDatasetorder = async ({
         { returnOriginal: false },
       );
       if (saved && saved.status === STATUS_MAP.OPEN) {
-        logger.log('datasetorder updated', orderHash);
+        logger.debug('datasetorder updated', orderHash);
         eventEmitter.emit('datasetorder_updated', saved.toJSON());
       }
       if (saved && saved.status === STATUS_MAP.FILLED) {
-        logger.log('datasetorder filled', orderHash);
+        logger.debug('datasetorder filled', orderHash);
         eventEmitter.emit('datasetorder_filled', saved.toJSON());
       }
     }
   } catch (e) {
-    logger.log('updateDatasetorder()', e);
+    logger.warn('updateDatasetorder()', e);
     throw e;
   }
 };
@@ -983,16 +983,16 @@ const updateWorkerpoolorder = async ({
         { returnOriginal: false },
       );
       if (saved && saved.status === STATUS_MAP.OPEN) {
-        logger.log('workerpoolorder updated', orderHash);
+        logger.debug('workerpoolorder updated', orderHash);
         eventEmitter.emit('workerpoolorder_updated', saved.toJSON());
       }
       if (saved && saved.status === STATUS_MAP.FILLED) {
-        logger.log('workerpoolorder filled', orderHash);
+        logger.debug('workerpoolorder filled', orderHash);
         eventEmitter.emit('workerpoolorder_filled', saved.toJSON());
       }
     }
   } catch (e) {
-    logger.log('updateWorkerpoolorder()', e);
+    logger.warn('updateWorkerpoolorder()', e);
     throw e;
   }
 };
@@ -1032,16 +1032,16 @@ const updateRequestorder = async ({
         { returnOriginal: false },
       );
       if (saved && saved.status === STATUS_MAP.OPEN) {
-        logger.log('requestorder updated', orderHash);
+        logger.debug('requestorder updated', orderHash);
         eventEmitter.emit('requestorder_updated', saved.toJSON());
       }
       if (saved && saved.status === STATUS_MAP.FILLED) {
-        logger.log('requestorder filled', orderHash);
+        logger.debug('requestorder filled', orderHash);
         eventEmitter.emit('requestorder_filled', saved.toJSON());
       }
     }
   } catch (e) {
-    logger.log('updateRequestorder()', e);
+    logger.warn('updateRequestorder()', e);
     throw e;
   }
 };
@@ -1060,11 +1060,11 @@ const cancelApporder = async ({ orderHash = throwIfMissing() } = {}) => {
       { returnOriginal: true, upsert: false },
     );
     if (published && published.status === STATUS_MAP.OPEN) {
-      logger.log('apporder canceled', orderHash);
+      logger.debug('apporder canceled', orderHash);
       eventEmitter.emit('apporder_canceled', published.toJSON());
     }
   } catch (e) {
-    logger.log('cancelApporder() error', e);
+    logger.warn('cancelApporder() error', e);
     throw e;
   }
 };
@@ -1083,11 +1083,11 @@ const cancelDatasetorder = async ({ orderHash = throwIfMissing() } = {}) => {
       { returnOriginal: true, upsert: false },
     );
     if (published && published.status === STATUS_MAP.OPEN) {
-      logger.log('datasetorder canceled', orderHash);
+      logger.debug('datasetorder canceled', orderHash);
       eventEmitter.emit('datasetorder_canceled', published.toJSON());
     }
   } catch (e) {
-    logger.log('cancelDatasetorder() error', e);
+    logger.warn('cancelDatasetorder() error', e);
     throw e;
   }
 };
@@ -1106,11 +1106,11 @@ const cancelWorkerpoolorder = async ({ orderHash = throwIfMissing() } = {}) => {
       { returnOriginal: true, upsert: false },
     );
     if (published && published.status === STATUS_MAP.OPEN) {
-      logger.log('workerpoolorder canceled', orderHash);
+      logger.debug('workerpoolorder canceled', orderHash);
       eventEmitter.emit('workerpoolorder_canceled', published.toJSON());
     }
   } catch (e) {
-    logger.log('cancelWorkerpoolorder() error', e);
+    logger.warn('cancelWorkerpoolorder() error', e);
     throw e;
   }
 };
@@ -1129,11 +1129,11 @@ const cancelRequestorder = async ({ orderHash = throwIfMissing() } = {}) => {
       { returnOriginal: true, upsert: false },
     );
     if (published && published.status === STATUS_MAP.OPEN) {
-      logger.log('requestorder canceled', orderHash);
+      logger.debug('requestorder canceled', orderHash);
       eventEmitter.emit('requestorder_canceled', published.toJSON());
     }
   } catch (e) {
-    logger.log('cancelRequestorder() error', e);
+    logger.warn('cancelRequestorder() error', e);
     throw e;
   }
 };

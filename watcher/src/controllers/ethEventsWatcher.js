@@ -63,11 +63,11 @@ const registerHubEvents = () => {
 
 const registerERlcEvents = async () => {
   if (isEnterpriseFlavour(config.flavour)) {
-    logger.log('registering ERlc events');
+    logger.log('registering eRLC events');
     const eRlcContract = getERlc();
     eRlcContract.on('RoleRevoked', extractEvent(processRoleRevoked));
   } else {
-    logger.log('skipping register ERlc events');
+    logger.log('skipping register eRLC events');
   }
 };
 
@@ -99,10 +99,10 @@ const unsubscribeHubEvents = () => {
 
 const unsubscribeERlcEvents = async () => {
   if (isEnterpriseFlavour(config.flavour)) {
-    logger.log('unsubscribe ERlc events');
+    logger.log('unsubscribe eRLC events');
     getERlc().removeAllListeners();
   } else {
-    logger.log('skipping unsubscribe ERlc events');
+    logger.log('skipping unsubscribe eRLC events');
   }
 };
 
@@ -143,7 +143,7 @@ const getContractPastEvent = async (
     ]);
     return eventsArray;
   } catch (error) {
-    logger.log(`getContractPastEvent() ${eventName}`, error);
+    logger.warn(`getContractPastEvent() ${eventName}`, error);
     throw error;
   }
 };
@@ -401,7 +401,7 @@ const replayPastEvents = async (
       eventsCount,
     );
   } catch (error) {
-    logger.log('replayPastEvents()', error);
+    logger.warn('replayPastEvents()', error);
     throw error;
   }
 };

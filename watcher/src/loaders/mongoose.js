@@ -30,7 +30,7 @@ const getMongoose = async ({ server = mongoConfig.host, db } = {}) => {
     logger.log(`opened connection ${server}${db}`);
     return connection;
   } catch (error) {
-    logger.log('getMongoose', error);
+    logger.warn('getMongoose', error);
     throw error;
   }
 };

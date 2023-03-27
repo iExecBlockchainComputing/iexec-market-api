@@ -51,7 +51,7 @@ const replayPastOnly = async ({ nbConfirmation = 10 } = {}) => {
     }
     return;
   } catch (error) {
-    logger.log('replayPastOnly()', error);
+    logger.warn('replayPastOnly()', error);
     throw error;
   }
 };
