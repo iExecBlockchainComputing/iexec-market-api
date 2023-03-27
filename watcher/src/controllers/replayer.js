@@ -19,7 +19,10 @@ const logger = getLogger('controllers:replayer');
 
 const EVENT_REPLAY_JOB = 'replay-past-events';
 
-const replayPastOnly = async ({ nbConfirmation = 10 } = {}) => {
+const replayPastOnly = async ({
+  nbConfirmation = 10,
+  handleIndexedBlock = setCheckpointBlock,
+} = {}) => {
   try {
     const [currentCheckpoint, lastIndexedBlock, currentBlock] =
       await Promise.all([
@@ -44,7 +47,7 @@ const replayPastOnly = async ({ nbConfirmation = 10 } = {}) => {
       );
       await replayPastEvents(currentCheckpoint, {
         lastBlockNumber: nextCheckpoint,
-        handleIndexedBlock: setCheckpointBlock,
+        handleIndexedBlock,
       });
     } else {
       logger.log('nothing to replay skipping');
@@ -61,9 +64,15 @@ const startReplayer = async () => {
   agenda.define(
     EVENT_REPLAY_JOB,
     { lockLifetime: 10 * 60 * 1000 },
-    async () => {
+    async (job) => {
       try {
-        await replayPastOnly();
+        await replayPastOnly({
+          handleIndexedBlock: async (blockNumber) => {
+            await setCheckpointBlock(blockNumber);
+            // reset job lock after every iteration
+            await job.touch();
+          },
+        });
       } catch (error) {
         errorHandler(error, { type: 'replay-job' });
         throw error;
