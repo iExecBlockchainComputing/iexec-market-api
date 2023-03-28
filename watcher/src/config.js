@@ -26,7 +26,7 @@ const {
   SYNC_CHECK_INTERVAL,
   OUT_OF_SYNC_LIMIT,
   REPLAY_INTERVAL,
-  BLOCKS_BATCH_SIZE,
+  BLOCKS_BATCH_SIZE = '1000', // default batch size is 1000
   RETRY_DELAY,
   CREATE_INDEX = 'true', // create db indexes by default
 } = process.env;
