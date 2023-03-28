@@ -28,7 +28,7 @@ const {
   REPLAY_INTERVAL,
   BLOCKS_BATCH_SIZE,
   RETRY_DELAY,
-  CREATE_INDEX,
+  CREATE_INDEX = 'true', // create db indexes by default
 } = process.env;
 
 if (!CHAIN) throw Error('missing env CHAIN');
