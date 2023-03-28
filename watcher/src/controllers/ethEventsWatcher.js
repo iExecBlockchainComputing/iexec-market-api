@@ -1,4 +1,4 @@
-const { logger } = require('../utils/logger');
+const { getLogger } = require('../utils/logger');
 const {
   getProvider,
   getHub,
@@ -29,8 +29,9 @@ const {
 } = require('../utils/eth-utils');
 const { isEnterpriseFlavour } = require('../utils/iexec-utils');
 const config = require('../config');
+const { traceAll } = require('../utils/trace');
 
-const log = logger.extend('controllers:ethEventsWatcher');
+const logger = getLogger('controllers:ethEventsWatcher');
 
 const extractEvent =
   (processCallback) =>
@@ -40,13 +41,13 @@ const extractEvent =
   };
 
 const registerNewBlock = () => {
-  log('registering block events');
+  logger.log('registering block events');
   const provider = getProvider();
   provider.on('block', processNewBlock);
 };
 
 const registerHubEvents = () => {
-  log('registering Hub events');
+  logger.log('registering Hub events');
   const hubContract = getHub();
   hubContract.on('CreateCategory', extractEvent(processCreateCategory));
   hubContract.on('OrdersMatched', extractEvent(processOrdersMatched));
@@ -62,28 +63,28 @@ const registerHubEvents = () => {
 
 const registerERlcEvents = async () => {
   if (isEnterpriseFlavour(config.flavour)) {
-    log('registering ERlc events');
+    logger.log('registering eRLC events');
     const eRlcContract = getERlc();
     eRlcContract.on('RoleRevoked', extractEvent(processRoleRevoked));
   } else {
-    log('skipping register ERlc events');
+    logger.log('skipping register eRLC events');
   }
 };
 
 const registerAppRegistryEvents = () => {
-  log('registering AppRegistry events');
+  logger.log('registering AppRegistry events');
   const appRegistryContract = getAppRegistry();
   appRegistryContract.on('Transfer', extractEvent(processTransferApp));
 };
 
 const registerDatasetRegistryEvents = () => {
-  log('registering DatasetRegistry events');
+  logger.log('registering DatasetRegistry events');
   const datasetRegistryContract = getDatasetRegistry();
   datasetRegistryContract.on('Transfer', extractEvent(processTransferDataset));
 };
 
 const registerWorkerpoolRegistryEvents = () => {
-  log('registering WorkerpoolRegistry events');
+  logger.log('registering WorkerpoolRegistry events');
   const workerpoolRegistryContract = getWorkerpoolRegistry();
   workerpoolRegistryContract.on(
     'Transfer',
@@ -92,31 +93,31 @@ const registerWorkerpoolRegistryEvents = () => {
 };
 
 const unsubscribeHubEvents = () => {
-  log('unsubscribe Hub events');
+  logger.log('unsubscribe Hub events');
   getHub().removeAllListeners();
 };
 
 const unsubscribeERlcEvents = async () => {
   if (isEnterpriseFlavour(config.flavour)) {
-    log('unsubscribe ERlc events');
+    logger.log('unsubscribe eRLC events');
     getERlc().removeAllListeners();
   } else {
-    log('skipping unsubscribe ERlc events');
+    logger.log('skipping unsubscribe eRLC events');
   }
 };
 
 const unsubscribeAppRegistryEvents = () => {
-  log('unsubscribe AppRegistry events');
+  logger.log('unsubscribe AppRegistry events');
   getAppRegistry().removeAllListeners();
 };
 
 const unsubscribeDatasetRegistryEvents = () => {
-  log('unsubscribe DatasetRegistry events');
+  logger.log('unsubscribe DatasetRegistry events');
   getDatasetRegistry().removeAllListeners();
 };
 
 const unsubscribeWorkerpoolRegistryEvents = () => {
-  log('unsubscribe WorkerpoolRegistry events');
+  logger.log('unsubscribe WorkerpoolRegistry events');
   getWorkerpoolRegistry().removeAllListeners();
 };
 
@@ -142,206 +143,227 @@ const getContractPastEvent = async (
     ]);
     return eventsArray;
   } catch (error) {
-    log(`getContractPastEvent() ${eventName}`, error);
+    logger.warn(`getContractPastEvent() ${eventName}`, error);
     throw error;
   }
 };
 
-const replayPastEventBatch = async (
-  firstBlock,
-  lastBlock,
-  { processedCount = 0, handleIndexedBlock } = {},
-) => {
-  const fromBlock = firstBlock;
-  const last =
-    lastBlock === 'latest' ? await getBlockNumber(getProvider()) : lastBlock;
+const replayPastEventBatch = traceAll(
+  // eslint-disable-next-line prefer-arrow-callback
+  async function _replayPastEventBatch({
+    fromBlock,
+    toBlock,
+    handleIndexedBlock,
+  }) {
+    logger.log('replay batch from block', fromBlock, 'to block', toBlock);
 
-  let toBlock;
-  let iterate;
-  if (
-    config.runtime.blocksBatchSize > 0 &&
-    last - fromBlock > config.runtime.blocksBatchSize
-  ) {
-    toBlock = fromBlock + config.runtime.blocksBatchSize - 1;
-    iterate = true;
-  } else {
-    toBlock = last;
-    iterate = false;
-  }
+    const hubContract = getHub();
+    const appRegistryContract = getAppRegistry();
+    const datasetRegistryContract = getDatasetRegistry();
+    const workerpoolRegistryContract = getWorkerpoolRegistry();
 
-  log('replay batch from block', firstBlock, 'to block', toBlock);
+    const [
+      transferAppEvents,
+      transferDatasetEvents,
+      transferWorkerpoolEvents,
+      createCategoryEvents,
+      transferStakeEvents,
+      ordersMatchedEvents,
+      closedAppOrderEvents,
+      closedDatasetOrderEvents,
+      closedWorkerpoolOrderEvents,
+      closedRequestOrderEvents,
+      roleRevokedEvents,
+    ] = await Promise.all([
+      getContractPastEvent(appRegistryContract, 'Transfer', {
+        fromBlock,
+        toBlock,
+      }),
+      getContractPastEvent(datasetRegistryContract, 'Transfer', {
+        fromBlock,
+        toBlock,
+      }),
+      getContractPastEvent(workerpoolRegistryContract, 'Transfer', {
+        fromBlock,
+        toBlock,
+      }),
+      getContractPastEvent(hubContract, 'CreateCategory', {
+        fromBlock,
+        toBlock,
+      }),
+      getContractPastEvent(hubContract, 'Transfer', {
+        fromBlock,
+        toBlock,
+      }),
+      getContractPastEvent(hubContract, 'OrdersMatched', {
+        fromBlock,
+        toBlock,
+      }),
+      getContractPastEvent(hubContract, 'ClosedAppOrder', {
+        fromBlock,
+        toBlock,
+      }),
+      getContractPastEvent(hubContract, 'ClosedDatasetOrder', {
+        fromBlock,
+        toBlock,
+      }),
+      getContractPastEvent(hubContract, 'ClosedWorkerpoolOrder', {
+        fromBlock,
+        toBlock,
+      }),
+      getContractPastEvent(hubContract, 'ClosedRequestOrder', {
+        fromBlock,
+        toBlock,
+      }),
+      isEnterpriseFlavour(config.flavour)
+        ? getContractPastEvent(getERlc(), 'RoleRevoked', {
+            fromBlock,
+            toBlock,
+          })
+        : [],
+    ]);
 
-  const hubContract = getHub();
-  const appRegistryContract = getAppRegistry();
-  const datasetRegistryContract = getDatasetRegistry();
-  const workerpoolRegistryContract = getWorkerpoolRegistry();
-
-  const [
-    transferAppEvents,
-    transferDatasetEvents,
-    transferWorkerpoolEvents,
-    createCategoryEvents,
-    transferStakeEvents,
-    ordersMatchedEvents,
-    closedAppOrderEvents,
-    closedDatasetOrderEvents,
-    closedWorkerpoolOrderEvents,
-    closedRequestOrderEvents,
-    roleRevokedEvents,
-  ] = await Promise.all([
-    getContractPastEvent(appRegistryContract, 'Transfer', {
-      fromBlock,
-      toBlock,
-    }),
-    getContractPastEvent(datasetRegistryContract, 'Transfer', {
-      fromBlock,
-      toBlock,
-    }),
-    getContractPastEvent(workerpoolRegistryContract, 'Transfer', {
-      fromBlock,
-      toBlock,
-    }),
-    getContractPastEvent(hubContract, 'CreateCategory', {
-      fromBlock,
-      toBlock,
-    }),
-    getContractPastEvent(hubContract, 'Transfer', {
-      fromBlock,
-      toBlock,
-    }),
-    getContractPastEvent(hubContract, 'OrdersMatched', {
-      fromBlock,
-      toBlock,
-    }),
-    getContractPastEvent(hubContract, 'ClosedAppOrder', {
-      fromBlock,
-      toBlock,
-    }),
-    getContractPastEvent(hubContract, 'ClosedDatasetOrder', {
-      fromBlock,
-      toBlock,
-    }),
-    getContractPastEvent(hubContract, 'ClosedWorkerpoolOrder', {
-      fromBlock,
-      toBlock,
-    }),
-    getContractPastEvent(hubContract, 'ClosedRequestOrder', {
-      fromBlock,
-      toBlock,
-    }),
-    isEnterpriseFlavour(config.flavour)
-      ? getContractPastEvent(getERlc(), 'RoleRevoked', {
-          fromBlock,
-          toBlock,
-        })
-      : [],
-  ]);
-
-  const eventsArray = transferAppEvents
-    .map((e) => ({ event: e, process: processTransferApp }))
-    .concat(
-      transferDatasetEvents.map((e) => ({
-        event: e,
-        process: processTransferDataset,
-      })),
-    )
-    .concat(
-      transferWorkerpoolEvents.map((e) => ({
-        event: e,
-        process: processTransferWorkerpool,
-      })),
-    )
-    .concat(
-      createCategoryEvents.map((e) => ({
-        event: e,
-        process: processCreateCategory,
-      })),
-    )
-    .concat(
-      transferStakeEvents
-        .filter((e) => {
-          // filter mint & no value
-          const { from, value } = cleanRPC(e.args);
-          return from !== NULL_ADDRESS && value !== '0';
-        })
-        .reduce((acc, curr) => {
-          // filter unique addresses
-          const { from } = curr.args;
-          const collectedEvent = acc.find((e) => e.args.from === from);
-          if (!collectedEvent) acc.push(curr);
-          return acc;
-        }, [])
-        .map((e) => ({
+    const eventsArray = transferAppEvents
+      .map((e) => ({ event: e, process: processTransferApp }))
+      .concat(
+        transferDatasetEvents.map((e) => ({
           event: e,
-          process: processStakeLoss,
+          process: processTransferDataset,
         })),
-    )
-    .concat(
-      ordersMatchedEvents.map((e) => ({
-        event: e,
-        process: processOrdersMatched,
-      })),
-    )
-    .concat(
-      closedAppOrderEvents.map((e) => ({
-        event: e,
-        process: processClosedAppOrder,
-      })),
-    )
-    .concat(
-      closedDatasetOrderEvents.map((e) => ({
-        event: e,
-        process: processClosedDatasetOrder,
-      })),
-    )
-    .concat(
-      closedWorkerpoolOrderEvents.map((e) => ({
-        event: e,
-        process: processClosedWorkerpoolOrder,
-      })),
-    )
-    .concat(
-      closedRequestOrderEvents.map((e) => ({
-        event: e,
-        process: processClosedRequestOrder,
-      })),
-    )
-    .concat(
-      roleRevokedEvents.map((e) => ({
-        event: e,
-        process: processRoleRevoked,
-      })),
-    );
+      )
+      .concat(
+        transferWorkerpoolEvents.map((e) => ({
+          event: e,
+          process: processTransferWorkerpool,
+        })),
+      )
+      .concat(
+        createCategoryEvents.map((e) => ({
+          event: e,
+          process: processCreateCategory,
+        })),
+      )
+      .concat(
+        transferStakeEvents
+          .filter((e) => {
+            // filter mint & no value
+            const { from, value } = cleanRPC(e.args);
+            return from !== NULL_ADDRESS && value !== '0';
+          })
+          .reduce((acc, curr) => {
+            // filter unique addresses
+            const { from } = curr.args;
+            const collectedEvent = acc.find((e) => e.args.from === from);
+            if (!collectedEvent) acc.push(curr);
+            return acc;
+          }, [])
+          .map((e) => ({
+            event: e,
+            process: processStakeLoss,
+          })),
+      )
+      .concat(
+        ordersMatchedEvents.map((e) => ({
+          event: e,
+          process: processOrdersMatched,
+        })),
+      )
+      .concat(
+        closedAppOrderEvents.map((e) => ({
+          event: e,
+          process: processClosedAppOrder,
+        })),
+      )
+      .concat(
+        closedDatasetOrderEvents.map((e) => ({
+          event: e,
+          process: processClosedDatasetOrder,
+        })),
+      )
+      .concat(
+        closedWorkerpoolOrderEvents.map((e) => ({
+          event: e,
+          process: processClosedWorkerpoolOrder,
+        })),
+      )
+      .concat(
+        closedRequestOrderEvents.map((e) => ({
+          event: e,
+          process: processClosedRequestOrder,
+        })),
+      )
+      .concat(
+        roleRevokedEvents.map((e) => ({
+          event: e,
+          process: processRoleRevoked,
+        })),
+      );
 
-  log('batch events count', eventsArray.length);
+    logger.log('batch events count', eventsArray.length);
 
-  const EVENTS_BATCH_SIZE = 200;
+    const EVENTS_BATCH_SIZE = 200;
 
-  const processEvents = async (eventsToProcess, i = 0) => {
-    await Promise.all(
-      eventsToProcess
-        .slice(0, EVENTS_BATCH_SIZE - 1)
-        .map((e) => e.process(e.event, { isReplay: true })),
-    );
-    const remainingEvents = eventsToProcess.slice(EVENTS_BATCH_SIZE - 1);
-    return remainingEvents.length > 0 && processEvents(remainingEvents, i + 1);
-  };
+    const processEvents = async (eventsToProcess, i = 0) => {
+      await Promise.all(
+        eventsToProcess
+          .slice(0, EVENTS_BATCH_SIZE - 1)
+          .map((e) => e.process(e.event, { isReplay: true })),
+      );
+      const remainingEvents = eventsToProcess.slice(EVENTS_BATCH_SIZE - 1);
+      return (
+        remainingEvents.length > 0 && processEvents(remainingEvents, i + 1)
+      );
+    };
 
-  await processEvents(eventsArray);
+    await processEvents(eventsArray);
 
-  if (typeof handleIndexedBlock === 'function') {
-    await handleIndexedBlock(toBlock);
-  }
+    if (typeof handleIndexedBlock === 'function') {
+      await handleIndexedBlock(toBlock);
+    }
+    return eventsArray.length;
+  },
+  { logger },
+);
 
-  const processed = processedCount + eventsArray.length;
-  if (iterate) {
-    return replayPastEventBatch(toBlock + 1, lastBlock, {
-      processedCount: processed,
+const recursiveReplayPastEventBatch = traceAll(
+  async function _recursiveReplayPastEventBatch(
+    firstBlock,
+    lastBlock,
+    { processedCount = 0, handleIndexedBlock } = {},
+  ) {
+    const fromBlock = firstBlock;
+    const last =
+      lastBlock === 'latest' ? await getBlockNumber(getProvider()) : lastBlock;
+
+    let toBlock;
+    let iterate;
+    if (
+      config.runtime.blocksBatchSize > 0 &&
+      last - fromBlock > config.runtime.blocksBatchSize
+    ) {
+      toBlock = fromBlock + config.runtime.blocksBatchSize - 1;
+      iterate = true;
+    } else {
+      toBlock = last;
+      iterate = false;
+    }
+
+    const processedEvents = await replayPastEventBatch({
+      fromBlock,
+      toBlock,
       handleIndexedBlock,
     });
-  }
-  return processed;
-};
+    const processed = processedCount + processedEvents;
+    if (iterate) {
+      return _recursiveReplayPastEventBatch(toBlock + 1, lastBlock, {
+        processedCount: processed,
+        handleIndexedBlock,
+      });
+    }
+    return processed;
+  },
+  { logger },
+);
 
 const replayPastEvents = async (
   startingBlockNumber,
@@ -351,7 +373,7 @@ const replayPastEvents = async (
   } = {},
 ) => {
   try {
-    log(
+    logger.log(
       'replaying events from block',
       startingBlockNumber,
       'to block',
@@ -359,10 +381,10 @@ const replayPastEvents = async (
     );
     const currentBlock = await getBlockNumber(getProvider());
     if (startingBlockNumber > currentBlock) {
-      log('no new block');
+      logger.log('no new block');
       return;
     }
-    const eventsCount = await replayPastEventBatch(
+    const eventsCount = await recursiveReplayPastEventBatch(
       startingBlockNumber,
       lastBlockNumber,
       {
@@ -370,7 +392,7 @@ const replayPastEvents = async (
         batch: config.runtime.blocksBatchSize,
       },
     );
-    log(
+    logger.log(
       'replayed events from block',
       startingBlockNumber,
       'to block',
@@ -379,18 +401,24 @@ const replayPastEvents = async (
       eventsCount,
     );
   } catch (error) {
-    log('replayPastEvents()', error);
+    logger.warn('replayPastEvents()', error);
     throw error;
   }
 };
 
 module.exports = {
-  registerNewBlock,
-  registerHubEvents,
-  registerERlcEvents,
-  registerAppRegistryEvents,
-  registerDatasetRegistryEvents,
-  registerWorkerpoolRegistryEvents,
-  unsubscribeAllEvents,
-  replayPastEvents,
+  registerNewBlock: traceAll(registerNewBlock, { logger }),
+  registerHubEvents: traceAll(registerHubEvents, { logger }),
+  registerERlcEvents: traceAll(registerERlcEvents, { logger }),
+  registerAppRegistryEvents: traceAll(registerAppRegistryEvents, {
+    logger,
+  }),
+  registerDatasetRegistryEvents: traceAll(registerDatasetRegistryEvents, {
+    logger,
+  }),
+  registerWorkerpoolRegistryEvents: traceAll(registerWorkerpoolRegistryEvents, {
+    logger,
+  }),
+  unsubscribeAllEvents: traceAll(unsubscribeAllEvents, { logger }),
+  replayPastEvents: traceAll(replayPastEvents, { logger }),
 };

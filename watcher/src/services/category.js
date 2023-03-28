@@ -1,15 +1,16 @@
 const config = require('../config');
 const { getProvider, getHub } = require('../loaders/ethereum');
 const categoryModel = require('../models/categoryModel');
-const { logger } = require('../utils/logger');
+const { getLogger } = require('../utils/logger');
 const { throwIfMissing } = require('../utils/error');
 const { waitForGetBlock, callAtBlock } = require('../utils/eth-utils');
+const { traceAll } = require('../utils/trace');
 
 const { chainId } = config.chain;
 
-const log = logger.extend('services:category');
+const logger = getLogger('services:category');
 
-log('instantiating service');
+logger.log('instantiating service');
 
 const addCategory = async ({
   catid = throwIfMissing(),
@@ -44,11 +45,11 @@ const addCategory = async ({
       },
     );
   } catch (e) {
-    log('addCategory() error', e);
+    logger.warn('addCategory() error', e);
     throw e;
   }
 };
 
 module.exports = {
-  addCategory,
+  addCategory: traceAll(addCategory, { logger }),
 };

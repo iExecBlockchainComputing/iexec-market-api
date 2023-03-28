@@ -2,10 +2,15 @@
 
 ## v6.0.0
 
-- \[BREAKING\] removed viviani and goerli default configuration
+- \[BREAKING\] removed mainnet, viviani and goerli default configuration
+- \[BREAKING\] CREATE_INDEX default value is now set to `true` to create DB indexes by default
+- \[BREAKING\] BLOCKS_BATCH_SIZE default value is now set to `1000` to better adapt to bellecour indexation
+
 - better tracking of indexed block number
 - start replayer before initial synchro's end to achieve faster checkpoint sync
+- fix avoid multiple replay of past events running simultaneous on an overlapping range
 - fix avoid checkpoint further than last indexed block
+- fix avoid possible clunky state on ws close recover
 - fix typos
 - update dependencies
 

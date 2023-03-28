@@ -8,9 +8,9 @@ const workerpoolDesc = require('@iexec/poco/build/contracts-min/Workerpool.json'
 const datasetDesc = require('@iexec/poco/build/contracts-min/Dataset.json');
 const eRlcDesc = require('@iexec/erlc/build/contracts-min/ERLCTokenSwap.json');
 const { FLAVOURS, STANDARD_FLAVOUR } = require('./utils/iexec-utils');
-const { logger } = require('./utils/logger');
+const { getLogger } = require('./utils/logger');
 
-const log = logger.extend('config');
+const logger = getLogger('config');
 
 const {
   MONGO_HOST,
@@ -26,9 +26,9 @@ const {
   SYNC_CHECK_INTERVAL,
   OUT_OF_SYNC_LIMIT,
   REPLAY_INTERVAL,
-  BLOCKS_BATCH_SIZE,
+  BLOCKS_BATCH_SIZE = '1000', // default batch size is 1000
   RETRY_DELAY,
-  CREATE_INDEX,
+  CREATE_INDEX = 'true', // create db indexes by default
 } = process.env;
 
 if (!CHAIN) throw Error('missing env CHAIN');
@@ -113,11 +113,11 @@ if (!chain.httpHost) {
   throw Error('missing ethereum RPC endpoint ETH_RPC_HOST');
 }
 
-log('chain', chain);
-log('flavour', flavour);
-log('mongo', mongo);
-log('redis', redis);
-log('runtime', runtime);
+logger.log('chain', chain);
+logger.log('flavour', flavour);
+logger.log('mongo', mongo);
+logger.log('redis', redis);
+logger.log('runtime', runtime);
 
 module.exports = {
   abi,

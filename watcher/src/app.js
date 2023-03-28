@@ -18,10 +18,10 @@ const {
 } = require('./controllers/syncWatcher');
 const { startReplayer, stopReplayer } = require('./controllers/replayer');
 const { getNextBlockToProcess, setLastBlock } = require('./services/counter');
-const { logger } = require('./utils/logger');
+const { getLogger, APP_NAMESPACE } = require('./utils/logger');
 const { errorHandler } = require('./utils/error');
 
-const log = logger.extend('app');
+const logger = getLogger(APP_NAMESPACE);
 
 const { wsHost, httpHost, chainId, hubAddress } = config.chain;
 if (!chainId) throw Error('missing chainId');
@@ -33,48 +33,52 @@ socket.init();
 
 const start = async ({ replayer = true, syncWatcher = true } = {}) => {
   try {
-    log('STARTING WATCHER...');
+    logger.log('STARTING WATCHER...');
     await stopReplayer();
     await stopSyncWatcher();
-    log('connecting ethereum node');
 
-    await ethereum.init(() => {
-      log('restarting on ethereum connection lost');
-      start();
-    });
-    log('done');
+    logger.log('connecting ethereum node');
+    await ethereum.init();
+    logger.log('ethereum node connected');
 
     if (replayer) {
-      log('starting event replayer...');
+      logger.log('starting event replayer...');
       await startReplayer();
-      log('done');
+      logger.log('event replayer started');
+    } else {
+      logger.log('skip starting replayer');
     }
 
-    log('checking last block seen');
+    logger.log('checking last block seen...');
     const startBlock = await getNextBlockToProcess();
-    log('done');
+    logger.log('got last block');
 
-    log(`replaying past events from block ${startBlock} to latest...`);
+    logger.log(
+      `start replaying past events from block ${startBlock} to latest...`,
+    );
     await replayPastEvents(startBlock, {
       handleIndexedBlock: setLastBlock,
     });
-    log('done');
+    logger.log(`replayed past events from block ${startBlock} to latest`);
 
-    log('starting listening to new events...');
+    logger.log('starting new events listeners...');
     registerHubEvents();
     registerERlcEvents();
     registerAppRegistryEvents();
     registerDatasetRegistryEvents();
     registerWorkerpoolRegistryEvents();
     registerNewBlock();
-    log('done');
+    logger.log('listening to new events');
 
     if (syncWatcher) {
-      log('starting sync watcher...');
+      logger.log('starting sync watcher...');
       await startSyncWatcher();
-      log('done');
+      logger.log('sync watcher started');
+    } else {
+      logger.log('skip starting sync watcher');
     }
-    log('WATCHER SUCCESSFULLY STARTED');
+
+    logger.log('WATCHER SUCCESSFULLY STARTED');
   } catch (error) {
     errorHandler(error, {
       type: 'start-watcher',
@@ -87,10 +91,10 @@ const start = async ({ replayer = true, syncWatcher = true } = {}) => {
 
 const stop = async () => {
   try {
-    log('STOPPING...');
+    logger.log('STOPPING...');
     await Promise.all([stopSyncWatcher(), stopReplayer()]);
     unsubscribeAllEvents();
-    log('STOPPED');
+    logger.log('STOPPED');
   } catch (error) {
     errorHandler(error, {
       type: 'stop-watcher',

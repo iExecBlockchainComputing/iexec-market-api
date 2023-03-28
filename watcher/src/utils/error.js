@@ -1,5 +1,7 @@
-const { logError } = require('./logger');
+const { getLogger, APP_NAMESPACE } = require('./logger');
 const { sleep } = require('./utils');
+
+const logError = getLogger(APP_NAMESPACE).error;
 
 const getPropsToCopy = (error) => {
   const {
@@ -51,17 +53,23 @@ const throwIfMissing = () => {
   throw new InternalError('missing parameter');
 };
 
-const recoverOnCriticalError = () => {
-  logError(
-    'A critical error has occured - Stopping process to recover on next sartup',
-  );
-  process.exit(1);
+let isRecovering = false;
+const GRACE_PERIOD = 3000;
+const recoverOnCriticalError = async () => {
+  if (!isRecovering) {
+    isRecovering = true;
+    logError(
+      `A critical error has occurred - Stopping process in ${GRACE_PERIOD}ms`,
+    );
+    sleep(GRACE_PERIOD);
+    logError('A critical error has occurred - Stopping process now');
+    process.exit(1);
+  }
 };
 
 const errorHandler = async (error, context) => {
   logError(error, '\nContext: ', JSON.stringify(context, null, 2));
   if (context.critical) {
-    await sleep(3000);
     recoverOnCriticalError();
   }
 };
