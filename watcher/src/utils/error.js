@@ -53,17 +53,23 @@ const throwIfMissing = () => {
   throw new InternalError('missing parameter');
 };
 
-const recoverOnCriticalError = () => {
-  logError(
-    'A critical error has occurred - Stopping process to recover on next startup',
-  );
-  process.exit(1);
+let isRecovering = false;
+const GRACE_PERIOD = 3000;
+const recoverOnCriticalError = async () => {
+  if (!isRecovering) {
+    isRecovering = true;
+    logError(
+      `A critical error has occurred - Stopping process in ${GRACE_PERIOD}ms`,
+    );
+    sleep(GRACE_PERIOD);
+    logError('A critical error has occurred - Stopping process now');
+    process.exit(1);
+  }
 };
 
 const errorHandler = async (error, context) => {
   logError(error, '\nContext: ', JSON.stringify(context, null, 2));
   if (context.critical) {
-    await sleep(3000);
     recoverOnCriticalError();
   }
 };

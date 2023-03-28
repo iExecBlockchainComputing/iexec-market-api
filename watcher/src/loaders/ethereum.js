@@ -1,7 +1,6 @@
 const ethers = require('ethers');
 const config = require('../config');
 const { getLogger } = require('../utils/logger');
-const { sleep } = require('../utils/utils');
 const { errorHandler } = require('../utils/error');
 const { isEnterpriseFlavour } = require('../utils/iexec-utils');
 
@@ -24,7 +23,7 @@ let datasetRegistryContract;
 let workerpoolRegistryContract;
 let eRlcContract;
 
-const init = async (wsClosedCallback) => {
+const init = async () => {
   try {
     logger.log('opening ws');
     wsProvider = new ethers.providers.WebSocketProvider(wsHost);
@@ -32,26 +31,18 @@ const init = async (wsClosedCallback) => {
     wsProvider._websocket.on('error', (e) => {
       errorHandler(e, {
         type: 'ethereum-ws-error',
+        error: e,
         critical: true,
       });
     });
     wsProvider._websocket.on('close', async (code, reason) => {
       initialized = false;
-      logger.warn('ws closed', code, reason);
-      const tryRecover =
-        wsClosedCallback && typeof wsClosedCallback === 'function';
       errorHandler(Error('ws closed'), {
         type: 'ethereum-ws-closed',
         code,
         reason,
-        critical: !tryRecover,
+        critical: true,
       });
-      if (tryRecover) {
-        logger.log('recovering');
-        wsProvider._websocket.terminate();
-        await sleep(3000);
-        wsClosedCallback();
-      }
     });
 
     logger.debug('hubAddress', hubAddress);

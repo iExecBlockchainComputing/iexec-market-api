@@ -38,10 +38,7 @@ const start = async ({ replayer = true, syncWatcher = true } = {}) => {
     await stopSyncWatcher();
 
     logger.log('connecting ethereum node');
-    await ethereum.init(() => {
-      logger.log('restarting on ethereum connection lost');
-      start({ replayer: false, syncWatcher: false });
-    });
+    await ethereum.init();
     logger.log('ethereum node connected');
 
     if (replayer) {
