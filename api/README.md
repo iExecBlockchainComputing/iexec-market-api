@@ -11,19 +11,11 @@ docker run --rm -p 27017:27017 mongo:latest
 docker run --rm -p 6379:6379 redis:alpine redis-server --appendonly yes
 ```
 
-configure blockchain access in `.env` file (infura, alchemy or custom node)
+configure blockchain access in `.env` file
 
 ```text
 ## configure the ethereum RPC endpoint
-# GOERLI_ETH_RPC_HOST=https://goerli-node:8545
 # MAINNET_ETH_RPC_HOST=https://mainnet-node:8545
-
-## or set INFURA_PROJECT_ID to access public chains through infura.io
-# INFURA_PROJECT_ID=abcdef1234567890
-
-## or set [CHAIN]_ALCHEMY_API_KEY to access public chains through alchemyapi.io
-# GOERLI_ALCHEMY_API_KEY=myKey
-# MAINNET_ALCHEMY_API_KEY=myKey
 ```
 
 install dependencies
@@ -77,7 +69,7 @@ npm test
 
   - header authorization\*
   - query chainId\*
-  - body {taget:"unpublish_orderHash"|"unpublish_all"|"unpublish_last", orderHash|app}
+  - body {target:"unpublish_orderHash"|"unpublish_all"|"unpublish_last", orderHash|app}
   - response {ok, target, unpublished: [...orderHash]}
 
 - GET /datasetorders/:orderHash
@@ -104,7 +96,7 @@ npm test
 
   - header authorization\*
   - query chainId\*
-  - body {taget:"unpublish_orderHash"|"unpublish_all"|"unpublish_last", orderHash|dataset}
+  - body {target:"unpublish_orderHash"|"unpublish_all"|"unpublish_last", orderHash|dataset}
   - response {ok, target, unpublished: [...orderHash]}
 
 - GET /workerpoolorders/:orderHash
@@ -131,7 +123,7 @@ npm test
 
   - header authorization\*
   - query chainId\*
-  - body {taget:"unpublish_orderHash"|"unpublish_all"|"unpublish_last", orderHash|workerpool}
+  - body {target:"unpublish_orderHash"|"unpublish_all"|"unpublish_last", orderHash|workerpool}
   - response {ok, target, unpublished: [...orderHash]}
 
 - GET /requestorders/:orderHash
@@ -158,7 +150,7 @@ npm test
 
   - header authorization\*
   - query chainId\*
-  - body {taget:"unpublish_orderHash"|"unpublish_all"|"unpublish_last", orderHash|requester}
+  - body {target:"unpublish_orderHash"|"unpublish_all"|"unpublish_last", orderHash|requester}
   - response {ok, target, unpublished: [...orderHash]}
 
 - GET /categories/:catid

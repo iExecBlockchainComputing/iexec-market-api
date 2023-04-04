@@ -28,7 +28,10 @@ const {
   REQUESTORDERS_COLLECTION,
   DEALS_COLLECTION,
   CATEGORIES_COLLECTION,
+  fastForwardToLastBlock,
+  setCheckpointToLastBlock,
 } = require('./test-utils');
+const { init: ethereumInit } = require('../src/loaders/ethereum');
 
 jest.setTimeout(120000);
 
@@ -481,7 +484,7 @@ describe('Watcher', () => {
     );
 
     const apporder = await deployAndGetApporder(iexec);
-    const independantApporder = await deployAndGetApporder(iexec);
+    const independentApporder = await deployAndGetApporder(iexec);
     const apporder5nRlc = await iexec.order.signApporder({
       ...apporder,
       appprice: 5,
@@ -504,8 +507,8 @@ describe('Watcher', () => {
       apporder: apporder5nRlc,
       workerpoolorder,
     });
-    const independantRequestorder = await getMatchableRequestorder(iexec, {
-      apporder: independantApporder,
+    const independentRequestorder = await getMatchableRequestorder(iexec, {
+      apporder: independentApporder,
       workerpoolorder,
     });
     const requestorderPrivate = await getMatchableRequestorder(
@@ -516,29 +519,29 @@ describe('Watcher', () => {
       },
     );
     const [
-      independantAppHash,
+      independentAppHash,
       appHash,
       app5nRlcHash,
       appPrivateHash,
       requestAppHash,
       requestApp5nRlcHash,
-      independantRequestHash,
+      independentRequestHash,
       requestPrivateHash,
     ] = await Promise.all([
-      iexec.order.hashApporder(independantApporder),
+      iexec.order.hashApporder(independentApporder),
       iexec.order.hashApporder(apporder),
       iexec.order.hashApporder(apporder5nRlc),
       iexec.order.hashApporder(apporderPrivate),
       iexec.order.hashRequestorder(requestorderApp),
       iexec.order.hashRequestorder(requestorderApp5nRlc),
-      iexec.order.hashRequestorder(independantRequestorder),
+      iexec.order.hashRequestorder(independentRequestorder),
       iexec.order.hashRequestorder(requestorderPrivate),
     ]);
     await Promise.all([
       addApporders(chainId, [
         {
-          orderHash: independantAppHash,
-          order: independantApporder,
+          orderHash: independentAppHash,
+          order: independentApporder,
         },
         {
           orderHash: appHash,
@@ -567,8 +570,8 @@ describe('Watcher', () => {
           order: requestorderPrivate,
         },
         {
-          orderHash: independantRequestHash,
-          order: independantRequestorder,
+          orderHash: independentRequestHash,
+          order: independentRequestorder,
         },
       ]),
     ]);
@@ -585,7 +588,7 @@ describe('Watcher', () => {
       [savedRequestorderApp],
       [savedRequestorderApp5nRlc],
       [savedRequestorderPrivate],
-      [savedIndependantRequestorder],
+      [savedIndependentRequestorder],
     ] = await Promise.all([
       find(chainId, REQUESTORDERS_COLLECTION, {
         orderHash: requestAppHash,
@@ -597,13 +600,13 @@ describe('Watcher', () => {
         orderHash: requestPrivateHash,
       }),
       find(chainId, REQUESTORDERS_COLLECTION, {
-        orderHash: independantRequestHash,
+        orderHash: independentRequestHash,
       }),
     ]);
     expect(savedRequestorderApp.status).toBe(STATUS_MAP.DEAD);
     expect(savedRequestorderApp5nRlc.status).toBe(STATUS_MAP.OPEN);
     expect(savedRequestorderPrivate.status).toBe(STATUS_MAP.OPEN);
-    expect(savedIndependantRequestorder.status).toBe(STATUS_MAP.OPEN);
+    expect(savedIndependentRequestorder.status).toBe(STATUS_MAP.OPEN);
     expect(socketEmitSpy).toHaveBeenCalledTimes(3);
     expect(
       socketEmitSpy.mock.calls.filter(
@@ -626,13 +629,13 @@ describe('Watcher', () => {
 
   test('OrderMatched (clean app dependant TEE requestOrders)', async () => {
     await iexec.account.deposit(100);
-    const independantApporder = await deployAndGetApporder(iexec);
+    const independentApporder = await deployAndGetApporder(iexec);
     const apporderTee = await iexec.order.signApporder({
-      ...independantApporder,
+      ...independentApporder,
       tag: ['tee'],
     });
     const apporderTee5nRlc = await iexec.order.signApporder({
-      ...independantApporder,
+      ...independentApporder,
       tag: ['tee'],
       appprice: 5,
     });
@@ -651,30 +654,30 @@ describe('Watcher', () => {
       apporder: apporderTee5nRlc,
       workerpoolorder,
     });
-    const independantRequestorder = await getMatchableRequestorder(iexec, {
-      apporder: independantApporder,
+    const independentRequestorder = await getMatchableRequestorder(iexec, {
+      apporder: independentApporder,
       workerpoolorder,
     });
     const [
-      independantAppHash,
+      independentAppHash,
       appTeeHash,
       appTee5nRlcHash,
       requestAppTeeHash,
       requestAppTee5nRlcHash,
-      independantRequestHash,
+      independentRequestHash,
     ] = await Promise.all([
-      iexec.order.hashApporder(independantApporder),
+      iexec.order.hashApporder(independentApporder),
       iexec.order.hashApporder(apporderTee),
       iexec.order.hashApporder(apporderTee5nRlc),
       iexec.order.hashRequestorder(requestorderAppTee),
       iexec.order.hashRequestorder(requestorderAppTee5nRlc),
-      iexec.order.hashRequestorder(independantRequestorder),
+      iexec.order.hashRequestorder(independentRequestorder),
     ]);
     await Promise.all([
       addApporders(chainId, [
         {
-          orderHash: independantAppHash,
-          order: independantApporder,
+          orderHash: independentAppHash,
+          order: independentApporder,
         },
         {
           orderHash: appTeeHash,
@@ -695,8 +698,8 @@ describe('Watcher', () => {
           order: requestorderAppTee5nRlc,
         },
         {
-          orderHash: independantRequestHash,
-          order: independantRequestorder,
+          orderHash: independentRequestHash,
+          order: independentRequestorder,
         },
       ]),
     ]);
@@ -712,7 +715,7 @@ describe('Watcher', () => {
     const [
       [savedRequestorderAppTee],
       [savedRequestorderAppTee5nRlc],
-      [savedIndependantRequestorder],
+      [savedIndependentRequestorder],
     ] = await Promise.all([
       find(chainId, REQUESTORDERS_COLLECTION, {
         orderHash: requestAppTeeHash,
@@ -721,12 +724,12 @@ describe('Watcher', () => {
         orderHash: requestAppTee5nRlcHash,
       }),
       find(chainId, REQUESTORDERS_COLLECTION, {
-        orderHash: independantRequestHash,
+        orderHash: independentRequestHash,
       }),
     ]);
     expect(savedRequestorderAppTee.status).toBe(STATUS_MAP.DEAD);
     expect(savedRequestorderAppTee5nRlc.status).toBe(STATUS_MAP.OPEN);
-    expect(savedIndependantRequestorder.status).toBe(STATUS_MAP.OPEN);
+    expect(savedIndependentRequestorder.status).toBe(STATUS_MAP.OPEN);
     expect(socketEmitSpy).toHaveBeenCalledTimes(3);
     expect(
       socketEmitSpy.mock.calls.filter(
@@ -793,7 +796,7 @@ describe('Watcher', () => {
       datasetorder: datasetorder5nRlc,
       workerpoolorder,
     });
-    const independantRequestorder = await getMatchableRequestorder(iexec, {
+    const independentRequestorder = await getMatchableRequestorder(iexec, {
       apporder,
       workerpoolorder,
     });
@@ -812,7 +815,7 @@ describe('Watcher', () => {
       datasetPrivateHash,
       requestDatasetHash,
       requestDataset5nRlcHash,
-      independantRequestHash,
+      independentRequestHash,
       requestPrivateHash,
     ] = await Promise.all([
       iexec.order.hashApporder(apporder),
@@ -821,7 +824,7 @@ describe('Watcher', () => {
       iexec.order.hashDatasetorder(datasetorderPrivate),
       iexec.order.hashRequestorder(requestorderDataset),
       iexec.order.hashRequestorder(requestorderDataset5nRlc),
-      iexec.order.hashRequestorder(independantRequestorder),
+      iexec.order.hashRequestorder(independentRequestorder),
       iexec.order.hashRequestorder(requestorderPrivate),
     ]);
     await Promise.all([
@@ -859,8 +862,8 @@ describe('Watcher', () => {
           order: requestorderPrivate,
         },
         {
-          orderHash: independantRequestHash,
-          order: independantRequestorder,
+          orderHash: independentRequestHash,
+          order: independentRequestorder,
         },
       ]),
     ]);
@@ -878,7 +881,7 @@ describe('Watcher', () => {
       [savedRequestorderDataset],
       [savedRequestorderDataset5nRlc],
       [savedRequestorderPrivate],
-      [savedIndependantRequestorder],
+      [savedIndependentRequestorder],
     ] = await Promise.all([
       find(chainId, REQUESTORDERS_COLLECTION, {
         orderHash: requestDatasetHash,
@@ -890,13 +893,13 @@ describe('Watcher', () => {
         orderHash: requestPrivateHash,
       }),
       find(chainId, REQUESTORDERS_COLLECTION, {
-        orderHash: independantRequestHash,
+        orderHash: independentRequestHash,
       }),
     ]);
     expect(savedRequestorderDataset.status).toBe(STATUS_MAP.DEAD);
     expect(savedRequestorderDataset5nRlc.status).toBe(STATUS_MAP.OPEN);
     expect(savedRequestorderPrivate.status).toBe(STATUS_MAP.OPEN);
-    expect(savedIndependantRequestorder.status).toBe(STATUS_MAP.OPEN);
+    expect(savedIndependentRequestorder.status).toBe(STATUS_MAP.OPEN);
     expect(socketEmitSpy).toHaveBeenCalledTimes(4);
     expect(
       socketEmitSpy.mock.calls.filter(
@@ -993,7 +996,7 @@ describe('Watcher', () => {
         volume: 10,
       })
       .then((o) => iexec.order.signRequestorder(o, { checkRequest: false }));
-    const independantRequestorder = await iexec.order.signRequestorder(
+    const independentRequestorder = await iexec.order.signRequestorder(
       {
         ...requestorder,
         appmaxprice: 5,
@@ -1013,14 +1016,14 @@ describe('Watcher', () => {
       appPrivateHash,
       requestHash,
       requestPrivateHash,
-      independantRequestHash,
+      independentRequestHash,
     ] = await Promise.all([
       iexec.order.hashApporder(apporder),
       iexec.order.hashApporder(apporder5nRlc),
       iexec.order.hashApporder(apporderPrivate),
       iexec.order.hashRequestorder(requestorder),
       iexec.order.hashRequestorder(requestorderPrivate),
-      iexec.order.hashRequestorder(independantRequestorder),
+      iexec.order.hashRequestorder(independentRequestorder),
     ]);
     await Promise.all([
       addApporders(chainId, [
@@ -1047,8 +1050,8 @@ describe('Watcher', () => {
           order: requestorderPrivate,
         },
         {
-          orderHash: independantRequestHash,
-          order: independantRequestorder,
+          orderHash: independentRequestHash,
+          order: independentRequestorder,
         },
       ]),
     ]);
@@ -1058,7 +1061,7 @@ describe('Watcher', () => {
       [savedApporder],
       [savedRequestorder],
       [savedRequestorderPrivate],
-      [savedIndependantRequestorder],
+      [savedIndependentRequestorder],
     ] = await Promise.all([
       find(chainId, APPORDERS_COLLECTION, {
         orderHash: appHash,
@@ -1070,14 +1073,14 @@ describe('Watcher', () => {
         orderHash: requestPrivateHash,
       }),
       find(chainId, REQUESTORDERS_COLLECTION, {
-        orderHash: independantRequestHash,
+        orderHash: independentRequestHash,
       }),
     ]);
     expect(savedApporder.status).toBe(STATUS_MAP.CANCELED);
     expect(savedApporder.remaining).toBe(0);
     expect(savedRequestorder.status).toBe(STATUS_MAP.DEAD);
     expect(savedRequestorderPrivate.status).toBe(STATUS_MAP.OPEN);
-    expect(savedIndependantRequestorder.status).toBe(STATUS_MAP.OPEN);
+    expect(savedIndependentRequestorder.status).toBe(STATUS_MAP.OPEN);
     expect(socketEmitSpy).toHaveBeenCalledTimes(2);
     expect(
       socketEmitSpy.mock.calls.filter(
@@ -1105,7 +1108,7 @@ describe('Watcher', () => {
       tag: ['tee'],
       appprice: 5,
     });
-    const independantRequestorder = await iexec.order
+    const independentRequestorder = await iexec.order
       .createRequestorder({
         app: apporder.app,
         appmaxprice: 0,
@@ -1117,14 +1120,14 @@ describe('Watcher', () => {
       .then((o) => iexec.order.signRequestorder(o, { checkRequest: false }));
     const requestorderTee = await iexec.order.signRequestorder(
       {
-        ...independantRequestorder,
+        ...independentRequestorder,
         tag: ['tee'],
       },
       { checkRequest: false },
     );
     const requestorderTee5nRlc = await iexec.order.signRequestorder(
       {
-        ...independantRequestorder,
+        ...independentRequestorder,
         tag: ['tee'],
         appmaxprice: 5,
       },
@@ -1136,14 +1139,14 @@ describe('Watcher', () => {
       appTee5nRlcHash,
       requestTeeHash,
       requestTee5nRlcHash,
-      independantRequestHash,
+      independentRequestHash,
     ] = await Promise.all([
       iexec.order.hashApporder(apporder),
       iexec.order.hashApporder(apporderTee),
       iexec.order.hashApporder(apporderTee5nRlc),
       iexec.order.hashRequestorder(requestorderTee),
       iexec.order.hashRequestorder(requestorderTee5nRlc),
-      iexec.order.hashRequestorder(independantRequestorder),
+      iexec.order.hashRequestorder(independentRequestorder),
     ]);
     await Promise.all([
       addApporders(chainId, [
@@ -1170,8 +1173,8 @@ describe('Watcher', () => {
           order: requestorderTee5nRlc,
         },
         {
-          orderHash: independantRequestHash,
-          order: independantRequestorder,
+          orderHash: independentRequestHash,
+          order: independentRequestorder,
         },
       ]),
     ]);
@@ -1181,7 +1184,7 @@ describe('Watcher', () => {
       [savedApporderTee],
       [savedRequestorderTee],
       [savedRequestorderTee5nRlc],
-      [savedIndependantRequestorder],
+      [savedIndependentRequestorder],
     ] = await Promise.all([
       find(chainId, APPORDERS_COLLECTION, {
         orderHash: appTeeHash,
@@ -1193,14 +1196,14 @@ describe('Watcher', () => {
         orderHash: requestTee5nRlcHash,
       }),
       find(chainId, REQUESTORDERS_COLLECTION, {
-        orderHash: independantRequestHash,
+        orderHash: independentRequestHash,
       }),
     ]);
     expect(savedApporderTee.status).toBe(STATUS_MAP.CANCELED);
     expect(savedApporderTee.remaining).toBe(0);
     expect(savedRequestorderTee.status).toBe(STATUS_MAP.DEAD);
     expect(savedRequestorderTee5nRlc.status).toBe(STATUS_MAP.OPEN);
-    expect(savedIndependantRequestorder.status).toBe(STATUS_MAP.OPEN);
+    expect(savedIndependentRequestorder.status).toBe(STATUS_MAP.OPEN);
     expect(socketEmitSpy).toHaveBeenCalledTimes(2);
     expect(
       socketEmitSpy.mock.calls.filter(
@@ -1294,7 +1297,7 @@ describe('Watcher', () => {
         volume: 10,
       })
       .then((o) => iexec.order.signRequestorder(o, { checkRequest: false }));
-    const independantRequestorder = await iexec.order.signRequestorder(
+    const independentRequestorder = await iexec.order.signRequestorder(
       {
         ...requestorder,
         datasetmaxprice: 5,
@@ -1315,7 +1318,7 @@ describe('Watcher', () => {
       datasetPrivateHash,
       requestHash,
       requestPrivateHash,
-      independantRequestHash,
+      independentRequestHash,
     ] = await Promise.all([
       iexec.order.hashApporder(apporder),
       iexec.order.hashDatasetorder(datasetorder),
@@ -1323,7 +1326,7 @@ describe('Watcher', () => {
       iexec.order.hashDatasetorder(datasetorderPrivate),
       iexec.order.hashRequestorder(requestorder),
       iexec.order.hashRequestorder(requestorderPrivate),
-      iexec.order.hashRequestorder(independantRequestorder),
+      iexec.order.hashRequestorder(independentRequestorder),
     ]);
     await Promise.all([
       addApporders(chainId, [
@@ -1356,8 +1359,8 @@ describe('Watcher', () => {
           order: requestorderPrivate,
         },
         {
-          orderHash: independantRequestHash,
-          order: independantRequestorder,
+          orderHash: independentRequestHash,
+          order: independentRequestorder,
         },
       ]),
     ]);
@@ -1369,7 +1372,7 @@ describe('Watcher', () => {
       [savedDatasetorder5nRlc],
       [savedRequestorder],
       [savedRequestorderPrivate],
-      [savedIndependantRequestorder],
+      [savedIndependentRequestorder],
     ] = await Promise.all([
       find(chainId, APPORDERS_COLLECTION, {
         orderHash: appHash,
@@ -1387,7 +1390,7 @@ describe('Watcher', () => {
         orderHash: requestPrivateHash,
       }),
       find(chainId, REQUESTORDERS_COLLECTION, {
-        orderHash: independantRequestHash,
+        orderHash: independentRequestHash,
       }),
     ]);
     expect(savedDatasetorder.status).toBe(STATUS_MAP.CANCELED);
@@ -1396,7 +1399,7 @@ describe('Watcher', () => {
     expect(savedApporder.status).toBe(STATUS_MAP.OPEN);
     expect(savedRequestorder.status).toBe(STATUS_MAP.DEAD);
     expect(savedRequestorderPrivate.status).toBe(STATUS_MAP.OPEN);
-    expect(savedIndependantRequestorder.status).toBe(STATUS_MAP.OPEN);
+    expect(savedIndependentRequestorder.status).toBe(STATUS_MAP.OPEN);
     expect(socketEmitSpy).toHaveBeenCalledTimes(2);
     expect(
       socketEmitSpy.mock.calls.filter(
@@ -1487,7 +1490,7 @@ describe('Watcher', () => {
   test('Transfer StakedRlc (clean dependant workerpoolorder)', async () => {
     await iexec.account.deposit(100);
     const address = await iexec.wallet.getAddress();
-    const independantWorkerpoolorder = await deployAndGetWorkerpoolorder(
+    const independentWorkerpoolorder = await deployAndGetWorkerpoolorder(
       iexec,
       {
         workerpoolprice: 36,
@@ -1495,30 +1498,30 @@ describe('Watcher', () => {
       },
     );
     const workerpoolorderTooExpensive = await iexec.order.signWorkerpoolorder({
-      ...independantWorkerpoolorder,
+      ...independentWorkerpoolorder,
       workerpoolprice: 104,
       volume: 1,
     });
     const workerpoolorderCumulativeTooExpensive =
       await iexec.order.signWorkerpoolorder({
-        ...independantWorkerpoolorder,
+        ...independentWorkerpoolorder,
         workerpoolprice: 37,
         volume: 3,
       });
     const [
-      independantWorkerpoolHash,
+      independentWorkerpoolHash,
       workerpoolorderTooExpensiveHash,
       workerpoolorderCumulativeTooExpensiveHash,
     ] = await Promise.all([
-      iexec.order.hashWorkerpoolorder(independantWorkerpoolorder),
+      iexec.order.hashWorkerpoolorder(independentWorkerpoolorder),
       iexec.order.hashWorkerpoolorder(workerpoolorderTooExpensive),
       iexec.order.hashWorkerpoolorder(workerpoolorderCumulativeTooExpensive),
     ]);
     await Promise.all([
       addWorkerpoolorders(chainId, [
         {
-          orderHash: independantWorkerpoolHash,
-          order: independantWorkerpoolorder,
+          orderHash: independentWorkerpoolHash,
+          order: independentWorkerpoolorder,
           signer: address,
         },
         {
@@ -1537,12 +1540,12 @@ describe('Watcher', () => {
     await iexec.account.withdraw(stake.sub(new utils.BN(30)));
     await sleep(PROCESS_TRIGGERED_EVENT_TIMEOUT);
     const [
-      [savedIndependantWorkerpoolorder],
-      [savedworkerpoolorderTooExpensive],
+      [savedIndependentWorkerpoolorder],
+      [savedWorkerpoolorderTooExpensive],
       [savedWorkerpoolorderCumulativeTooExpensive],
     ] = await Promise.all([
       find(chainId, WORKERPOOLORDERS_COLLECTION, {
-        orderHash: independantWorkerpoolHash,
+        orderHash: independentWorkerpoolHash,
       }),
       find(chainId, WORKERPOOLORDERS_COLLECTION, {
         orderHash: workerpoolorderTooExpensiveHash,
@@ -1551,8 +1554,8 @@ describe('Watcher', () => {
         orderHash: workerpoolorderCumulativeTooExpensiveHash,
       }),
     ]);
-    expect(savedIndependantWorkerpoolorder.status).toBe(STATUS_MAP.OPEN);
-    expect(savedworkerpoolorderTooExpensive.status).toBe(STATUS_MAP.DEAD);
+    expect(savedIndependentWorkerpoolorder.status).toBe(STATUS_MAP.OPEN);
+    expect(savedWorkerpoolorderTooExpensive.status).toBe(STATUS_MAP.DEAD);
     expect(savedWorkerpoolorderCumulativeTooExpensive.status).toBe(
       STATUS_MAP.DEAD,
     );
@@ -1588,7 +1591,7 @@ describe('Watcher', () => {
   test('Transfer StakedRlc (clean dependant requestorder)', async () => {
     await iexec.account.deposit(100);
     const address = await iexec.wallet.getAddress();
-    const independantRequestorder = await iexec.order
+    const independentRequestorder = await iexec.order
       .createRequestorder({
         app: utils.NULL_ADDRESS,
         appmaxprice: 1,
@@ -1601,7 +1604,7 @@ describe('Watcher', () => {
       .then((o) => iexec.order.signRequestorder(o, { checkRequest: false }));
     const requestorderAppTooExpensive = await iexec.order.signRequestorder(
       {
-        ...independantRequestorder,
+        ...independentRequestorder,
         appmaxprice: 4,
         datasetmaxprice: 0,
         workerpoolmaxprice: 0,
@@ -1610,7 +1613,7 @@ describe('Watcher', () => {
     );
     const requestorderDatasetTooExpensive = await iexec.order.signRequestorder(
       {
-        ...independantRequestorder,
+        ...independentRequestorder,
         appmaxprice: 0,
         datasetmaxprice: 4,
         workerpoolmaxprice: 0,
@@ -1620,7 +1623,7 @@ describe('Watcher', () => {
     const requestorderWorkerpoolTooExpensive =
       await iexec.order.signRequestorder(
         {
-          ...independantRequestorder,
+          ...independentRequestorder,
           appmaxprice: 0,
           datasetmaxprice: 0,
           workerpoolmaxprice: 4,
@@ -1630,7 +1633,7 @@ describe('Watcher', () => {
     const requestorderCumulativeTooExpensive =
       await iexec.order.signRequestorder(
         {
-          ...independantRequestorder,
+          ...independentRequestorder,
           appmaxprice: 2,
           datasetmaxprice: 2,
           workerpoolmaxprice: 2,
@@ -1638,13 +1641,13 @@ describe('Watcher', () => {
         { checkRequest: false },
       );
     const [
-      independantRequestHash,
+      independentRequestHash,
       requestorderAppTooExpensiveHash,
       requestorderDatasetTooExpensiveHash,
       requestorderWorkerpoolTooExpensiveHash,
       requestorderCumulativeTooExpensiveHash,
     ] = await Promise.all([
-      iexec.order.hashRequestorder(independantRequestorder),
+      iexec.order.hashRequestorder(independentRequestorder),
       iexec.order.hashRequestorder(requestorderAppTooExpensive),
       iexec.order.hashRequestorder(requestorderDatasetTooExpensive),
       iexec.order.hashRequestorder(requestorderWorkerpoolTooExpensive),
@@ -1653,8 +1656,8 @@ describe('Watcher', () => {
     await Promise.all([
       addRequestorders(chainId, [
         {
-          orderHash: independantRequestHash,
-          order: independantRequestorder,
+          orderHash: independentRequestHash,
+          order: independentRequestorder,
           signer: address,
         },
         {
@@ -1683,14 +1686,14 @@ describe('Watcher', () => {
     await iexec.account.withdraw(stake.sub(new utils.BN(10)));
     await sleep(PROCESS_TRIGGERED_EVENT_TIMEOUT);
     const [
-      [savedIndependantRequestorder],
+      [savedIndependentRequestorder],
       [savedRequestorderAppTooExpensive],
       [savedRequestorderDatasetTooExpensive],
       [savedRequestorderWorkerpoolTooExpensive],
       [savedRequestorderCumulativeTooExpensive],
     ] = await Promise.all([
       find(chainId, REQUESTORDERS_COLLECTION, {
-        orderHash: independantRequestHash,
+        orderHash: independentRequestHash,
       }),
       find(chainId, REQUESTORDERS_COLLECTION, {
         orderHash: requestorderAppTooExpensiveHash,
@@ -1705,7 +1708,7 @@ describe('Watcher', () => {
         orderHash: requestorderCumulativeTooExpensiveHash,
       }),
     ]);
-    expect(savedIndependantRequestorder.status).toBe(STATUS_MAP.OPEN);
+    expect(savedIndependentRequestorder.status).toBe(STATUS_MAP.OPEN);
     expect(savedRequestorderAppTooExpensive.status).toBe(STATUS_MAP.DEAD);
     expect(savedRequestorderDatasetTooExpensive.status).toBe(STATUS_MAP.DEAD);
     expect(savedRequestorderWorkerpoolTooExpensive.status).toBe(
@@ -1785,6 +1788,7 @@ describe('Watcher', () => {
       order.app,
       '0x000000000000000000000000000000000000dead',
     );
+    await sleep(PROCESS_TRIGGERED_EVENT_TIMEOUT);
     const [savedOrder] = await find(chainId, APPORDERS_COLLECTION, {
       orderHash,
     });
@@ -1813,6 +1817,7 @@ describe('Watcher', () => {
       order.dataset,
       '0x000000000000000000000000000000000000dead',
     );
+    await sleep(PROCESS_TRIGGERED_EVENT_TIMEOUT);
     const [savedOrder] = await find(chainId, DATASETORDERS_COLLECTION, {
       orderHash,
     });
@@ -1843,6 +1848,7 @@ describe('Watcher', () => {
       order.workerpool,
       '0x000000000000000000000000000000000000dead',
     );
+    await sleep(PROCESS_TRIGGERED_EVENT_TIMEOUT);
     const [savedOrder] = await find(chainId, WORKERPOOLORDERS_COLLECTION, {
       orderHash,
     });
@@ -1859,8 +1865,9 @@ describe('Watcher', () => {
 });
 
 describe('Recover on start', () => {
-  beforeAll(async () => {
+  beforeEach(async () => {
     await dropDB(chainId);
+    await fastForwardToLastBlock(chainId, rpc);
   });
 
   afterEach(async () => {
@@ -2172,7 +2179,7 @@ describe('Recover on start', () => {
   test('OrderMatched (clean app dependant requestOrders)', async () => {
     await iexec.account.deposit(100);
     const apporder = await deployAndGetApporder(iexec);
-    const independantApporder = await deployAndGetApporder(iexec);
+    const independentApporder = await deployAndGetApporder(iexec);
     const apporder5nRlc = await iexec.order.signApporder({
       ...apporder,
       appprice: 5,
@@ -2190,30 +2197,30 @@ describe('Recover on start', () => {
       apporder: apporder5nRlc,
       workerpoolorder,
     });
-    const independantRequestorder = await getMatchableRequestorder(iexec, {
-      apporder: independantApporder,
+    const independentRequestorder = await getMatchableRequestorder(iexec, {
+      apporder: independentApporder,
       workerpoolorder,
     });
     const [
-      independantAppHash,
+      independentAppHash,
       appHash,
       app5nRlcHash,
       requestAppHash,
       requestApp5nRlcHash,
-      independantRequestHash,
+      independentRequestHash,
     ] = await Promise.all([
-      iexec.order.hashApporder(independantApporder),
+      iexec.order.hashApporder(independentApporder),
       iexec.order.hashApporder(apporder),
       iexec.order.hashApporder(apporder5nRlc),
       iexec.order.hashRequestorder(requestorderApp),
       iexec.order.hashRequestorder(requestorderApp5nRlc),
-      iexec.order.hashRequestorder(independantRequestorder),
+      iexec.order.hashRequestorder(independentRequestorder),
     ]);
     await Promise.all([
       addApporders(chainId, [
         {
-          orderHash: independantAppHash,
-          order: independantApporder,
+          orderHash: independentAppHash,
+          order: independentApporder,
         },
         {
           orderHash: appHash,
@@ -2234,8 +2241,8 @@ describe('Recover on start', () => {
           order: requestorderApp5nRlc,
         },
         {
-          orderHash: independantRequestHash,
-          order: independantRequestorder,
+          orderHash: independentRequestHash,
+          order: independentRequestorder,
         },
       ]),
     ]);
@@ -2252,7 +2259,7 @@ describe('Recover on start', () => {
     const [
       [savedRequestorderApp],
       [savedRequestorderApp5nRlc],
-      [savedIndependantRequestorder],
+      [savedIndependentRequestorder],
     ] = await Promise.all([
       find(chainId, REQUESTORDERS_COLLECTION, {
         orderHash: requestAppHash,
@@ -2261,23 +2268,23 @@ describe('Recover on start', () => {
         orderHash: requestApp5nRlcHash,
       }),
       find(chainId, REQUESTORDERS_COLLECTION, {
-        orderHash: independantRequestHash,
+        orderHash: independentRequestHash,
       }),
     ]);
     expect(savedRequestorderApp.status).toBe(STATUS_MAP.DEAD);
     expect(savedRequestorderApp5nRlc.status).toBe(STATUS_MAP.OPEN);
-    expect(savedIndependantRequestorder.status).toBe(STATUS_MAP.OPEN);
+    expect(savedIndependentRequestorder.status).toBe(STATUS_MAP.OPEN);
   });
 
   test('OrderMatched (clean app dependant TEE requestOrders)', async () => {
     await iexec.account.deposit(100);
-    const independantApporder = await deployAndGetApporder(iexec);
+    const independentApporder = await deployAndGetApporder(iexec);
     const apporderTee = await iexec.order.signApporder({
-      ...independantApporder,
+      ...independentApporder,
       tag: ['tee'],
     });
     const apporderTee5nRlc = await iexec.order.signApporder({
-      ...independantApporder,
+      ...independentApporder,
       tag: ['tee'],
       appprice: 5,
     });
@@ -2296,30 +2303,30 @@ describe('Recover on start', () => {
       apporder: apporderTee5nRlc,
       workerpoolorder,
     });
-    const independantRequestorder = await getMatchableRequestorder(iexec, {
-      apporder: independantApporder,
+    const independentRequestorder = await getMatchableRequestorder(iexec, {
+      apporder: independentApporder,
       workerpoolorder,
     });
     const [
-      independantAppHash,
+      independentAppHash,
       appTeeHash,
       appTee5nRlcHash,
       requestAppTeeHash,
       requestAppTee5nRlcHash,
-      independantRequestHash,
+      independentRequestHash,
     ] = await Promise.all([
-      iexec.order.hashApporder(independantApporder),
+      iexec.order.hashApporder(independentApporder),
       iexec.order.hashApporder(apporderTee),
       iexec.order.hashApporder(apporderTee5nRlc),
       iexec.order.hashRequestorder(requestorderAppTee),
       iexec.order.hashRequestorder(requestorderAppTee5nRlc),
-      iexec.order.hashRequestorder(independantRequestorder),
+      iexec.order.hashRequestorder(independentRequestorder),
     ]);
     await Promise.all([
       addApporders(chainId, [
         {
-          orderHash: independantAppHash,
-          order: independantApporder,
+          orderHash: independentAppHash,
+          order: independentApporder,
         },
         {
           orderHash: appTeeHash,
@@ -2340,8 +2347,8 @@ describe('Recover on start', () => {
           order: requestorderAppTee5nRlc,
         },
         {
-          orderHash: independantRequestHash,
-          order: independantRequestorder,
+          orderHash: independentRequestHash,
+          order: independentRequestorder,
         },
       ]),
     ]);
@@ -2358,7 +2365,7 @@ describe('Recover on start', () => {
     const [
       [savedRequestorderAppTee],
       [savedRequestorderAppTee5nRlc],
-      [savedIndependantRequestorder],
+      [savedIndependentRequestorder],
     ] = await Promise.all([
       find(chainId, REQUESTORDERS_COLLECTION, {
         orderHash: requestAppTeeHash,
@@ -2367,12 +2374,12 @@ describe('Recover on start', () => {
         orderHash: requestAppTee5nRlcHash,
       }),
       find(chainId, REQUESTORDERS_COLLECTION, {
-        orderHash: independantRequestHash,
+        orderHash: independentRequestHash,
       }),
     ]);
     expect(savedRequestorderAppTee.status).toBe(STATUS_MAP.DEAD);
     expect(savedRequestorderAppTee5nRlc.status).toBe(STATUS_MAP.OPEN);
-    expect(savedIndependantRequestorder.status).toBe(STATUS_MAP.OPEN);
+    expect(savedIndependentRequestorder.status).toBe(STATUS_MAP.OPEN);
   });
 
   test('OrderMatched (clean dataset dependant requestOrders)', async () => {
@@ -2398,7 +2405,7 @@ describe('Recover on start', () => {
       datasetorder: datasetorder5nRlc,
       workerpoolorder,
     });
-    const independantRequestorder = await getMatchableRequestorder(iexec, {
+    const independentRequestorder = await getMatchableRequestorder(iexec, {
       apporder,
       workerpoolorder,
     });
@@ -2408,14 +2415,14 @@ describe('Recover on start', () => {
       dataset5nRlcHash,
       requestDatasetHash,
       requestDataset5nRlcHash,
-      independantRequestHash,
+      independentRequestHash,
     ] = await Promise.all([
       iexec.order.hashApporder(apporder),
       iexec.order.hashDatasetorder(datasetorder),
       iexec.order.hashDatasetorder(datasetorder5nRlc),
       iexec.order.hashRequestorder(requestorderDataset),
       iexec.order.hashRequestorder(requestorderDataset5nRlc),
-      iexec.order.hashRequestorder(independantRequestorder),
+      iexec.order.hashRequestorder(independentRequestorder),
     ]);
     await Promise.all([
       addApporders(chainId, [
@@ -2444,8 +2451,8 @@ describe('Recover on start', () => {
           order: requestorderDataset5nRlc,
         },
         {
-          orderHash: independantRequestHash,
-          order: independantRequestorder,
+          orderHash: independentRequestHash,
+          order: independentRequestorder,
         },
       ]),
     ]);
@@ -2463,7 +2470,7 @@ describe('Recover on start', () => {
     const [
       [savedRequestorderDataset],
       [savedRequestorderDataset5nRlc],
-      [savedIndependantRequestorder],
+      [savedIndependentRequestorder],
     ] = await Promise.all([
       find(chainId, REQUESTORDERS_COLLECTION, {
         orderHash: requestDatasetHash,
@@ -2472,12 +2479,12 @@ describe('Recover on start', () => {
         orderHash: requestDataset5nRlcHash,
       }),
       find(chainId, REQUESTORDERS_COLLECTION, {
-        orderHash: independantRequestHash,
+        orderHash: independentRequestHash,
       }),
     ]);
     expect(savedRequestorderDataset.status).toBe(STATUS_MAP.DEAD);
     expect(savedRequestorderDataset5nRlc.status).toBe(STATUS_MAP.OPEN);
-    expect(savedIndependantRequestorder.status).toBe(STATUS_MAP.OPEN);
+    expect(savedIndependentRequestorder.status).toBe(STATUS_MAP.OPEN);
   });
 
   test('ClosedAppOrder (cancel order)', async () => {
@@ -2523,7 +2530,7 @@ describe('Recover on start', () => {
         volume: 10,
       })
       .then((o) => iexec.order.signRequestorder(o, { checkRequest: false }));
-    const independantRequestorder = await iexec.order.signRequestorder(
+    const independentRequestorder = await iexec.order.signRequestorder(
       {
         ...requestorder,
         appmaxprice: 5,
@@ -2535,13 +2542,13 @@ describe('Recover on start', () => {
       app5nRlcHash,
       datasetHash,
       requestHash,
-      independantRequestHash,
+      independentRequestHash,
     ] = await Promise.all([
       iexec.order.hashApporder(apporder),
       iexec.order.hashApporder(apporder5nRlc),
       iexec.order.hashDatasetorder(datasetorder),
       iexec.order.hashRequestorder(requestorder),
-      iexec.order.hashRequestorder(independantRequestorder),
+      iexec.order.hashRequestorder(independentRequestorder),
     ]);
     await Promise.all([
       addApporders(chainId, [
@@ -2566,8 +2573,8 @@ describe('Recover on start', () => {
           order: requestorder,
         },
         {
-          orderHash: independantRequestHash,
-          order: independantRequestorder,
+          orderHash: independentRequestHash,
+          order: independentRequestorder,
         },
       ]),
     ]);
@@ -2576,7 +2583,7 @@ describe('Recover on start', () => {
       [savedApporder],
       [savedDatasetorder],
       [savedRequestorder],
-      [savedIndependantRequestorder],
+      [savedIndependentRequestorder],
     ] = await Promise.all([
       find(chainId, APPORDERS_COLLECTION, {
         orderHash: appHash,
@@ -2588,20 +2595,20 @@ describe('Recover on start', () => {
         orderHash: requestHash,
       }),
       find(chainId, REQUESTORDERS_COLLECTION, {
-        orderHash: independantRequestHash,
+        orderHash: independentRequestHash,
       }),
     ]);
     expect(savedApporder.status).toBe(STATUS_MAP.OPEN);
     expect(savedDatasetorder.status).toBe(STATUS_MAP.OPEN);
     expect(savedRequestorder.status).toBe(STATUS_MAP.OPEN);
-    expect(savedIndependantRequestorder.status).toBe(STATUS_MAP.OPEN);
+    expect(savedIndependentRequestorder.status).toBe(STATUS_MAP.OPEN);
     await start({ syncWatcher: false, replayer: false });
     await sleep(PROCESS_TRIGGERED_EVENT_TIMEOUT);
     const [
       [updatedApporder],
       [updatedDatasetorder],
       [updatedRequestorder],
-      [updatedIndependantRequestorder],
+      [updatedIndependentRequestorder],
     ] = await Promise.all([
       find(chainId, APPORDERS_COLLECTION, {
         orderHash: appHash,
@@ -2613,14 +2620,14 @@ describe('Recover on start', () => {
         orderHash: requestHash,
       }),
       find(chainId, REQUESTORDERS_COLLECTION, {
-        orderHash: independantRequestHash,
+        orderHash: independentRequestHash,
       }),
     ]);
     expect(updatedApporder.status).toBe(STATUS_MAP.CANCELED);
     expect(updatedApporder.remaining).toBe(0);
     expect(updatedDatasetorder.status).toBe(STATUS_MAP.OPEN);
     expect(updatedRequestorder.status).toBe(STATUS_MAP.DEAD);
-    expect(updatedIndependantRequestorder.status).toBe(STATUS_MAP.OPEN);
+    expect(updatedIndependentRequestorder.status).toBe(STATUS_MAP.OPEN);
   });
 
   test('ClosedAppOrder (clean dependant TEE requestorder)', async () => {
@@ -2634,7 +2641,7 @@ describe('Recover on start', () => {
       tag: ['tee'],
       appprice: 5,
     });
-    const independantRequestorder = await iexec.order
+    const independentRequestorder = await iexec.order
       .createRequestorder({
         app: apporder.app,
         appmaxprice: 0,
@@ -2646,14 +2653,14 @@ describe('Recover on start', () => {
       .then((o) => iexec.order.signRequestorder(o, { checkRequest: false }));
     const requestorderTee = await iexec.order.signRequestorder(
       {
-        ...independantRequestorder,
+        ...independentRequestorder,
         tag: ['tee'],
       },
       { checkRequest: false },
     );
     const requestorderTee5nRlc = await iexec.order.signRequestorder(
       {
-        ...independantRequestorder,
+        ...independentRequestorder,
         tag: ['tee'],
         appmaxprice: 5,
       },
@@ -2665,14 +2672,14 @@ describe('Recover on start', () => {
       appTee5nRlcHash,
       requestTeeHash,
       requestTee5nRlcHash,
-      independantRequestHash,
+      independentRequestHash,
     ] = await Promise.all([
       iexec.order.hashApporder(apporder),
       iexec.order.hashApporder(apporderTee),
       iexec.order.hashApporder(apporderTee5nRlc),
       iexec.order.hashRequestorder(requestorderTee),
       iexec.order.hashRequestorder(requestorderTee5nRlc),
-      iexec.order.hashRequestorder(independantRequestorder),
+      iexec.order.hashRequestorder(independentRequestorder),
     ]);
     await Promise.all([
       addApporders(chainId, [
@@ -2699,8 +2706,8 @@ describe('Recover on start', () => {
           order: requestorderTee5nRlc,
         },
         {
-          orderHash: independantRequestHash,
-          order: independantRequestorder,
+          orderHash: independentRequestHash,
+          order: independentRequestorder,
         },
       ]),
     ]);
@@ -2711,7 +2718,7 @@ describe('Recover on start', () => {
       [savedApporderTee],
       [savedRequestorderTee],
       [savedRequestorderTee5nRlc],
-      [savedIndependantRequestorder],
+      [savedIndependentRequestorder],
     ] = await Promise.all([
       find(chainId, APPORDERS_COLLECTION, {
         orderHash: appTeeHash,
@@ -2723,14 +2730,14 @@ describe('Recover on start', () => {
         orderHash: requestTee5nRlcHash,
       }),
       find(chainId, REQUESTORDERS_COLLECTION, {
-        orderHash: independantRequestHash,
+        orderHash: independentRequestHash,
       }),
     ]);
     expect(savedApporderTee.status).toBe(STATUS_MAP.CANCELED);
     expect(savedApporderTee.remaining).toBe(0);
     expect(savedRequestorderTee.status).toBe(STATUS_MAP.DEAD);
     expect(savedRequestorderTee5nRlc.status).toBe(STATUS_MAP.OPEN);
-    expect(savedIndependantRequestorder.status).toBe(STATUS_MAP.OPEN);
+    expect(savedIndependentRequestorder.status).toBe(STATUS_MAP.OPEN);
   });
 
   test('ClosedDatasetOrder (cancel order)', async () => {
@@ -2782,7 +2789,7 @@ describe('Recover on start', () => {
         volume: 10,
       })
       .then((o) => iexec.order.signRequestorder(o, { checkRequest: false }));
-    const independantRequestorder = await iexec.order.signRequestorder(
+    const independentRequestorder = await iexec.order.signRequestorder(
       {
         ...requestorder,
         datasetmaxprice: 5,
@@ -2794,13 +2801,13 @@ describe('Recover on start', () => {
       datasetHash,
       dataset5nRlcHash,
       requestHash,
-      independantRequestHash,
+      independentRequestHash,
     ] = await Promise.all([
       iexec.order.hashApporder(apporder),
       iexec.order.hashDatasetorder(datasetorder),
       iexec.order.hashDatasetorder(datasetorder5nRlc),
       iexec.order.hashRequestorder(requestorder),
-      iexec.order.hashRequestorder(independantRequestorder),
+      iexec.order.hashRequestorder(independentRequestorder),
     ]);
     await Promise.all([
       addApporders(chainId, [
@@ -2825,8 +2832,8 @@ describe('Recover on start', () => {
           order: requestorder,
         },
         {
-          orderHash: independantRequestHash,
-          order: independantRequestorder,
+          orderHash: independentRequestHash,
+          order: independentRequestorder,
         },
       ]),
     ]);
@@ -2836,7 +2843,7 @@ describe('Recover on start', () => {
       [savedDatasetorder],
       [savedDatasetorder5nRlc],
       [savedRequestorder],
-      [savedIndependantRequestorder],
+      [savedIndependentRequestorder],
     ] = await Promise.all([
       find(chainId, APPORDERS_COLLECTION, {
         orderHash: appHash,
@@ -2851,14 +2858,14 @@ describe('Recover on start', () => {
         orderHash: requestHash,
       }),
       find(chainId, REQUESTORDERS_COLLECTION, {
-        orderHash: independantRequestHash,
+        orderHash: independentRequestHash,
       }),
     ]);
     expect(savedDatasetorder.status).toBe(STATUS_MAP.OPEN);
     expect(savedDatasetorder5nRlc.status).toBe(STATUS_MAP.OPEN);
     expect(savedApporder.status).toBe(STATUS_MAP.OPEN);
     expect(savedRequestorder.status).toBe(STATUS_MAP.OPEN);
-    expect(savedIndependantRequestorder.status).toBe(STATUS_MAP.OPEN);
+    expect(savedIndependentRequestorder.status).toBe(STATUS_MAP.OPEN);
     await start({ syncWatcher: false, replayer: false });
     await sleep(PROCESS_TRIGGERED_EVENT_TIMEOUT);
     const [
@@ -2866,7 +2873,7 @@ describe('Recover on start', () => {
       [updatedDatasetorder],
       [updatedDatasetorder5nRlc],
       [updatedRequestorder],
-      [updatedIndependantRequestorder],
+      [updatedIndependentRequestorder],
     ] = await Promise.all([
       find(chainId, APPORDERS_COLLECTION, {
         orderHash: appHash,
@@ -2881,7 +2888,7 @@ describe('Recover on start', () => {
         orderHash: requestHash,
       }),
       find(chainId, REQUESTORDERS_COLLECTION, {
-        orderHash: independantRequestHash,
+        orderHash: independentRequestHash,
       }),
     ]);
     expect(updatedDatasetorder.status).toBe(STATUS_MAP.CANCELED);
@@ -2889,7 +2896,7 @@ describe('Recover on start', () => {
     expect(updatedDatasetorder5nRlc.status).toBe(STATUS_MAP.OPEN);
     expect(updatedApporder.status).toBe(STATUS_MAP.OPEN);
     expect(updatedRequestorder.status).toBe(STATUS_MAP.DEAD);
-    expect(updatedIndependantRequestorder.status).toBe(STATUS_MAP.OPEN);
+    expect(updatedIndependentRequestorder.status).toBe(STATUS_MAP.OPEN);
   });
 
   test('ClosedWorkerpoolOrder (cancel order)', async () => {
@@ -2951,7 +2958,7 @@ describe('Recover on start', () => {
   test('Transfer StakedRlc (clean dependant workerpoolorder)', async () => {
     await iexec.account.deposit(100);
     const address = await iexec.wallet.getAddress();
-    const independantWorkerpoolorder = await deployAndGetWorkerpoolorder(
+    const independentWorkerpoolorder = await deployAndGetWorkerpoolorder(
       iexec,
       {
         workerpoolprice: 0,
@@ -2959,28 +2966,28 @@ describe('Recover on start', () => {
       },
     );
     const finallyGoodWorkerpoolorder = await iexec.order.signWorkerpoolorder({
-      ...independantWorkerpoolorder,
+      ...independentWorkerpoolorder,
       workerpoolprice: 100,
       volume: 1,
     });
     const workerpoolorderTooExpensive = await iexec.order.signWorkerpoolorder({
-      ...independantWorkerpoolorder,
+      ...independentWorkerpoolorder,
       workerpoolprice: 104,
       volume: 1,
     });
     const workerpoolorderCumulativeTooExpensive =
       await iexec.order.signWorkerpoolorder({
-        ...independantWorkerpoolorder,
+        ...independentWorkerpoolorder,
         workerpoolprice: 37,
         volume: 3,
       });
     const [
-      independantWorkerpoolHash,
+      independentWorkerpoolHash,
       finallyGoodWorkerpoolHash,
       workerpoolorderTooExpensiveHash,
       workerpoolorderCumulativeTooExpensiveHash,
     ] = await Promise.all([
-      iexec.order.hashWorkerpoolorder(independantWorkerpoolorder),
+      iexec.order.hashWorkerpoolorder(independentWorkerpoolorder),
       iexec.order.hashWorkerpoolorder(finallyGoodWorkerpoolorder),
       iexec.order.hashWorkerpoolorder(workerpoolorderTooExpensive),
       iexec.order.hashWorkerpoolorder(workerpoolorderCumulativeTooExpensive),
@@ -2988,8 +2995,8 @@ describe('Recover on start', () => {
     await Promise.all([
       addWorkerpoolorders(chainId, [
         {
-          orderHash: independantWorkerpoolHash,
-          order: independantWorkerpoolorder,
+          orderHash: independentWorkerpoolHash,
+          order: independentWorkerpoolorder,
           signer: address,
         },
         {
@@ -3013,13 +3020,13 @@ describe('Recover on start', () => {
     await iexec.account.withdraw(stake);
     await iexec.account.deposit(30);
     const [
-      [savedIndependantWorkerpoolorder],
+      [savedIndependentWorkerpoolorder],
       [savedFinallyGoodWorkerpoolorder],
-      [savedworkerpoolorderTooExpensive],
+      [savedWorkerpoolorderTooExpensive],
       [savedWorkerpoolorderCumulativeTooExpensive],
     ] = await Promise.all([
       find(chainId, WORKERPOOLORDERS_COLLECTION, {
-        orderHash: independantWorkerpoolHash,
+        orderHash: independentWorkerpoolHash,
       }),
       find(chainId, WORKERPOOLORDERS_COLLECTION, {
         orderHash: finallyGoodWorkerpoolHash,
@@ -3031,22 +3038,22 @@ describe('Recover on start', () => {
         orderHash: workerpoolorderCumulativeTooExpensiveHash,
       }),
     ]);
-    expect(savedIndependantWorkerpoolorder.status).toBe(STATUS_MAP.OPEN);
+    expect(savedIndependentWorkerpoolorder.status).toBe(STATUS_MAP.OPEN);
     expect(savedFinallyGoodWorkerpoolorder.status).toBe(STATUS_MAP.OPEN);
-    expect(savedworkerpoolorderTooExpensive.status).toBe(STATUS_MAP.OPEN);
+    expect(savedWorkerpoolorderTooExpensive.status).toBe(STATUS_MAP.OPEN);
     expect(savedWorkerpoolorderCumulativeTooExpensive.status).toBe(
       STATUS_MAP.OPEN,
     );
     await start({ syncWatcher: false, replayer: false });
     await sleep(PROCESS_TRIGGERED_EVENT_TIMEOUT);
     const [
-      [updatedIndependantWorkerpoolorder],
+      [updatedIndependentWorkerpoolorder],
       [updatedFinallyGoodWorkerpoolorder],
-      [updatedworkerpoolorderTooExpensive],
+      [updatedWorkerpoolorderTooExpensive],
       [updatedWorkerpoolorderCumulativeTooExpensive],
     ] = await Promise.all([
       find(chainId, WORKERPOOLORDERS_COLLECTION, {
-        orderHash: independantWorkerpoolHash,
+        orderHash: independentWorkerpoolHash,
       }),
       find(chainId, WORKERPOOLORDERS_COLLECTION, {
         orderHash: finallyGoodWorkerpoolHash,
@@ -3058,9 +3065,9 @@ describe('Recover on start', () => {
         orderHash: workerpoolorderCumulativeTooExpensiveHash,
       }),
     ]);
-    expect(updatedIndependantWorkerpoolorder.status).toBe(STATUS_MAP.OPEN);
+    expect(updatedIndependentWorkerpoolorder.status).toBe(STATUS_MAP.OPEN);
     expect(updatedFinallyGoodWorkerpoolorder.status).toBe(STATUS_MAP.OPEN);
-    expect(updatedworkerpoolorderTooExpensive.status).toBe(STATUS_MAP.DEAD);
+    expect(updatedWorkerpoolorderTooExpensive.status).toBe(STATUS_MAP.DEAD);
     expect(updatedWorkerpoolorderCumulativeTooExpensive.status).toBe(
       STATUS_MAP.DEAD,
     );
@@ -3069,7 +3076,7 @@ describe('Recover on start', () => {
   test('Transfer StakedRlc (clean dependant requestorder)', async () => {
     await iexec.account.deposit(100);
     const address = await iexec.wallet.getAddress();
-    const independantRequestorder = await iexec.order
+    const independentRequestorder = await iexec.order
       .createRequestorder({
         app: utils.NULL_ADDRESS,
         appmaxprice: 0,
@@ -3082,7 +3089,7 @@ describe('Recover on start', () => {
       .then((o) => iexec.order.signRequestorder(o, { checkRequest: false }));
     const finallyGoodRequestorder = await iexec.order.signRequestorder(
       {
-        ...independantRequestorder,
+        ...independentRequestorder,
         appmaxprice: 1,
         datasetmaxprice: 1,
         workerpoolmaxprice: 1,
@@ -3091,7 +3098,7 @@ describe('Recover on start', () => {
     );
     const requestorderAppTooExpensive = await iexec.order.signRequestorder(
       {
-        ...independantRequestorder,
+        ...independentRequestorder,
         appmaxprice: 4,
         datasetmaxprice: 0,
         workerpoolmaxprice: 0,
@@ -3100,7 +3107,7 @@ describe('Recover on start', () => {
     );
     const requestorderDatasetTooExpensive = await iexec.order.signRequestorder(
       {
-        ...independantRequestorder,
+        ...independentRequestorder,
         appmaxprice: 0,
         datasetmaxprice: 4,
         workerpoolmaxprice: 0,
@@ -3110,7 +3117,7 @@ describe('Recover on start', () => {
     const requestorderWorkerpoolTooExpensive =
       await iexec.order.signRequestorder(
         {
-          ...independantRequestorder,
+          ...independentRequestorder,
           appmaxprice: 0,
           datasetmaxprice: 0,
           workerpoolmaxprice: 4,
@@ -3120,7 +3127,7 @@ describe('Recover on start', () => {
     const requestorderCumulativeTooExpensive =
       await iexec.order.signRequestorder(
         {
-          ...independantRequestorder,
+          ...independentRequestorder,
           appmaxprice: 2,
           datasetmaxprice: 2,
           workerpoolmaxprice: 2,
@@ -3128,14 +3135,14 @@ describe('Recover on start', () => {
         { checkRequest: false },
       );
     const [
-      independantRequestHash,
+      independentRequestHash,
       finallyGoodRequestHash,
       requestorderAppTooExpensiveHash,
       requestorderDatasetTooExpensiveHash,
       requestorderWorkerpoolTooExpensiveHash,
       requestorderCumulativeTooExpensiveHash,
     ] = await Promise.all([
-      iexec.order.hashRequestorder(independantRequestorder),
+      iexec.order.hashRequestorder(independentRequestorder),
       iexec.order.hashRequestorder(finallyGoodRequestorder),
       iexec.order.hashRequestorder(requestorderAppTooExpensive),
       iexec.order.hashRequestorder(requestorderDatasetTooExpensive),
@@ -3145,8 +3152,8 @@ describe('Recover on start', () => {
     await Promise.all([
       addRequestorders(chainId, [
         {
-          orderHash: independantRequestHash,
-          order: independantRequestorder,
+          orderHash: independentRequestHash,
+          order: independentRequestorder,
           signer: address,
         },
         {
@@ -3180,7 +3187,7 @@ describe('Recover on start', () => {
     await iexec.account.withdraw(stake);
     await iexec.account.deposit(10);
     const [
-      [savedIndependantRequestorder],
+      [savedIndependentRequestorder],
       [savedFinallyGoodRequestorder],
       [savedRequestorderAppTooExpensive],
       [savedRequestorderDatasetTooExpensive],
@@ -3188,7 +3195,7 @@ describe('Recover on start', () => {
       [savedRequestorderCumulativeTooExpensive],
     ] = await Promise.all([
       find(chainId, REQUESTORDERS_COLLECTION, {
-        orderHash: independantRequestHash,
+        orderHash: independentRequestHash,
       }),
       find(chainId, REQUESTORDERS_COLLECTION, {
         orderHash: finallyGoodRequestHash,
@@ -3206,7 +3213,7 @@ describe('Recover on start', () => {
         orderHash: requestorderCumulativeTooExpensiveHash,
       }),
     ]);
-    expect(savedIndependantRequestorder.status).toBe(STATUS_MAP.OPEN);
+    expect(savedIndependentRequestorder.status).toBe(STATUS_MAP.OPEN);
     expect(savedFinallyGoodRequestorder.status).toBe(STATUS_MAP.OPEN);
     expect(savedRequestorderAppTooExpensive.status).toBe(STATUS_MAP.OPEN);
     expect(savedRequestorderDatasetTooExpensive.status).toBe(STATUS_MAP.OPEN);
@@ -3219,7 +3226,7 @@ describe('Recover on start', () => {
     await start({ syncWatcher: false, replayer: false });
     await sleep(PROCESS_TRIGGERED_EVENT_TIMEOUT);
     const [
-      [updatedIndependantRequestorder],
+      [updatedIndependentRequestorder],
       [updatedFinallyGoodRequestorder],
       [updatedRequestorderAppTooExpensive],
       [updatedRequestorderDatasetTooExpensive],
@@ -3227,7 +3234,7 @@ describe('Recover on start', () => {
       [updatedRequestorderCumulativeTooExpensive],
     ] = await Promise.all([
       find(chainId, REQUESTORDERS_COLLECTION, {
-        orderHash: independantRequestHash,
+        orderHash: independentRequestHash,
       }),
       find(chainId, REQUESTORDERS_COLLECTION, {
         orderHash: finallyGoodRequestHash,
@@ -3245,7 +3252,7 @@ describe('Recover on start', () => {
         orderHash: requestorderCumulativeTooExpensiveHash,
       }),
     ]);
-    expect(updatedIndependantRequestorder.status).toBe(STATUS_MAP.OPEN);
+    expect(updatedIndependentRequestorder.status).toBe(STATUS_MAP.OPEN);
     expect(updatedFinallyGoodRequestorder.status).toBe(STATUS_MAP.OPEN);
     expect(updatedRequestorderAppTooExpensive.status).toBe(STATUS_MAP.DEAD);
     expect(updatedRequestorderDatasetTooExpensive.status).toBe(STATUS_MAP.DEAD);
@@ -3330,11 +3337,73 @@ describe('Recover on start', () => {
 describe('Replay Past', () => {
   beforeAll(async () => {
     await dropDB(chainId);
+    await ethereumInit();
+  });
+
+  beforeEach(async () => {
+    await fastForwardToLastBlock(chainId, rpc);
+    await setCheckpointToLastBlock(chainId);
   });
 
   test('checkpoints', async () => {
+    await iexec.hub.createCategory({
+      name: 'TEST',
+      description: 'DESC',
+      workClockTimeRef: '300',
+    });
+    await iexec.hub.createCategory({
+      name: 'TEST',
+      description: 'DESC',
+      workClockTimeRef: '300',
+    });
+    await iexec.hub.createCategory({
+      name: 'TEST',
+      description: 'DESC',
+      workClockTimeRef: '300',
+    });
+    await iexec.hub.createCategory({
+      name: 'TEST',
+      description: 'DESC',
+      workClockTimeRef: '300',
+    });
+    await iexec.hub.createCategory({
+      name: 'TEST',
+      description: 'DESC',
+      workClockTimeRef: '300',
+    });
+    await iexec.hub.createCategory({
+      name: 'TEST',
+      description: 'DESC',
+      workClockTimeRef: '300',
+    });
+    await iexec.hub.createCategory({
+      name: 'TEST',
+      description: 'DESC',
+      workClockTimeRef: '300',
+    });
+    await iexec.hub.createCategory({
+      name: 'TEST',
+      description: 'DESC',
+      workClockTimeRef: '300',
+    });
+    await iexec.hub.createCategory({
+      name: 'TEST',
+      description: 'DESC',
+      workClockTimeRef: '300',
+    });
+    await iexec.hub.createCategory({
+      name: 'TEST',
+      description: 'DESC',
+      workClockTimeRef: '300',
+    });
+    await iexec.hub.createCategory({
+      name: 'TEST',
+      description: 'DESC',
+      workClockTimeRef: '300',
+    });
+    await fastForwardToLastBlock(chainId, rpc);
     await replayPastOnly();
-    const [initalCheckPoint] = await find(chainId, 'counters', {
+    const [initialCheckPoint] = await find(chainId, 'counters', {
       name: 'checkpointBlock',
     });
     await replayPastOnly({ nbConfirmation: 5 });
@@ -3345,23 +3414,25 @@ describe('Replay Past', () => {
     const [finalCheckPoint] = await find(chainId, 'counters', {
       name: 'checkpointBlock',
     });
-    expect(initalCheckPoint.value).toBeDefined();
-    expect(typeof initalCheckPoint.value).toBe('number');
+    expect(initialCheckPoint.value).toBeDefined();
+    expect(typeof initialCheckPoint.value).toBe('number');
     expect(intermediaryCheckPoint.value).toBeDefined();
     expect(typeof intermediaryCheckPoint.value).toBe('number');
     expect(finalCheckPoint.value).toBeDefined();
     expect(typeof finalCheckPoint.value).toBe('number');
-    expect(intermediaryCheckPoint.value - initalCheckPoint.value).toBe(5);
-    expect(finalCheckPoint.value - initalCheckPoint.value).toBe(10);
+    expect(intermediaryCheckPoint.value - initialCheckPoint.value).toBe(5);
+    expect(finalCheckPoint.value - initialCheckPoint.value).toBe(10);
   });
 
   test('nbConfirmation', async () => {
     await dropDB(chainId);
+    await fastForwardToLastBlock(chainId, rpc);
     const { catid } = await iexec.hub.createCategory({
       name: 'TEST',
       description: 'DESC',
       workClockTimeRef: '300',
     });
+    await fastForwardToLastBlock(chainId, rpc);
     await replayPastOnly({ nbConfirmation: 1 });
     const [notSaved] = await find(chainId, CATEGORIES_COLLECTION, {
       catid: catid.toNumber(),
@@ -3384,6 +3455,7 @@ describe('Replay Past', () => {
       catid: catid.toNumber(),
     });
     expect(notSaved).toBeUndefined();
+    await fastForwardToLastBlock(chainId, rpc);
     await replayPastOnly({ nbConfirmation: 0 });
     const [saved] = await find(chainId, CATEGORIES_COLLECTION, {
       catid: catid.toNumber(),
@@ -3420,6 +3492,7 @@ describe('Replay Past', () => {
       },
       { checkRequest: false },
     );
+    await fastForwardToLastBlock(chainId, rpc);
     const [appHash, datasetHash, workerpoolHash, requestHash] =
       await Promise.all([
         iexec.order.hashApporder(apporder),
@@ -3526,6 +3599,7 @@ describe('Replay Past', () => {
       },
       { checkRequest: false },
     );
+    await fastForwardToLastBlock(chainId, rpc);
     await replayPastOnly({ nbConfirmation: 0 });
     const [
       [savedApporder],
@@ -3631,6 +3705,7 @@ describe('Replay Past', () => {
       },
       { checkRequest: false },
     );
+    await fastForwardToLastBlock(chainId, rpc);
     await replayPastOnly({ nbConfirmation: 0 });
     const [
       [savedApporder],
@@ -3668,6 +3743,7 @@ describe('Replay Past', () => {
       },
       { checkRequest: false },
     );
+    await fastForwardToLastBlock(chainId, rpc);
     await replayPastOnly({ nbConfirmation: 0 });
     const [savedPartiallyMatchedRequestorder] = await find(
       chainId,
@@ -3683,7 +3759,7 @@ describe('Replay Past', () => {
   test('OrderMatched (clean app dependant requestOrders)', async () => {
     await iexec.account.deposit(100);
     const apporder = await deployAndGetApporder(iexec);
-    const independantApporder = await deployAndGetApporder(iexec);
+    const independentApporder = await deployAndGetApporder(iexec);
     const apporder5nRlc = await iexec.order.signApporder({
       ...apporder,
       appprice: 5,
@@ -3701,30 +3777,30 @@ describe('Replay Past', () => {
       apporder: apporder5nRlc,
       workerpoolorder,
     });
-    const independantRequestorder = await getMatchableRequestorder(iexec, {
-      apporder: independantApporder,
+    const independentRequestorder = await getMatchableRequestorder(iexec, {
+      apporder: independentApporder,
       workerpoolorder,
     });
     const [
-      independantAppHash,
+      independentAppHash,
       appHash,
       app5nRlcHash,
       requestAppHash,
       requestApp5nRlcHash,
-      independantRequestHash,
+      independentRequestHash,
     ] = await Promise.all([
-      iexec.order.hashApporder(independantApporder),
+      iexec.order.hashApporder(independentApporder),
       iexec.order.hashApporder(apporder),
       iexec.order.hashApporder(apporder5nRlc),
       iexec.order.hashRequestorder(requestorderApp),
       iexec.order.hashRequestorder(requestorderApp5nRlc),
-      iexec.order.hashRequestorder(independantRequestorder),
+      iexec.order.hashRequestorder(independentRequestorder),
     ]);
     await Promise.all([
       addApporders(chainId, [
         {
-          orderHash: independantAppHash,
-          order: independantApporder,
+          orderHash: independentAppHash,
+          order: independentApporder,
         },
         {
           orderHash: appHash,
@@ -3745,8 +3821,8 @@ describe('Replay Past', () => {
           order: requestorderApp5nRlc,
         },
         {
-          orderHash: independantRequestHash,
-          order: independantRequestorder,
+          orderHash: independentRequestHash,
+          order: independentRequestorder,
         },
       ]),
     ]);
@@ -3758,12 +3834,13 @@ describe('Replay Past', () => {
       },
       { checkRequest: false },
     );
+    await fastForwardToLastBlock(chainId, rpc);
     await replayPastOnly({ nbConfirmation: 0 });
     await sleep(PROCESS_TRIGGERED_EVENT_TIMEOUT);
     const [
       [savedRequestorderApp],
       [savedRequestorderApp5nRlc],
-      [savedIndependantRequestorder],
+      [savedIndependentRequestorder],
     ] = await Promise.all([
       find(chainId, REQUESTORDERS_COLLECTION, {
         orderHash: requestAppHash,
@@ -3772,23 +3849,23 @@ describe('Replay Past', () => {
         orderHash: requestApp5nRlcHash,
       }),
       find(chainId, REQUESTORDERS_COLLECTION, {
-        orderHash: independantRequestHash,
+        orderHash: independentRequestHash,
       }),
     ]);
     expect(savedRequestorderApp.status).toBe(STATUS_MAP.DEAD);
     expect(savedRequestorderApp5nRlc.status).toBe(STATUS_MAP.OPEN);
-    expect(savedIndependantRequestorder.status).toBe(STATUS_MAP.OPEN);
+    expect(savedIndependentRequestorder.status).toBe(STATUS_MAP.OPEN);
   });
 
   test('OrderMatched (clean app dependant TEE requestOrders)', async () => {
     await iexec.account.deposit(100);
-    const independantApporder = await deployAndGetApporder(iexec);
+    const independentApporder = await deployAndGetApporder(iexec);
     const apporderTee = await iexec.order.signApporder({
-      ...independantApporder,
+      ...independentApporder,
       tag: ['tee'],
     });
     const apporderTee5nRlc = await iexec.order.signApporder({
-      ...independantApporder,
+      ...independentApporder,
       tag: ['tee'],
       appprice: 5,
     });
@@ -3807,30 +3884,30 @@ describe('Replay Past', () => {
       apporder: apporderTee5nRlc,
       workerpoolorder,
     });
-    const independantRequestorder = await getMatchableRequestorder(iexec, {
-      apporder: independantApporder,
+    const independentRequestorder = await getMatchableRequestorder(iexec, {
+      apporder: independentApporder,
       workerpoolorder,
     });
     const [
-      independantAppHash,
+      independentAppHash,
       appTeeHash,
       appTee5nRlcHash,
       requestAppTeeHash,
       requestAppTee5nRlcHash,
-      independantRequestHash,
+      independentRequestHash,
     ] = await Promise.all([
-      iexec.order.hashApporder(independantApporder),
+      iexec.order.hashApporder(independentApporder),
       iexec.order.hashApporder(apporderTee),
       iexec.order.hashApporder(apporderTee5nRlc),
       iexec.order.hashRequestorder(requestorderAppTee),
       iexec.order.hashRequestorder(requestorderAppTee5nRlc),
-      iexec.order.hashRequestorder(independantRequestorder),
+      iexec.order.hashRequestorder(independentRequestorder),
     ]);
     await Promise.all([
       addApporders(chainId, [
         {
-          orderHash: independantAppHash,
-          order: independantApporder,
+          orderHash: independentAppHash,
+          order: independentApporder,
         },
         {
           orderHash: appTeeHash,
@@ -3851,8 +3928,8 @@ describe('Replay Past', () => {
           order: requestorderAppTee5nRlc,
         },
         {
-          orderHash: independantRequestHash,
-          order: independantRequestorder,
+          orderHash: independentRequestHash,
+          order: independentRequestorder,
         },
       ]),
     ]);
@@ -3864,12 +3941,13 @@ describe('Replay Past', () => {
       },
       { checkRequest: false },
     );
+    await fastForwardToLastBlock(chainId, rpc);
     await replayPastOnly({ nbConfirmation: 0 });
     await sleep(PROCESS_TRIGGERED_EVENT_TIMEOUT);
     const [
       [savedRequestorderAppTee],
       [savedRequestorderAppTee5nRlc],
-      [savedIndependantRequestorder],
+      [savedIndependentRequestorder],
     ] = await Promise.all([
       find(chainId, REQUESTORDERS_COLLECTION, {
         orderHash: requestAppTeeHash,
@@ -3878,12 +3956,12 @@ describe('Replay Past', () => {
         orderHash: requestAppTee5nRlcHash,
       }),
       find(chainId, REQUESTORDERS_COLLECTION, {
-        orderHash: independantRequestHash,
+        orderHash: independentRequestHash,
       }),
     ]);
     expect(savedRequestorderAppTee.status).toBe(STATUS_MAP.DEAD);
     expect(savedRequestorderAppTee5nRlc.status).toBe(STATUS_MAP.OPEN);
-    expect(savedIndependantRequestorder.status).toBe(STATUS_MAP.OPEN);
+    expect(savedIndependentRequestorder.status).toBe(STATUS_MAP.OPEN);
   });
 
   test('OrderMatched (clean dataset dependant requestOrders)', async () => {
@@ -3909,7 +3987,7 @@ describe('Replay Past', () => {
       datasetorder: datasetorder5nRlc,
       workerpoolorder,
     });
-    const independantRequestorder = await getMatchableRequestorder(iexec, {
+    const independentRequestorder = await getMatchableRequestorder(iexec, {
       apporder,
       workerpoolorder,
     });
@@ -3919,14 +3997,14 @@ describe('Replay Past', () => {
       dataset5nRlcHash,
       requestDatasetHash,
       requestDataset5nRlcHash,
-      independantRequestHash,
+      independentRequestHash,
     ] = await Promise.all([
       iexec.order.hashApporder(apporder),
       iexec.order.hashDatasetorder(datasetorder),
       iexec.order.hashDatasetorder(datasetorder5nRlc),
       iexec.order.hashRequestorder(requestorderDataset),
       iexec.order.hashRequestorder(requestorderDataset5nRlc),
-      iexec.order.hashRequestorder(independantRequestorder),
+      iexec.order.hashRequestorder(independentRequestorder),
     ]);
     await Promise.all([
       addApporders(chainId, [
@@ -3955,8 +4033,8 @@ describe('Replay Past', () => {
           order: requestorderDataset5nRlc,
         },
         {
-          orderHash: independantRequestHash,
-          order: independantRequestorder,
+          orderHash: independentRequestHash,
+          order: independentRequestorder,
         },
       ]),
     ]);
@@ -3969,12 +4047,13 @@ describe('Replay Past', () => {
       },
       { checkRequest: false },
     );
+    await fastForwardToLastBlock(chainId, rpc);
     await replayPastOnly({ nbConfirmation: 0 });
     await sleep(PROCESS_TRIGGERED_EVENT_TIMEOUT);
     const [
       [savedRequestorderDataset],
       [savedRequestorderDataset5nRlc],
-      [savedIndependantRequestorder],
+      [savedIndependentRequestorder],
     ] = await Promise.all([
       find(chainId, REQUESTORDERS_COLLECTION, {
         orderHash: requestDatasetHash,
@@ -3983,12 +4062,12 @@ describe('Replay Past', () => {
         orderHash: requestDataset5nRlcHash,
       }),
       find(chainId, REQUESTORDERS_COLLECTION, {
-        orderHash: independantRequestHash,
+        orderHash: independentRequestHash,
       }),
     ]);
     expect(savedRequestorderDataset.status).toBe(STATUS_MAP.DEAD);
     expect(savedRequestorderDataset5nRlc.status).toBe(STATUS_MAP.OPEN);
-    expect(savedIndependantRequestorder.status).toBe(STATUS_MAP.OPEN);
+    expect(savedIndependentRequestorder.status).toBe(STATUS_MAP.OPEN);
   });
 
   test('ClosedAppOrder (cancel order)', async () => {
@@ -4001,6 +4080,7 @@ describe('Replay Past', () => {
       },
     ]);
     await iexec.order.cancelApporder(apporder);
+    await fastForwardToLastBlock(chainId, rpc);
     await replayPastOnly({ nbConfirmation: 0 });
     const [[savedApporder]] = await Promise.all([
       find(chainId, APPORDERS_COLLECTION, {
@@ -4031,7 +4111,7 @@ describe('Replay Past', () => {
         volume: 10,
       })
       .then((o) => iexec.order.signRequestorder(o, { checkRequest: false }));
-    const independantRequestorder = await iexec.order.signRequestorder(
+    const independentRequestorder = await iexec.order.signRequestorder(
       {
         ...requestorder,
         appmaxprice: 5,
@@ -4043,13 +4123,13 @@ describe('Replay Past', () => {
       app5nRlcHash,
       datasetHash,
       requestHash,
-      independantRequestHash,
+      independentRequestHash,
     ] = await Promise.all([
       iexec.order.hashApporder(apporder),
       iexec.order.hashApporder(apporder5nRlc),
       iexec.order.hashDatasetorder(datasetorder),
       iexec.order.hashRequestorder(requestorder),
-      iexec.order.hashRequestorder(independantRequestorder),
+      iexec.order.hashRequestorder(independentRequestorder),
     ]);
     await Promise.all([
       addApporders(chainId, [
@@ -4074,17 +4154,18 @@ describe('Replay Past', () => {
           order: requestorder,
         },
         {
-          orderHash: independantRequestHash,
-          order: independantRequestorder,
+          orderHash: independentRequestHash,
+          order: independentRequestorder,
         },
       ]),
     ]);
     await iexec.order.cancelApporder(apporder);
+    await fastForwardToLastBlock(chainId, rpc);
     const [
       [savedApporder],
       [savedDatasetorder],
       [savedRequestorder],
-      [savedIndependantRequestorder],
+      [savedIndependentRequestorder],
     ] = await Promise.all([
       find(chainId, APPORDERS_COLLECTION, {
         orderHash: appHash,
@@ -4096,20 +4177,20 @@ describe('Replay Past', () => {
         orderHash: requestHash,
       }),
       find(chainId, REQUESTORDERS_COLLECTION, {
-        orderHash: independantRequestHash,
+        orderHash: independentRequestHash,
       }),
     ]);
     expect(savedApporder.status).toBe(STATUS_MAP.OPEN);
     expect(savedDatasetorder.status).toBe(STATUS_MAP.OPEN);
     expect(savedRequestorder.status).toBe(STATUS_MAP.OPEN);
-    expect(savedIndependantRequestorder.status).toBe(STATUS_MAP.OPEN);
+    expect(savedIndependentRequestorder.status).toBe(STATUS_MAP.OPEN);
     await replayPastOnly({ nbConfirmation: 0 });
     await sleep(PROCESS_TRIGGERED_EVENT_TIMEOUT);
     const [
       [updatedApporder],
       [updatedDatasetorder],
       [updatedRequestorder],
-      [updatedIndependantRequestorder],
+      [updatedIndependentRequestorder],
     ] = await Promise.all([
       find(chainId, APPORDERS_COLLECTION, {
         orderHash: appHash,
@@ -4121,14 +4202,14 @@ describe('Replay Past', () => {
         orderHash: requestHash,
       }),
       find(chainId, REQUESTORDERS_COLLECTION, {
-        orderHash: independantRequestHash,
+        orderHash: independentRequestHash,
       }),
     ]);
     expect(updatedApporder.status).toBe(STATUS_MAP.CANCELED);
     expect(updatedApporder.remaining).toBe(0);
     expect(updatedDatasetorder.status).toBe(STATUS_MAP.OPEN);
     expect(updatedRequestorder.status).toBe(STATUS_MAP.DEAD);
-    expect(updatedIndependantRequestorder.status).toBe(STATUS_MAP.OPEN);
+    expect(updatedIndependentRequestorder.status).toBe(STATUS_MAP.OPEN);
   });
 
   test('ClosedAppOrder (clean dependant TEE requestorder)', async () => {
@@ -4143,7 +4224,7 @@ describe('Replay Past', () => {
       tag: ['tee'],
       appprice: 5,
     });
-    const independantRequestorder = await iexec.order
+    const independentRequestorder = await iexec.order
       .createRequestorder({
         app: apporder.app,
         appmaxprice: 0,
@@ -4155,14 +4236,14 @@ describe('Replay Past', () => {
       .then((o) => iexec.order.signRequestorder(o, { checkRequest: false }));
     const requestorderTee = await iexec.order.signRequestorder(
       {
-        ...independantRequestorder,
+        ...independentRequestorder,
         tag: ['tee'],
       },
       { checkRequest: false },
     );
     const requestorderTee5nRlc = await iexec.order.signRequestorder(
       {
-        ...independantRequestorder,
+        ...independentRequestorder,
         tag: ['tee'],
         appmaxprice: 5,
       },
@@ -4174,14 +4255,14 @@ describe('Replay Past', () => {
       appTee5nRlcHash,
       requestTeeHash,
       requestTee5nRlcHash,
-      independantRequestHash,
+      independentRequestHash,
     ] = await Promise.all([
       iexec.order.hashApporder(apporder),
       iexec.order.hashApporder(apporderTee),
       iexec.order.hashApporder(apporderTee5nRlc),
       iexec.order.hashRequestorder(requestorderTee),
       iexec.order.hashRequestorder(requestorderTee5nRlc),
-      iexec.order.hashRequestorder(independantRequestorder),
+      iexec.order.hashRequestorder(independentRequestorder),
     ]);
     await Promise.all([
       addApporders(chainId, [
@@ -4208,19 +4289,20 @@ describe('Replay Past', () => {
           order: requestorderTee5nRlc,
         },
         {
-          orderHash: independantRequestHash,
-          order: independantRequestorder,
+          orderHash: independentRequestHash,
+          order: independentRequestorder,
         },
       ]),
     ]);
     await iexec.order.cancelApporder(apporderTee);
+    await fastForwardToLastBlock(chainId, rpc);
     await replayPastOnly({ nbConfirmation: 0 });
     await sleep(PROCESS_TRIGGERED_EVENT_TIMEOUT);
     const [
       [savedApporderTee],
       [savedRequestorderTee],
       [savedRequestorderTee5nRlc],
-      [savedIndependantRequestorder],
+      [savedIndependentRequestorder],
     ] = await Promise.all([
       find(chainId, APPORDERS_COLLECTION, {
         orderHash: appTeeHash,
@@ -4232,14 +4314,14 @@ describe('Replay Past', () => {
         orderHash: requestTee5nRlcHash,
       }),
       find(chainId, REQUESTORDERS_COLLECTION, {
-        orderHash: independantRequestHash,
+        orderHash: independentRequestHash,
       }),
     ]);
     expect(savedApporderTee.status).toBe(STATUS_MAP.CANCELED);
     expect(savedApporderTee.remaining).toBe(0);
     expect(savedRequestorderTee.status).toBe(STATUS_MAP.DEAD);
     expect(savedRequestorderTee5nRlc.status).toBe(STATUS_MAP.OPEN);
-    expect(savedIndependantRequestorder.status).toBe(STATUS_MAP.OPEN);
+    expect(savedIndependentRequestorder.status).toBe(STATUS_MAP.OPEN);
   });
 
   test('ClosedDatasetOrder (cancel order)', async () => {
@@ -4254,6 +4336,7 @@ describe('Replay Past', () => {
       },
     ]);
     await iexec.order.cancelDatasetorder(datasetorder);
+    await fastForwardToLastBlock(chainId, rpc);
     await replayPastOnly({ nbConfirmation: 0 });
     const [[savedDatasetorder]] = await Promise.all([
       find(chainId, DATASETORDERS_COLLECTION, {
@@ -4288,7 +4371,7 @@ describe('Replay Past', () => {
         volume: 10,
       })
       .then((o) => iexec.order.signRequestorder(o, { checkRequest: false }));
-    const independantRequestorder = await iexec.order.signRequestorder(
+    const independentRequestorder = await iexec.order.signRequestorder(
       {
         ...requestorder,
         datasetmaxprice: 5,
@@ -4300,13 +4383,13 @@ describe('Replay Past', () => {
       datasetHash,
       dataset5nRlcHash,
       requestHash,
-      independantRequestHash,
+      independentRequestHash,
     ] = await Promise.all([
       iexec.order.hashApporder(apporder),
       iexec.order.hashDatasetorder(datasetorder),
       iexec.order.hashDatasetorder(datasetorder5nRlc),
       iexec.order.hashRequestorder(requestorder),
-      iexec.order.hashRequestorder(independantRequestorder),
+      iexec.order.hashRequestorder(independentRequestorder),
     ]);
     await Promise.all([
       addApporders(chainId, [
@@ -4331,8 +4414,8 @@ describe('Replay Past', () => {
           order: requestorder,
         },
         {
-          orderHash: independantRequestHash,
-          order: independantRequestorder,
+          orderHash: independentRequestHash,
+          order: independentRequestorder,
         },
       ]),
     ]);
@@ -4342,7 +4425,7 @@ describe('Replay Past', () => {
       [savedDatasetorder],
       [savedDatasetorder5nRlc],
       [savedRequestorder],
-      [savedIndependantRequestorder],
+      [savedIndependentRequestorder],
     ] = await Promise.all([
       find(chainId, APPORDERS_COLLECTION, {
         orderHash: appHash,
@@ -4357,14 +4440,15 @@ describe('Replay Past', () => {
         orderHash: requestHash,
       }),
       find(chainId, REQUESTORDERS_COLLECTION, {
-        orderHash: independantRequestHash,
+        orderHash: independentRequestHash,
       }),
     ]);
     expect(savedDatasetorder.status).toBe(STATUS_MAP.OPEN);
     expect(savedDatasetorder5nRlc.status).toBe(STATUS_MAP.OPEN);
     expect(savedApporder.status).toBe(STATUS_MAP.OPEN);
     expect(savedRequestorder.status).toBe(STATUS_MAP.OPEN);
-    expect(savedIndependantRequestorder.status).toBe(STATUS_MAP.OPEN);
+    expect(savedIndependentRequestorder.status).toBe(STATUS_MAP.OPEN);
+    await fastForwardToLastBlock(chainId, rpc);
     await replayPastOnly({ nbConfirmation: 0 });
     await sleep(PROCESS_TRIGGERED_EVENT_TIMEOUT);
     const [
@@ -4372,7 +4456,7 @@ describe('Replay Past', () => {
       [updatedDatasetorder],
       [updatedDatasetorder5nRlc],
       [updatedRequestorder],
-      [updatedIndependantRequestorder],
+      [updatedIndependentRequestorder],
     ] = await Promise.all([
       find(chainId, APPORDERS_COLLECTION, {
         orderHash: appHash,
@@ -4387,7 +4471,7 @@ describe('Replay Past', () => {
         orderHash: requestHash,
       }),
       find(chainId, REQUESTORDERS_COLLECTION, {
-        orderHash: independantRequestHash,
+        orderHash: independentRequestHash,
       }),
     ]);
     expect(updatedDatasetorder.status).toBe(STATUS_MAP.CANCELED);
@@ -4395,7 +4479,7 @@ describe('Replay Past', () => {
     expect(updatedDatasetorder5nRlc.status).toBe(STATUS_MAP.OPEN);
     expect(updatedApporder.status).toBe(STATUS_MAP.OPEN);
     expect(updatedRequestorder.status).toBe(STATUS_MAP.DEAD);
-    expect(updatedIndependantRequestorder.status).toBe(STATUS_MAP.OPEN);
+    expect(updatedIndependentRequestorder.status).toBe(STATUS_MAP.OPEN);
   });
 
   test('ClosedWorkerpoolOrder (cancel order)', async () => {
@@ -4412,6 +4496,7 @@ describe('Replay Past', () => {
       ]),
     ]);
     await iexec.order.cancelWorkerpoolorder(workerpoolorder);
+    await fastForwardToLastBlock(chainId, rpc);
     await replayPastOnly({ nbConfirmation: 0 });
     const [[savedWorkerpoolorder]] = await Promise.all([
       find(chainId, WORKERPOOLORDERS_COLLECTION, {
@@ -4442,6 +4527,7 @@ describe('Replay Past', () => {
       ]),
     ]);
     await iexec.order.cancelRequestorder(requestorder);
+    await fastForwardToLastBlock(chainId, rpc);
     await replayPastOnly({ nbConfirmation: 0 });
     const [[savedRequestorder]] = await Promise.all([
       find(chainId, REQUESTORDERS_COLLECTION, {
@@ -4455,7 +4541,7 @@ describe('Replay Past', () => {
   test('Transfer StakedRlc (clean dependant workerpoolorder)', async () => {
     await iexec.account.deposit(100);
     const address = await iexec.wallet.getAddress();
-    const independantWorkerpoolorder = await deployAndGetWorkerpoolorder(
+    const independentWorkerpoolorder = await deployAndGetWorkerpoolorder(
       iexec,
       {
         workerpoolprice: 0,
@@ -4464,31 +4550,31 @@ describe('Replay Past', () => {
     );
 
     const finallyGoodWorkerpoolorder = await iexec.order.signWorkerpoolorder({
-      ...independantWorkerpoolorder,
+      ...independentWorkerpoolorder,
       workerpoolprice: 100,
       volume: 1,
     });
 
     const workerpoolorderTooExpensive = await iexec.order.signWorkerpoolorder({
-      ...independantWorkerpoolorder,
+      ...independentWorkerpoolorder,
       workerpoolprice: 104,
       volume: 1,
     });
 
     const workerpoolorderCumulativeTooExpensive =
       await iexec.order.signWorkerpoolorder({
-        ...independantWorkerpoolorder,
+        ...independentWorkerpoolorder,
         workerpoolprice: 37,
         volume: 3,
       });
 
     const [
-      independantWorkerpoolHash,
+      independentWorkerpoolHash,
       finallyGoodWorkerpoolHash,
       workerpoolorderTooExpensiveHash,
       workerpoolorderCumulativeTooExpensiveHash,
     ] = await Promise.all([
-      iexec.order.hashWorkerpoolorder(independantWorkerpoolorder),
+      iexec.order.hashWorkerpoolorder(independentWorkerpoolorder),
       iexec.order.hashWorkerpoolorder(finallyGoodWorkerpoolorder),
       iexec.order.hashWorkerpoolorder(workerpoolorderTooExpensive),
       iexec.order.hashWorkerpoolorder(workerpoolorderCumulativeTooExpensive),
@@ -4496,8 +4582,8 @@ describe('Replay Past', () => {
     await Promise.all([
       addWorkerpoolorders(chainId, [
         {
-          orderHash: independantWorkerpoolHash,
-          order: independantWorkerpoolorder,
+          orderHash: independentWorkerpoolHash,
+          order: independentWorkerpoolorder,
           signer: address,
         },
         {
@@ -4521,13 +4607,13 @@ describe('Replay Past', () => {
     await iexec.account.withdraw(stake);
     await iexec.account.deposit(30);
     const [
-      [savedIndependantWorkerpoolorder],
+      [savedIndependentWorkerpoolorder],
       [savedFinallyGoodWorkerpoolorder],
-      [savedworkerpoolorderTooExpensive],
+      [savedWorkerpoolorderTooExpensive],
       [savedWorkerpoolorderCumulativeTooExpensive],
     ] = await Promise.all([
       find(chainId, WORKERPOOLORDERS_COLLECTION, {
-        orderHash: independantWorkerpoolHash,
+        orderHash: independentWorkerpoolHash,
       }),
       find(chainId, WORKERPOOLORDERS_COLLECTION, {
         orderHash: finallyGoodWorkerpoolHash,
@@ -4539,22 +4625,23 @@ describe('Replay Past', () => {
         orderHash: workerpoolorderCumulativeTooExpensiveHash,
       }),
     ]);
-    expect(savedIndependantWorkerpoolorder.status).toBe(STATUS_MAP.OPEN);
+    expect(savedIndependentWorkerpoolorder.status).toBe(STATUS_MAP.OPEN);
     expect(savedFinallyGoodWorkerpoolorder.status).toBe(STATUS_MAP.OPEN);
-    expect(savedworkerpoolorderTooExpensive.status).toBe(STATUS_MAP.OPEN);
+    expect(savedWorkerpoolorderTooExpensive.status).toBe(STATUS_MAP.OPEN);
     expect(savedWorkerpoolorderCumulativeTooExpensive.status).toBe(
       STATUS_MAP.OPEN,
     );
+    await fastForwardToLastBlock(chainId, rpc);
     await replayPastOnly({ nbConfirmation: 0 });
     await sleep(PROCESS_TRIGGERED_EVENT_TIMEOUT);
     const [
-      [updatedIndependantWorkerpoolorder],
+      [updatedIndependentWorkerpoolorder],
       [updatedFinallyGoodWorkerpoolorder],
-      [updatedworkerpoolorderTooExpensive],
+      [updatedWorkerpoolorderTooExpensive],
       [updatedWorkerpoolorderCumulativeTooExpensive],
     ] = await Promise.all([
       find(chainId, WORKERPOOLORDERS_COLLECTION, {
-        orderHash: independantWorkerpoolHash,
+        orderHash: independentWorkerpoolHash,
       }),
       find(chainId, WORKERPOOLORDERS_COLLECTION, {
         orderHash: finallyGoodWorkerpoolHash,
@@ -4566,9 +4653,9 @@ describe('Replay Past', () => {
         orderHash: workerpoolorderCumulativeTooExpensiveHash,
       }),
     ]);
-    expect(updatedIndependantWorkerpoolorder.status).toBe(STATUS_MAP.OPEN);
+    expect(updatedIndependentWorkerpoolorder.status).toBe(STATUS_MAP.OPEN);
     expect(updatedFinallyGoodWorkerpoolorder.status).toBe(STATUS_MAP.OPEN);
-    expect(updatedworkerpoolorderTooExpensive.status).toBe(STATUS_MAP.DEAD);
+    expect(updatedWorkerpoolorderTooExpensive.status).toBe(STATUS_MAP.DEAD);
     expect(updatedWorkerpoolorderCumulativeTooExpensive.status).toBe(
       STATUS_MAP.DEAD,
     );
@@ -4577,7 +4664,7 @@ describe('Replay Past', () => {
   test('Transfer StakedRlc (clean dependant requestorder)', async () => {
     await iexec.account.deposit(100);
     const address = await iexec.wallet.getAddress();
-    const independantRequestorder = await iexec.order
+    const independentRequestorder = await iexec.order
       .createRequestorder({
         app: utils.NULL_ADDRESS,
         appmaxprice: 0,
@@ -4591,7 +4678,7 @@ describe('Replay Past', () => {
 
     const finallyGoodRequestorder = await iexec.order.signRequestorder(
       {
-        ...independantRequestorder,
+        ...independentRequestorder,
         appmaxprice: 1,
         datasetmaxprice: 1,
         workerpoolmaxprice: 1,
@@ -4601,7 +4688,7 @@ describe('Replay Past', () => {
 
     const requestorderAppTooExpensive = await iexec.order.signRequestorder(
       {
-        ...independantRequestorder,
+        ...independentRequestorder,
         appmaxprice: 4,
         datasetmaxprice: 0,
         workerpoolmaxprice: 0,
@@ -4611,7 +4698,7 @@ describe('Replay Past', () => {
 
     const requestorderDatasetTooExpensive = await iexec.order.signRequestorder(
       {
-        ...independantRequestorder,
+        ...independentRequestorder,
         appmaxprice: 0,
         datasetmaxprice: 4,
         workerpoolmaxprice: 0,
@@ -4622,7 +4709,7 @@ describe('Replay Past', () => {
     const requestorderWorkerpoolTooExpensive =
       await iexec.order.signRequestorder(
         {
-          ...independantRequestorder,
+          ...independentRequestorder,
           appmaxprice: 0,
           datasetmaxprice: 0,
           workerpoolmaxprice: 4,
@@ -4633,7 +4720,7 @@ describe('Replay Past', () => {
     const requestorderCumulativeTooExpensive =
       await iexec.order.signRequestorder(
         {
-          ...independantRequestorder,
+          ...independentRequestorder,
           appmaxprice: 2,
           datasetmaxprice: 2,
           workerpoolmaxprice: 2,
@@ -4641,14 +4728,14 @@ describe('Replay Past', () => {
         { checkRequest: false },
       );
     const [
-      independantRequestHash,
+      independentRequestHash,
       finallyGoodRequestHash,
       requestorderAppTooExpensiveHash,
       requestorderDatasetTooExpensiveHash,
       requestorderWorkerpoolTooExpensiveHash,
       requestorderCumulativeTooExpensiveHash,
     ] = await Promise.all([
-      iexec.order.hashRequestorder(independantRequestorder),
+      iexec.order.hashRequestorder(independentRequestorder),
       iexec.order.hashRequestorder(finallyGoodRequestorder),
       iexec.order.hashRequestorder(requestorderAppTooExpensive),
       iexec.order.hashRequestorder(requestorderDatasetTooExpensive),
@@ -4658,8 +4745,8 @@ describe('Replay Past', () => {
     await Promise.all([
       addRequestorders(chainId, [
         {
-          orderHash: independantRequestHash,
-          order: independantRequestorder,
+          orderHash: independentRequestHash,
+          order: independentRequestorder,
           signer: address,
         },
         {
@@ -4693,7 +4780,7 @@ describe('Replay Past', () => {
     await iexec.account.withdraw(stake);
     await iexec.account.deposit(10);
     const [
-      [savedIndependantRequestorder],
+      [savedIndependentRequestorder],
       [savedFinallyGoodRequestorder],
       [savedRequestorderAppTooExpensive],
       [savedRequestorderDatasetTooExpensive],
@@ -4701,7 +4788,7 @@ describe('Replay Past', () => {
       [savedRequestorderCumulativeTooExpensive],
     ] = await Promise.all([
       find(chainId, REQUESTORDERS_COLLECTION, {
-        orderHash: independantRequestHash,
+        orderHash: independentRequestHash,
       }),
       find(chainId, REQUESTORDERS_COLLECTION, {
         orderHash: finallyGoodRequestHash,
@@ -4719,7 +4806,7 @@ describe('Replay Past', () => {
         orderHash: requestorderCumulativeTooExpensiveHash,
       }),
     ]);
-    expect(savedIndependantRequestorder.status).toBe(STATUS_MAP.OPEN);
+    expect(savedIndependentRequestorder.status).toBe(STATUS_MAP.OPEN);
     expect(savedFinallyGoodRequestorder.status).toBe(STATUS_MAP.OPEN);
     expect(savedRequestorderAppTooExpensive.status).toBe(STATUS_MAP.OPEN);
     expect(savedRequestorderDatasetTooExpensive.status).toBe(STATUS_MAP.OPEN);
@@ -4729,10 +4816,11 @@ describe('Replay Past', () => {
     expect(savedRequestorderCumulativeTooExpensive.status).toBe(
       STATUS_MAP.OPEN,
     );
+    await fastForwardToLastBlock(chainId, rpc);
     await replayPastOnly({ nbConfirmation: 0 });
     await sleep(PROCESS_TRIGGERED_EVENT_TIMEOUT);
     const [
-      [updatedIndependantRequestorder],
+      [updatedIndependentRequestorder],
       [updatedFinallyGoodRequestorder],
       [updatedRequestorderAppTooExpensive],
       [updatedRequestorderDatasetTooExpensive],
@@ -4740,7 +4828,7 @@ describe('Replay Past', () => {
       [updatedRequestorderCumulativeTooExpensive],
     ] = await Promise.all([
       find(chainId, REQUESTORDERS_COLLECTION, {
-        orderHash: independantRequestHash,
+        orderHash: independentRequestHash,
       }),
       find(chainId, REQUESTORDERS_COLLECTION, {
         orderHash: finallyGoodRequestHash,
@@ -4758,7 +4846,7 @@ describe('Replay Past', () => {
         orderHash: requestorderCumulativeTooExpensiveHash,
       }),
     ]);
-    expect(updatedIndependantRequestorder.status).toBe(STATUS_MAP.OPEN);
+    expect(updatedIndependentRequestorder.status).toBe(STATUS_MAP.OPEN);
     expect(updatedFinallyGoodRequestorder.status).toBe(STATUS_MAP.OPEN);
     expect(updatedRequestorderAppTooExpensive.status).toBe(STATUS_MAP.DEAD);
     expect(updatedRequestorderDatasetTooExpensive.status).toBe(STATUS_MAP.DEAD);
@@ -4786,6 +4874,7 @@ describe('Replay Past', () => {
       order.app,
       '0x000000000000000000000000000000000000dead',
     );
+    await fastForwardToLastBlock(chainId, rpc);
     await replayPastOnly({ nbConfirmation: 0 });
     const [savedOrder] = await find(chainId, APPORDERS_COLLECTION, {
       orderHash,
@@ -4809,6 +4898,7 @@ describe('Replay Past', () => {
       order.dataset,
       '0x000000000000000000000000000000000000dead',
     );
+    await fastForwardToLastBlock(chainId, rpc);
     await replayPastOnly({ nbConfirmation: 0 });
     const [savedOrder] = await find(chainId, DATASETORDERS_COLLECTION, {
       orderHash,
@@ -4832,6 +4922,7 @@ describe('Replay Past', () => {
       order.workerpool,
       '0x000000000000000000000000000000000000dead',
     );
+    await fastForwardToLastBlock(chainId, rpc);
     await replayPastOnly({ nbConfirmation: 0 });
     const [savedOrder] = await find(chainId, WORKERPOOLORDERS_COLLECTION, {
       orderHash,

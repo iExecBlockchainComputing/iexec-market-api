@@ -1,8 +1,9 @@
 const config = require('../config');
-const { logger } = require('./logger');
+const { getLogger } = require('./logger');
+const { traceAll } = require('./trace');
 const { sleep } = require('./utils');
 
-const log = logger.extend('utils:eth-utils');
+const logger = getLogger('utils:eth-utils');
 
 const NULL_ADDRESS = '0x0000000000000000000000000000000000000000';
 
@@ -55,7 +56,7 @@ const retryableCall = async (
     return res;
   } catch (e) {
     if (e.code && e.code === 429) {
-      log('retryableCall()', method, 'try', count);
+      logger.debug(`retryableCall ${method} try ${count}`);
       if (count <= maxTry) {
         await sleep(1000 * count + getRandomInt(250));
         return retryableCall(obj, method, args, { maxTry }, count + 1);
@@ -76,7 +77,7 @@ const retryableFunctionCall = async (
     return res;
   } catch (e) {
     if (e.code && e.code === 429) {
-      log('retryableFunctionCall()', 'try', count);
+      logger.debug(`retryableFunctionCall ${method} try ${count}`);
       if (count <= maxTry) {
         await sleep(1000 * count + getRandomInt(250));
         return retryableFunctionCall(method, args, { maxTry }, count + 1);
@@ -86,7 +87,7 @@ const retryableFunctionCall = async (
   }
 };
 
-const callAtBlock = async (method, args = [], blockNumber) => {
+const callAtBlock = async (method, args = [], blockNumber = undefined) => {
   const makeCall = async () =>
     blockNumber !== undefined
       ? retryableFunctionCall(method, args)
@@ -98,11 +99,15 @@ const callAtBlock = async (method, args = [], blockNumber) => {
     try {
       res = await makeCall();
       if (res === null || res === undefined) {
-        log('callAtBlock()', blockNumber, `returned ${res}, waiting for block`);
+        logger.debug(
+          'callAtBlock()',
+          blockNumber,
+          `returned ${res}, waiting for block`,
+        );
         if (currentTry <= CALL_AT_BLOCK_MAX_TRY) {
           await sleep(config.runtime.retryDelay);
         } else {
-          throw Error('callAtBlock()', blockNumber, 'Max try reached');
+          throw Error(`callAtBlock ${blockNumber} Max try reached`);
         }
       }
     } catch (error) {
@@ -110,11 +115,15 @@ const callAtBlock = async (method, args = [], blockNumber) => {
         error.code === -32000 ||
         (error.message && error.message.indexOf('-32000') !== -1)
       ) {
-        log('callAtBlock()', blockNumber, '-32000 error, waiting for block');
+        logger.debug(
+          'callAtBlock()',
+          blockNumber,
+          '-32000 error, waiting for block',
+        );
         if (currentTry <= CALL_AT_BLOCK_MAX_TRY) {
           await sleep(config.runtime.retryDelay);
         } else {
-          throw Error('callAtBlock()', blockNumber, 'Max try reached');
+          throw Error(`callAtBlock ${blockNumber} Max try reached`);
         }
       } else {
         throw error;
@@ -143,7 +152,9 @@ const waitForGetBlock = async (provider, blockNumber) => {
     try {
       block = await retryableCall(provider, 'getBlock', [blockNumber]);
     } catch (error) {
-      log('waitForGetBlock()', blockNumber, tryCount, error);
+      logger.debug(
+        `waitForGetBlock() ${blockNumber} try ${tryCount} error ${error}`,
+      );
     }
     if (!block) {
       await sleep(1000);
@@ -155,8 +166,8 @@ const waitForGetBlock = async (provider, blockNumber) => {
 module.exports = {
   NULL_ADDRESS,
   cleanRPC,
-  callAtBlock,
-  waitForGetBlock,
-  getBlockNumber,
-  queryFilter,
+  callAtBlock: traceAll(callAtBlock, { logger }),
+  waitForGetBlock: traceAll(waitForGetBlock, { logger }),
+  getBlockNumber: traceAll(getBlockNumber, { logger }),
+  queryFilter: traceAll(queryFilter, { logger }),
 };

@@ -1,10 +1,13 @@
 const config = require('../config');
 const counterModel = require('../models/counterModel');
-const { logger } = require('../utils/logger');
+const { getLogger } = require('../utils/logger');
+const { traceAll } = require('../utils/trace');
 
 const { chainId } = config.chain;
 
-const log = logger.extend('services:counter');
+const logger = getLogger('services:counter');
+
+logger.log('instantiating service');
 
 const getNextBlockToProcess = async () => {
   try {
@@ -13,12 +16,24 @@ const getNextBlockToProcess = async () => {
     if (lastBlockCounter !== null) return lastBlockCounter.value + 1;
     return config.runtime.startBlock;
   } catch (e) {
-    log('getNextBlockToProcess()', e);
+    logger.warn('getNextBlockToProcess()', e);
     throw e;
   }
 };
 
-const updateLastBlock = async (blockNumber) => {
+const getLastBlock = async () => {
+  try {
+    const CounterModel = await counterModel.getModel(chainId);
+    const lastBlockCounter = await CounterModel.findOne({ name: 'lastBlock' });
+    if (lastBlockCounter !== null) return lastBlockCounter.value;
+    return config.runtime.startBlock;
+  } catch (e) {
+    logger.warn('getLastBlock()', e);
+    throw e;
+  }
+};
+
+const setLastBlock = async (blockNumber) => {
   try {
     const CounterModel = await counterModel.getModel(chainId);
     const lastBlockCounter = await CounterModel.findOneAndUpdate(
@@ -26,9 +41,9 @@ const updateLastBlock = async (blockNumber) => {
       { $max: { value: blockNumber } },
       { new: true, upsert: true },
     );
-    log('lastBlockCounter', lastBlockCounter.value);
+    logger.log('lastBlockCounter', lastBlockCounter.value);
   } catch (e) {
-    log('updateLastBlock()', e);
+    logger.warn('setLastBlock()', e);
     throw e;
   }
 };
@@ -42,7 +57,7 @@ const getCheckpointBlock = async () => {
     if (checkpointBlockCounter !== null) return checkpointBlockCounter.value;
     return config.runtime.startBlock;
   } catch (e) {
-    log('getCheckpointBlock()', e);
+    logger.warn('getCheckpointBlock()', e);
     throw e;
   }
 };
@@ -55,16 +70,17 @@ const setCheckpointBlock = async (blockNumber) => {
       { value: blockNumber },
       { new: true, upsert: true },
     );
-    log('checkpointBlockCounter', checkpointBlockCounter.value);
+    logger.log('checkpointBlockCounter', checkpointBlockCounter.value);
   } catch (e) {
-    log('setCheckpointBlock()', e);
+    logger.warn('setCheckpointBlock()', e);
     throw e;
   }
 };
 
 module.exports = {
-  getNextBlockToProcess,
-  updateLastBlock,
-  getCheckpointBlock,
-  setCheckpointBlock,
+  getNextBlockToProcess: traceAll(getNextBlockToProcess, { logger }),
+  getLastBlock: traceAll(getLastBlock, { logger }),
+  setLastBlock: traceAll(setLastBlock, { logger }),
+  getCheckpointBlock: traceAll(getCheckpointBlock, { logger }),
+  setCheckpointBlock: traceAll(setCheckpointBlock, { logger }),
 };

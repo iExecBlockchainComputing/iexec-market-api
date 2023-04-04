@@ -1,16 +1,15 @@
 const ethers = require('ethers');
 const config = require('../config');
-const { logger } = require('../utils/logger');
-const { sleep } = require('../utils/utils');
+const { getLogger } = require('../utils/logger');
 const { errorHandler } = require('../utils/error');
 const { isEnterpriseFlavour } = require('../utils/iexec-utils');
 
-const log = logger.extend('ethereum');
+const logger = getLogger('ethereum');
 
 const { wsHost, httpHost, hubAddress } = config.chain;
 
-log('wsHost', wsHost);
-log('httpHost', httpHost);
+logger.log('wsHost', wsHost);
+logger.log('httpHost', httpHost);
 
 let wsProvider;
 
@@ -24,37 +23,29 @@ let datasetRegistryContract;
 let workerpoolRegistryContract;
 let eRlcContract;
 
-const init = async (wsClosedCallback) => {
+const init = async () => {
   try {
-    log('openning ws');
+    logger.log('opening ws');
     wsProvider = new ethers.providers.WebSocketProvider(wsHost);
-    wsProvider._websocket.on('open', () => log('ws open'));
+    wsProvider._websocket.on('open', () => logger.log('ws open'));
     wsProvider._websocket.on('error', (e) => {
       errorHandler(e, {
         type: 'ethereum-ws-error',
+        error: e,
         critical: true,
       });
     });
     wsProvider._websocket.on('close', async (code, reason) => {
       initialized = false;
-      log('ws closed', code, reason);
-      const tryRecover =
-        wsClosedCallback && typeof wsClosedCallback === 'function';
       errorHandler(Error('ws closed'), {
         type: 'ethereum-ws-closed',
         code,
         reason,
-        critical: !tryRecover,
+        critical: true,
       });
-      if (tryRecover) {
-        log('recovering');
-        wsProvider._websocket.terminate();
-        await sleep(3000);
-        wsClosedCallback();
-      }
     });
 
-    log('hubAddress', hubAddress);
+    logger.debug('hubAddress', hubAddress);
     hubContract = new ethers.Contract(hubAddress, config.abi.hub, wsProvider);
     const [
       [appRegistryAddress],
@@ -67,10 +58,10 @@ const init = async (wsClosedCallback) => {
       hubContract.functions.workerpoolregistry(),
       hubContract.functions.token(),
     ]);
-    log('appRegistryAddress', appRegistryAddress);
-    log('datasetRegistryAddress', datasetRegistryAddress);
-    log('workerpoolRegistryAddress', workerpoolRegistryAddress);
-    log('tokenAddress', tokenAddress);
+    logger.debug('appRegistryAddress', appRegistryAddress);
+    logger.debug('datasetRegistryAddress', datasetRegistryAddress);
+    logger.debug('workerpoolRegistryAddress', workerpoolRegistryAddress);
+    logger.debug('tokenAddress', tokenAddress);
 
     appRegistryContract = new ethers.Contract(
       appRegistryAddress,
@@ -96,12 +87,12 @@ const init = async (wsClosedCallback) => {
     }
     initialized = true;
   } catch (e) {
-    log('init()', e);
+    logger.warn('init()', e);
     throw e;
   }
 };
 
-const thowIfNotReady = () => {
+const throwIfNotReady = () => {
   if (!initialized) {
     throw Error('ethereum ws not ready');
   }
@@ -109,20 +100,20 @@ const thowIfNotReady = () => {
 };
 
 const getRpcProvider = () => rpcProvider;
-const getProvider = () => thowIfNotReady() || wsProvider;
-const getHub = () => thowIfNotReady() || hubContract;
-const getAppRegistry = () => thowIfNotReady() || appRegistryContract;
-const getDatasetRegistry = () => thowIfNotReady() || datasetRegistryContract;
+const getProvider = () => throwIfNotReady() || wsProvider;
+const getHub = () => throwIfNotReady() || hubContract;
+const getAppRegistry = () => throwIfNotReady() || appRegistryContract;
+const getDatasetRegistry = () => throwIfNotReady() || datasetRegistryContract;
 const getWorkerpoolRegistry = () =>
-  thowIfNotReady() || workerpoolRegistryContract;
-const getERlc = () => thowIfNotReady() || eRlcContract;
+  throwIfNotReady() || workerpoolRegistryContract;
+const getERlc = () => throwIfNotReady() || eRlcContract;
 const getApp = (address) =>
-  thowIfNotReady() || new ethers.Contract(address, config.abi.app, wsProvider);
+  throwIfNotReady() || new ethers.Contract(address, config.abi.app, wsProvider);
 const getDataset = (address) =>
-  thowIfNotReady() ||
+  throwIfNotReady() ||
   new ethers.Contract(address, config.abi.dataset, wsProvider);
 const getWorkerpool = (address) =>
-  thowIfNotReady() ||
+  throwIfNotReady() ||
   new ethers.Contract(address, config.abi.workerpool, wsProvider);
 
 module.exports = {

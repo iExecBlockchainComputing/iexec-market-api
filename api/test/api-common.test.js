@@ -5,7 +5,7 @@ const socket = require('../src/loaders/socket');
 // jest spies
 const socketEmitSpy = jest.spyOn(socket, 'emit');
 
-const appli = require('../src/app');
+const application = require('../src/app');
 const { chains } = require('../src/config');
 const { STATUS_MAP } = require('../src/utils/order-utils');
 const {
@@ -87,7 +87,7 @@ let server;
 let request;
 
 beforeAll(async () => {
-  server = appli.listen();
+  server = application.listen();
   request = supertest(server);
 });
 
@@ -3290,177 +3290,6 @@ describe('API', () => {
               }),
             );
           }, 15000);
-
-          /** ---- ALLOW BID/ASK OVERLAP ----
-          test('POST /requestorders (best workerpool order in same category is not allowed)', async () => {
-            await iexec.account.deposit(100);
-            const order10nRlc = await iexec.order.signRequestorder(
-              {
-                ...requestorderTemplate,
-                workerpool: utils.NULL_ADDRESS,
-                workerpoolmaxprice: 10,
-                volume: 1,
-                category: 5,
-              },
-              { checkRequest: false },
-            );
-            const order9nRlc = await iexec.order.signRequestorder(
-              {
-                ...requestorderTemplate,
-                workerpool: utils.NULL_ADDRESS,
-                workerpoolmaxprice: 9,
-                volume: 1,
-                category: 5,
-              },
-              { checkRequest: false },
-            );
-            const workerpoolorder10nRlc = await iexec.order.signWorkerpoolorder(
-              {
-                ...workerpoolorderTemplate,
-                workerpoolprice: 10,
-                volume: 1,
-                category: 5,
-              },
-            );
-            const apporder = await iexec.order.signApporder(apporderTemplate);
-            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
-            await request
-              .post(
-                buildQuery('/apporders', {
-                  chainId, // *
-                }),
-              )
-              .send({
-                order: apporder,
-              })
-              .set('authorization', WALLETS.DEFAULT.authorization)
-              .then(parseResult);
-            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
-            await request
-              .post(
-                buildQuery('/workerpoolorders', {
-                  chainId, // *
-                }),
-              )
-              .send({
-                order: workerpoolorder10nRlc,
-              })
-              .set('authorization', WALLETS.DEFAULT.authorization)
-              .then(parseResult);
-            jest.clearAllMocks();
-            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
-            const resOK = await request
-              .post(
-                buildQuery('/requestorders', {
-                  chainId, // *
-                }),
-              )
-              .send({
-                order: order9nRlc,
-              })
-              .set('authorization', WALLETS.DEFAULT.authorization)
-              .then(parseResult);
-            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
-            const resKO = await request
-              .post(
-                buildQuery('/requestorders', {
-                  chainId, // *
-                }),
-              )
-              .send({
-                order: order10nRlc,
-              })
-              .set('authorization', WALLETS.DEFAULT.authorization)
-              .then(parseResult);
-            expect(resOK.status).toBe(OK_STATUS);
-            expect(resOK.data.ok).toBe(true);
-            expect(resKO.status).toBe(BUSINESS_ERROR_STATUS);
-            expect(resKO.data.ok).toBe(false);
-            expect(resKO.data.error).toBe(
-              'workerpoolmaxprice (10) is greather than or equals best workerpoolorder price (10), you may want to fill it',
-            );
-            expect(resKO.data.published).toBeUndefined();
-            expect(socketEmitSpy).toHaveBeenCalledTimes(1);
-            expect(socketEmitSpy).toHaveBeenNthCalledWith(
-              1,
-              `${chainId}:orders`,
-              'requestorder_published',
-              expect.objectContaining({
-                orderHash: resOK.data.published.orderHash,
-              }),
-            );
-          });
-
-          test('POST /requestorders (allow best workerpool order in other category)', async () => {
-            await iexec.account.deposit(100);
-            const order10nRlc = await iexec.order.signRequestorder(
-              {
-                ...requestorderTemplate,
-                workerpool: utils.NULL_ADDRESS,
-                workerpoolmaxprice: 10,
-                volume: 1,
-                category: 5,
-              },
-              { checkRequest: false },
-            );
-            const workerpoolorder10nRlc = await iexec.order.signWorkerpoolorder(
-              {
-                ...workerpoolorderTemplate,
-                workerpoolprice: 10,
-                volume: 1,
-                category: 4,
-              },
-            );
-            const apporder = await iexec.order.signApporder(apporderTemplate);
-            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
-            await request
-              .post(
-                buildQuery('/apporders', {
-                  chainId, // *
-                }),
-              )
-              .send({
-                order: apporder,
-              })
-              .set('authorization', WALLETS.DEFAULT.authorization)
-              .then(parseResult);
-            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
-            await request
-              .post(
-                buildQuery('/workerpoolorders', {
-                  chainId, // *
-                }),
-              )
-              .send({
-                order: workerpoolorder10nRlc,
-              })
-              .set('authorization', WALLETS.DEFAULT.authorization)
-              .then(parseResult);
-            jest.clearAllMocks();
-            await setChallenge(chainId, WALLETS.DEFAULT.challenge);
-            const { data, status } = await request
-              .post(
-                buildQuery('/requestorders', {
-                  chainId, // *
-                }),
-              )
-              .send({
-                order: order10nRlc,
-              })
-              .set('authorization', WALLETS.DEFAULT.authorization)
-              .then(parseResult);
-            expect(status).toBe(OK_STATUS);
-            expect(data.ok).toBe(true);
-            expect(data.published).toBeDefined();
-            expect(socketEmitSpy).toHaveBeenCalledTimes(1);
-            expect(socketEmitSpy).toHaveBeenNthCalledWith(
-              1,
-              `${chainId}:orders`,
-              'requestorder_published',
-              expect.objectContaining({ orderHash: data.published.orderHash }),
-            );
-          });
-          */
         });
 
         describe('unpublish', () => {
@@ -6163,8 +5992,8 @@ describe('API', () => {
           // prepare documents
 
           const filterOrders = (orders, ordersToRemove) => {
-            const hashsToRemove = ordersToRemove.map((o) => o.orderHash);
-            return orders.filter((o) => !hashsToRemove.includes(o.orderHash));
+            const hashesToRemove = ordersToRemove.map((o) => o.orderHash);
+            return orders.filter((o) => !hashesToRemove.includes(o.orderHash));
           };
 
           otherAddress = await iexecUser1.wallet.getAddress();

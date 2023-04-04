@@ -1,6 +1,7 @@
 const { Schema } = require('mongoose');
 const { getMongoose } = require('../loaders/mongoose');
-const { logger } = require('../utils/logger');
+const { getLogger } = require('../utils/logger');
+const { traceAll } = require('../utils/trace');
 const {
   AddressSchema,
   Bytes32Schema,
@@ -10,7 +11,7 @@ const {
 } = require('./common').schema;
 const { toJsonOption } = require('./common').option;
 
-const log = logger.extend('models:dealModel');
+const logger = getLogger('models:dealModel');
 
 const connectedModels = {};
 
@@ -58,16 +59,16 @@ const getModel = async (db) => {
       return model;
     }
     connectedModels[db] = new Promise((resolve, reject) => {
-      log('getting connection');
+      logger.debug('getting connection');
       getMongoose({ db })
         .then((mongoose) => {
-          log('instanciating model');
+          logger.debug('instantiating model');
           const DealModel = mongoose.model('Deal', dealSchema);
           DealModel.on('index', (err) => {
             if (err) {
-              log(`error creating index: ${err}`);
+              logger.error(`error creating index: ${err}`);
             } else {
-              log('index created');
+              logger.log('index created');
             }
           });
           resolve(DealModel);
@@ -77,11 +78,11 @@ const getModel = async (db) => {
     const model = await connectedModels[db];
     return model;
   } catch (e) {
-    log('getModel() error', e);
+    logger.warn('getModel() error', e);
     throw e;
   }
 };
 
 module.exports = {
-  getModel,
+  getModel: traceAll(getModel, { logger }),
 };

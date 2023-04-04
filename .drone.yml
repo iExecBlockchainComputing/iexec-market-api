@@ -1,6 +1,6 @@
 pipeline:
   api-test:
-    image: node:14.17-alpine
+    image: node:16.19.0-alpine
     commands:
       - apk update && apk upgrade
       - node -v
@@ -11,7 +11,7 @@ pipeline:
       - npm run ci-test-native
 
   watcher-test:
-    image: node:14.17-alpine
+    image: node:16.19.0-alpine
     commands:
       - apk update && apk upgrade
       - node -v
@@ -28,7 +28,9 @@ pipeline:
     secrets: [docker_username, docker_password]
     auto_tag: true
     when:
-      ref: [refs/tags/v5*]
+      ref:
+        include: refs/tags/v[1-9]*.*[0-9].*[0-9]
+        exclude: refs/tags/v[1-9]*.*[0-9].*[0-9]-*
 
   watcher-publish:
     image: plugins/docker
@@ -37,7 +39,29 @@ pipeline:
     secrets: [docker_username, docker_password]
     auto_tag: true
     when:
-      ref: [refs/tags/v5*]
+      ref:
+        include: refs/tags/v[1-9]*.*[0-9].*[0-9]
+        exclude: refs/tags/v[1-9]*.*[0-9].*[0-9]-*
+
+  api-publish-alpha:
+    image: plugins/docker
+    dockerfile: Dockerfile.api
+    repo: iexechub/iexec-market-api
+    secrets: [docker_username, docker_password]
+    tags:
+      - ${DRONE_TAG##v}
+    when:
+      ref: refs/tags/v[1-9]*.*[0-9].*[0-9]-alpha.*[0-9]
+
+  watcher-publish-alpha:
+    image: plugins/docker
+    dockerfile: Dockerfile.watcher
+    repo: iexechub/iexec-market-watcher
+    secrets: [docker_username, docker_password]
+    tags:
+      - ${DRONE_TAG##v}
+    when:
+      ref: refs/tags/v[1-9]*.*[0-9].*[0-9]-alpha.*[0-9]
 
 services:
   chain-token:

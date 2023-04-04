@@ -25,7 +25,10 @@ const {
   DATASETORDERS_COLLECTION,
   WORKERPOOLORDERS_COLLECTION,
   REQUESTORDERS_COLLECTION,
+  fastForwardToLastBlock,
+  setCheckpointToLastBlock,
 } = require('./test-utils');
+const { init: ethereumInit } = require('../src/loaders/ethereum');
 
 jest.setTimeout(120000);
 
@@ -923,19 +926,9 @@ describe('Watcher enterprise specific', () => {
 });
 
 describe('Recover on start enterprise specific', () => {
-  beforeAll(async () => {
-    await dropDB(chainId);
-    await start({ syncWatcher: false, replayer: false });
-    await stop();
-  });
-
   beforeEach(async () => {
-    await dropDB(chainId, [
-      APPORDERS_COLLECTION,
-      DATASETORDERS_COLLECTION,
-      WORKERPOOLORDERS_COLLECTION,
-      REQUESTORDERS_COLLECTION,
-    ]);
+    await dropDB(chainId);
+    await fastForwardToLastBlock(chainId, rpc);
     jest.clearAllMocks();
   });
 
@@ -1876,8 +1869,7 @@ describe('Recover on start enterprise specific', () => {
 describe('Replay Past enterprise specific', () => {
   beforeAll(async () => {
     await dropDB(chainId);
-    await start({ syncWatcher: false, replayer: false });
-    await stop();
+    await ethereumInit();
   });
 
   beforeEach(async () => {
@@ -1887,6 +1879,8 @@ describe('Replay Past enterprise specific', () => {
       WORKERPOOLORDERS_COLLECTION,
       REQUESTORDERS_COLLECTION,
     ]);
+    await fastForwardToLastBlock(chainId, rpc);
+    await setCheckpointToLastBlock(chainId);
     jest.clearAllMocks();
   });
 
@@ -1982,6 +1976,7 @@ describe('Replay Past enterprise specific', () => {
     await revokeKYC(userAddress);
     await sleep(PROCESS_TRIGGERED_EVENT_TIMEOUT);
     expect(socketEmitSpy).toHaveBeenCalledTimes(0);
+    await fastForwardToLastBlock(chainId, rpc);
     await replayPastOnly({ nbConfirmation: 0 });
     await sleep(PROCESS_TRIGGERED_EVENT_TIMEOUT);
     const [
@@ -2162,6 +2157,7 @@ describe('Replay Past enterprise specific', () => {
     await revokeKYC(userAddress);
     await sleep(PROCESS_TRIGGERED_EVENT_TIMEOUT);
     expect(socketEmitSpy).toHaveBeenCalledTimes(0);
+    await fastForwardToLastBlock(chainId, rpc);
     await replayPastOnly({ nbConfirmation: 0 });
     await sleep(PROCESS_TRIGGERED_EVENT_TIMEOUT);
     const [
@@ -2372,6 +2368,7 @@ describe('Replay Past enterprise specific', () => {
     await revokeKYC(userAddress);
     await sleep(PROCESS_TRIGGERED_EVENT_TIMEOUT);
     expect(socketEmitSpy).toHaveBeenCalledTimes(0);
+    await fastForwardToLastBlock(chainId, rpc);
     await replayPastOnly({ nbConfirmation: 0 });
     await sleep(PROCESS_TRIGGERED_EVENT_TIMEOUT);
     const [
@@ -2581,6 +2578,7 @@ describe('Replay Past enterprise specific', () => {
     await revokeKYC(userAddress);
     await sleep(PROCESS_TRIGGERED_EVENT_TIMEOUT);
     expect(socketEmitSpy).toHaveBeenCalledTimes(0);
+    await fastForwardToLastBlock(chainId, rpc);
     await replayPastOnly({ nbConfirmation: 0 });
     await sleep(PROCESS_TRIGGERED_EVENT_TIMEOUT);
     const [
@@ -2771,6 +2769,7 @@ describe('Replay Past enterprise specific', () => {
     await grantKYC(userAddress);
     await sleep(PROCESS_TRIGGERED_EVENT_TIMEOUT);
     expect(socketEmitSpy).toHaveBeenCalledTimes(0);
+    await fastForwardToLastBlock(chainId, rpc);
     await replayPastOnly({ nbConfirmation: 0 });
     await sleep(PROCESS_TRIGGERED_EVENT_TIMEOUT);
     const [

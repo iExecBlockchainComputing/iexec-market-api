@@ -6,6 +6,7 @@ const apporderModel = require('../src/models/apporderModel');
 const datasetorderModel = require('../src/models/datasetorderModel');
 const workerpoolorderModel = require('../src/models/workerpoolorderModel');
 const requestorderModel = require('../src/models/requestorderModel');
+const counterModel = require('../src/models/counterModel');
 
 const APPORDERS_COLLECTION = 'apporders';
 const DATASETORDERS_COLLECTION = 'datasetorders';
@@ -317,6 +318,26 @@ const dropDB = async (
   );
 };
 
+const fastForwardToLastBlock = async (dbName, provider) => {
+  const CounterModel = await counterModel.getModel(dbName);
+  const blockNumber = await provider.getBlockNumber();
+  await CounterModel.findOneAndUpdate(
+    { name: 'lastBlock' },
+    { value: blockNumber },
+    { new: true, upsert: true },
+  );
+};
+
+const setCheckpointToLastBlock = async (dbName) => {
+  const CounterModel = await counterModel.getModel(dbName);
+  const lastBlock = await CounterModel.findOne({ name: 'lastBlock' });
+  await CounterModel.findOneAndUpdate(
+    { name: 'checkpointBlock' },
+    { value: lastBlock.value },
+    { new: true, upsert: true },
+  );
+};
+
 module.exports = {
   addApporders,
   addDatasetorders,
@@ -324,6 +345,8 @@ module.exports = {
   addRequestorders,
   find,
   dropDB,
+  fastForwardToLastBlock,
+  setCheckpointToLastBlock,
   getId,
   deployAndGetApporder,
   deployAndGetDatasetorder,

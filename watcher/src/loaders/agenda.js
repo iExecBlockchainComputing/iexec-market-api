@@ -1,11 +1,11 @@
 const Agenda = require('agenda');
 const config = require('../config');
 const { getMongoose } = require('./mongoose');
-const { logger } = require('../utils/logger');
+const { getLogger } = require('../utils/logger');
 
 const { chainId } = config.chain;
 
-const log = logger.extend('agenda');
+const logger = getLogger('agenda');
 
 let agendaPromise;
 
@@ -14,24 +14,27 @@ const getAgenda = async () => {
     return agendaPromise;
   }
   agendaPromise = new Promise((resolve, reject) => {
-    log('connecting');
+    logger.log('connecting');
     getMongoose({ db: `${chainId}_jobs` })
       .then(async (mongooseConnection) => {
         const { db } = mongooseConnection;
         const agenda = new Agenda({ mongo: db });
-        log('starting worker');
+        logger.log('starting worker');
         agenda
           .start()
           .then(() => {
-            log('running');
+            logger.log('running');
             resolve(agenda);
           })
           .catch((e) => {
-            log('start failled', e);
+            logger.warn('start failed', e);
             reject(e);
           });
       })
-      .catch((e) => reject(e));
+      .catch((e) => {
+        logger.warn('getAgenda()', e);
+        reject(e);
+      });
   });
   return agendaPromise;
 };

@@ -1,4 +1,4 @@
-// use experiental ether utils._TypedDataEncoder (to remove when TypedDataEncoder is included)
+// use experimental ether utils._TypedDataEncoder (to remove when TypedDataEncoder is included)
 // https://docs.ethers.io/v5/api/utils/hashing/#TypedDataEncoder
 const { recoverAddress, _TypedDataEncoder: TypedDataEncoder } =
   require('ethers').utils;

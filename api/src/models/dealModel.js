@@ -61,7 +61,7 @@ const getModel = async (db) => {
       log('getting connection');
       getMongoose({ db })
         .then((mongoose) => {
-          log('instanciating model');
+          log('instantiating model');
           const DealModel = mongoose.model('Deal', dealSchema);
           DealModel.on('index', (err) => {
             if (err) {

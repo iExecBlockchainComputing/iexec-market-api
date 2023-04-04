@@ -8,16 +8,14 @@ const workerpoolDesc = require('@iexec/poco/build/contracts-min/Workerpool.json'
 const datasetDesc = require('@iexec/poco/build/contracts-min/Dataset.json');
 const eRlcDesc = require('@iexec/erlc/build/contracts-min/ERLCTokenSwap.json');
 const { FLAVOURS, STANDARD_FLAVOUR } = require('./utils/iexec-utils');
-const { logger } = require('./utils/logger');
+const { getLogger } = require('./utils/logger');
 
-const log = logger.extend('config');
+const logger = getLogger('config');
 
 const {
   MONGO_HOST,
   REDIS_HOST,
   FLAVOUR,
-  INFURA_PROJECT_ID,
-  ALCHEMY_API_KEY,
   ETH_WS_HOST,
   ETH_RPC_HOST,
   CHAIN,
@@ -28,9 +26,9 @@ const {
   SYNC_CHECK_INTERVAL,
   OUT_OF_SYNC_LIMIT,
   REPLAY_INTERVAL,
-  BLOCKS_BATCH_SIZE,
+  BLOCKS_BATCH_SIZE = '1000', // default batch size is 1000
   RETRY_DELAY,
-  CREATE_INDEX,
+  CREATE_INDEX = 'true', // create db indexes by default
 } = process.env;
 
 if (!CHAIN) throw Error('missing env CHAIN');
@@ -54,42 +52,7 @@ const stringToBoolean = (string) => {
   }
 };
 
-const chains = {
-  MAINNET: {
-    httpHost:
-      (INFURA_PROJECT_ID &&
-        `https://mainnet.infura.io/v3/${INFURA_PROJECT_ID}`) ||
-      (ALCHEMY_API_KEY &&
-        `https://eth-mainnet.alchemyapi.io/v2/${ALCHEMY_API_KEY}`),
-    wsHost:
-      (INFURA_PROJECT_ID &&
-        `wss://mainnet.infura.io/ws/v3/${INFURA_PROJECT_ID}`) ||
-      (ALCHEMY_API_KEY &&
-        `wss://eth-mainnet.ws.alchemyapi.io/v2/${ALCHEMY_API_KEY}`),
-    chainId: '1',
-    hubAddress: '0x3eca1B216A7DF1C7689aEb259fFB83ADFB894E7f',
-  },
-  GOERLI: {
-    httpHost:
-      (INFURA_PROJECT_ID &&
-        `https://goerli.infura.io/v3/${INFURA_PROJECT_ID}`) ||
-      (ALCHEMY_API_KEY &&
-        `https://eth-goerli.alchemyapi.io/v2/${ALCHEMY_API_KEY}`),
-    wsHost:
-      (INFURA_PROJECT_ID &&
-        `wss://goerli.infura.io/ws/v3/${INFURA_PROJECT_ID}`) ||
-      (ALCHEMY_API_KEY &&
-        `wss://eth-goerli.ws.alchemyapi.io/v2/${ALCHEMY_API_KEY}`),
-    chainId: '5',
-    hubAddress: '0x3eca1B216A7DF1C7689aEb259fFB83ADFB894E7f',
-  },
-  VIVIANI: {
-    httpHost: 'https://viviani.iex.ec',
-    wsHost: 'wss://viviani-ws.iex.ec',
-    chainId: '133',
-    hubAddress: '0x3eca1B216A7DF1C7689aEb259fFB83ADFB894E7f',
-    isNative: true,
-  },
+const DEFAULT_CHAINS_CONFIG = {
   BELLECOUR: {
     httpHost: 'https://bellecour.iex.ec',
     wsHost: 'wss://bellecour-ws.iex.ec',
@@ -101,7 +64,7 @@ const chains = {
 
 const chain = {
   ...{ name },
-  ...(name in chains && chains[name]),
+  ...(name in DEFAULT_CHAINS_CONFIG && DEFAULT_CHAINS_CONFIG[name]),
   ...(CHAIN_ID && { chainId: CHAIN_ID }),
   ...(ETH_WS_HOST && { wsHost: ETH_WS_HOST }),
   ...(ETH_RPC_HOST && { httpHost: ETH_RPC_HOST }),
@@ -150,11 +113,11 @@ if (!chain.httpHost) {
   throw Error('missing ethereum RPC endpoint ETH_RPC_HOST');
 }
 
-log('chain', chain);
-log('flavour', flavour);
-log('mongo', mongo);
-log('redis', redis);
-log('runtime', runtime);
+logger.log('chain', chain);
+logger.log('flavour', flavour);
+logger.log('mongo', mongo);
+logger.log('redis', redis);
+logger.log('runtime', runtime);
 
 module.exports = {
   abi,
