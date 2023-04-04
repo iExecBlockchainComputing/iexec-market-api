@@ -1,6 +1,7 @@
 const { string, number, object } = require('yup');
 const { getAddress } = require('ethers').utils;
 const { supportedChainsIds } = require('../config');
+const { ANY } = require('./keywords');
 
 const chainIdSchema = () =>
   string().oneOf(supportedChainsIds, 'chainId ${value} is not supported');
@@ -25,24 +26,49 @@ const timestampSchema = () =>
     '${path} must be a timestamp (2019-09-11T10:03:38.068Z is a valid timestamp)',
   );
 
+const transformAddress = (value) => {
+  try {
+    return getAddress(value.toLowerCase());
+  } catch (e) {
+    return value;
+  }
+};
+
+const isAddress = (value) => {
+  try {
+    getAddress(value);
+    return true;
+  } catch (e) {
+    return false;
+  }
+};
+
 const addressSchema = () =>
   string()
-    .transform((value) => {
-      try {
-        return getAddress(value.toLowerCase());
-      } catch (e) {
-        return value;
-      }
-    })
+    .transform(transformAddress)
     .test('is-address', '${path} is not a valid ethereum address', (value) => {
       if (value === undefined) return true;
-      try {
-        getAddress(value);
-        return true;
-      } catch (e) {
-        return false;
-      }
+      return isAddress(value);
     });
+
+const isAny = (value) => value === ANY;
+
+const addressOrAnySchema = () =>
+  string()
+    .transform((value) => {
+      if (isAny(value)) {
+        return value;
+      }
+      return transformAddress(value);
+    })
+    .test(
+      'is-any-or-address',
+      `\${path} is neither "${ANY}" nor a valid ethereum address`,
+      (value) => {
+        if (value === undefined) return true;
+        return isAny(value) || isAddress(value);
+      },
+    );
 
 const bytes32Schema = () =>
   string()
@@ -148,6 +174,7 @@ const signedRequestorderSchema = () =>
 module.exports = {
   stringSchema: string,
   addressSchema,
+  addressOrAnySchema,
   bytes32Schema,
   apporderSchema,
   signedApporderSchema,
