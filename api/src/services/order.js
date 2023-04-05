@@ -40,6 +40,7 @@ const {
 } = require('../utils/order-utils');
 const { isEnterpriseFlavour } = require('../utils/iexec-utils');
 const { flavour, maxOpenOrdersPerWallet } = require('../config');
+const { ANY } = require('../utils/keywords');
 
 const PAGE_LENGTH = 20;
 
@@ -82,6 +83,22 @@ const minTrustClause = (minTrust) =>
 
 const maxTrustClause = (maxTrust) =>
   (maxTrust || maxTrust === 0) && { 'order.trust': { $lte: maxTrust } };
+
+const isAny = (value) => value === ANY;
+const getRestrictClause = (restrictName) => (restrictValue) => {
+  const restrictYey = `order.${restrictName}`;
+  return (
+    !isAny(restrictValue) && {
+      [restrictYey]: restrictValue
+        ? { $in: [NULL_ADDRESS, restrictValue] }
+        : NULL_ADDRESS,
+    }
+  );
+};
+const apprestrictClause = getRestrictClause('apprestrict');
+const datasetrestrictClause = getRestrictClause('datasetrestrict');
+const workerpoolrestrictClause = getRestrictClause('workerpoolrestrict');
+const requesterrestrictClause = getRestrictClause('requesterrestrict');
 
 const fetchIExecDomain = async (iExecContract = throwIfMissing()) => {
   const { name, version, chainId, verifyingContract } = await wrapEthCall(
@@ -597,15 +614,9 @@ const getApporders = async ({
       status: STATUS_MAP.OPEN,
       ...(app && { 'order.app': app }),
       ...(appOwner && { signer: appOwner }),
-      'order.datasetrestrict': dataset
-        ? { $in: [NULL_ADDRESS, dataset] }
-        : NULL_ADDRESS,
-      'order.workerpoolrestrict': workerpool
-        ? { $in: [NULL_ADDRESS, workerpool] }
-        : NULL_ADDRESS,
-      'order.requesterrestrict': requester
-        ? { $in: [NULL_ADDRESS, requester] }
-        : NULL_ADDRESS,
+      ...datasetrestrictClause(dataset),
+      ...workerpoolrestrictClause(workerpool),
+      ...requesterrestrictClause(requester),
       ...minVolumeClause(minVolume),
       ...tagClause({ minTag, maxTag }),
     };
@@ -672,13 +683,9 @@ const getDatasetorders = async ({
       status: STATUS_MAP.OPEN,
       ...(dataset && { 'order.dataset': dataset }),
       ...(datasetOwner && { signer: datasetOwner }),
-      'order.apprestrict': app ? { $in: [NULL_ADDRESS, app] } : NULL_ADDRESS,
-      'order.workerpoolrestrict': workerpool
-        ? { $in: [NULL_ADDRESS, workerpool] }
-        : NULL_ADDRESS,
-      'order.requesterrestrict': requester
-        ? { $in: [NULL_ADDRESS, requester] }
-        : NULL_ADDRESS,
+      ...apprestrictClause(app),
+      ...workerpoolrestrictClause(workerpool),
+      ...requesterrestrictClause(requester),
       ...minVolumeClause(minVolume),
       ...tagClause({ minTag, maxTag }),
     };
@@ -748,13 +755,9 @@ const getWorkerpoolorders = async ({
       ...(category !== undefined && { 'order.category': category }),
       ...(workerpool && { 'order.workerpool': workerpool }),
       ...(workerpoolOwner && { signer: workerpoolOwner }),
-      'order.apprestrict': app ? { $in: [NULL_ADDRESS, app] } : NULL_ADDRESS,
-      'order.datasetrestrict': dataset
-        ? { $in: [NULL_ADDRESS, dataset] }
-        : NULL_ADDRESS,
-      'order.requesterrestrict': requester
-        ? { $in: [NULL_ADDRESS, requester] }
-        : NULL_ADDRESS,
+      ...apprestrictClause(app),
+      ...datasetrestrictClause(dataset),
+      ...requesterrestrictClause(requester),
       ...minTrustClause(minTrust),
       ...minVolumeClause(minVolume),
       ...tagClause({ minTag, maxTag }),
@@ -827,9 +830,11 @@ const getRequestorders = async ({
       ...(dataset && { 'order.dataset': dataset }),
       ...(requester && { 'order.requester': requester }),
       ...(beneficiary && { 'order.beneficiary': beneficiary }),
-      'order.workerpool': workerpool
-        ? { $in: [NULL_ADDRESS, workerpool] }
-        : NULL_ADDRESS,
+      ...(!isAny(workerpool) && {
+        'order.workerpool': workerpool
+          ? { $in: [NULL_ADDRESS, workerpool] }
+          : NULL_ADDRESS,
+      }),
       ...maxTrustClause(maxTrust),
       ...minVolumeClause(minVolume),
       ...tagClause({ minTag, maxTag }),

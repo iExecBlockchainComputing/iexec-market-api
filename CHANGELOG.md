@@ -1,11 +1,15 @@
 # CHANGELOG
 
+## Next
+
+- add `"any"` as allowed keyword on restrict filtering fields for GET `/apporders`, `/datasetorders`, `/workerpoolorders`
+- add `"any"` as allowed keyword on workerpool filtering field for GET `/requestorders`
+
 ## v6.0.0
 
 - \[BREAKING\] removed mainnet, viviani and goerli default configuration
 - \[BREAKING\] CREATE_INDEX default value is now set to `true` to create DB indexes by default
 - \[BREAKING\] BLOCKS_BATCH_SIZE default value is now set to `1000` to better adapt to bellecour indexation
-
 - better tracking of indexed block number
 - start replayer before initial synchro's end to achieve faster checkpoint sync
 - fix avoid multiple replay of past events running simultaneous on an overlapping range
