@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Next
+## v6.1.0
 
 - add `"any"` as allowed keyword on restrict filtering fields for GET `/apporders`, `/datasetorders`, `/workerpoolorders`
 - add `"any"` as allowed keyword on workerpool filtering field for GET `/requestorders`
