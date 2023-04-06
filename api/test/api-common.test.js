@@ -3667,6 +3667,9 @@ describe('API', () => {
         const datasetAllowedOrders = [];
         const workerpoolAllowedOrders = [];
         const requesterAllowedOrders = [];
+        const anyDatasetAllowedOrders = [];
+        const anyWorkerpoolAllowedOrders = [];
+        const anyRequesterAllowedOrders = [];
         const minTeeTagOrders = [];
         const maxGpuTagOrders = [];
         const minMaxTeeTagOrders = [];
@@ -3885,6 +3888,32 @@ describe('API', () => {
           datasetAllowedOrders.push(...datasetAllowed, ...publicOrders);
           allOrders.push(...datasetAllowed);
 
+          const datasetNotAllowed = await Promise.all(
+            Array(5)
+              .fill(null)
+              .map(async () => {
+                const order = await iexecUser.order
+                  .createApporder({
+                    app: appAddress,
+                    appprice: 0,
+                    datasetrestrict: getRandomAddress(),
+                  })
+                  .then(iexecUser.order.signApporder);
+                const orderHash = await iexecUser.order.hashApporder(order);
+                return {
+                  order,
+                  orderHash,
+                  signer: ownerAddress,
+                };
+              }),
+          );
+          anyDatasetAllowedOrders.push(
+            ...datasetAllowed,
+            ...datasetNotAllowed,
+            ...publicOrders,
+          );
+          allOrders.push(...datasetNotAllowed);
+
           const workerpoolAllowed = await Promise.all(
             Array(5)
               .fill(null)
@@ -3907,6 +3936,32 @@ describe('API', () => {
           workerpoolAllowedOrders.push(...workerpoolAllowed, ...publicOrders);
           allOrders.push(...workerpoolAllowed);
 
+          const workerpoolNotAllowed = await Promise.all(
+            Array(5)
+              .fill(null)
+              .map(async () => {
+                const order = await iexecUser.order
+                  .createApporder({
+                    app: appAddress,
+                    appprice: 0,
+                    workerpoolrestrict: getRandomAddress(),
+                  })
+                  .then(iexecUser.order.signApporder);
+                const orderHash = await iexecUser.order.hashApporder(order);
+                return {
+                  order,
+                  orderHash,
+                  signer: ownerAddress,
+                };
+              }),
+          );
+          anyWorkerpoolAllowedOrders.push(
+            ...workerpoolAllowed,
+            ...workerpoolNotAllowed,
+            ...publicOrders,
+          );
+          allOrders.push(...workerpoolNotAllowed);
+
           const requesterAllowed = await Promise.all(
             Array(5)
               .fill(null)
@@ -3928,6 +3983,32 @@ describe('API', () => {
           );
           requesterAllowedOrders.push(...requesterAllowed, ...publicOrders);
           allOrders.push(...requesterAllowed);
+
+          const requesterNotAllowed = await Promise.all(
+            Array(5)
+              .fill(null)
+              .map(async () => {
+                const order = await iexecUser.order
+                  .createApporder({
+                    app: appAddress,
+                    appprice: 0,
+                    requesterrestrict: getRandomAddress(),
+                  })
+                  .then(iexecUser.order.signApporder);
+                const orderHash = await iexecUser.order.hashApporder(order);
+                return {
+                  order,
+                  orderHash,
+                  signer: ownerAddress,
+                };
+              }),
+          );
+          anyRequesterAllowedOrders.push(
+            ...requesterAllowed,
+            ...requesterNotAllowed,
+            ...publicOrders,
+          );
+          allOrders.push(...requesterNotAllowed);
 
           const consumed = await Promise.all(
             Array(10)
@@ -4237,6 +4318,24 @@ describe('API', () => {
           });
         });
 
+        test('GET /apporders (any dataset filter)', async () => {
+          const { data, status } = await request
+            .get(
+              buildQuery('/apporders', {
+                chainId, // *
+                app: appAddress, // *
+                dataset: 'any',
+              }),
+            )
+            .then(parseResult);
+          expect(status).toBe(OK_STATUS);
+          expect(data.ok).toBe(true);
+          expect(data.count).toBe(anyDatasetAllowedOrders.length);
+          expect(data.orders).toBeDefined();
+          expect(Array.isArray(data.orders)).toBe(true);
+          expect(data.orders.length).toBe(20);
+        });
+
         test('GET /apporders (workerpool filter)', async () => {
           const { data, status } = await request
             .get(
@@ -4261,6 +4360,24 @@ describe('API', () => {
           });
         });
 
+        test('GET /apporders (any workerpool filter)', async () => {
+          const { data, status } = await request
+            .get(
+              buildQuery('/apporders', {
+                chainId, // *
+                app: appAddress, // *
+                workerpool: 'any',
+              }),
+            )
+            .then(parseResult);
+          expect(status).toBe(OK_STATUS);
+          expect(data.ok).toBe(true);
+          expect(data.count).toBe(anyWorkerpoolAllowedOrders.length);
+          expect(data.orders).toBeDefined();
+          expect(Array.isArray(data.orders)).toBe(true);
+          expect(data.orders.length).toBe(20);
+        });
+
         test('GET /apporders (requester filter)', async () => {
           const { data, status } = await request
             .get(
@@ -4283,6 +4400,24 @@ describe('API', () => {
                 e.order.requesterrestrict === utils.NULL_ADDRESS,
             ).toBe(true);
           });
+        });
+
+        test('GET /apporders (any requester filter)', async () => {
+          const { data, status } = await request
+            .get(
+              buildQuery('/apporders', {
+                chainId, // *
+                app: appAddress, // *
+                requester: 'any',
+              }),
+            )
+            .then(parseResult);
+          expect(status).toBe(OK_STATUS);
+          expect(data.ok).toBe(true);
+          expect(data.count).toBe(anyRequesterAllowedOrders.length);
+          expect(data.orders).toBeDefined();
+          expect(Array.isArray(data.orders)).toBe(true);
+          expect(data.orders.length).toBe(20);
         });
 
         test('GET /apporders (minTag filter)', async () => {
@@ -4376,6 +4511,9 @@ describe('API', () => {
         const appAllowedOrders = [];
         const workerpoolAllowedOrders = [];
         const requesterAllowedOrders = [];
+        const anyAppAllowedOrders = [];
+        const anyRequesterAllowedOrders = [];
+        const anyWorkerpoolAllowedOrders = [];
         const minTeeTagOrders = [];
         const maxGpuTagOrders = [];
         const minMaxTeeTagOrders = [];
@@ -4600,8 +4738,36 @@ describe('API', () => {
                 };
               }),
           );
+
           appAllowedOrders.push(...appAllowed, ...publicOrders);
           allOrders.push(...appAllowed);
+
+          const appNotAllowed = await Promise.all(
+            Array(5)
+              .fill(null)
+              .map(async () => {
+                const order = await iexecUser.order
+                  .createDatasetorder({
+                    dataset: datasetAddress,
+                    datasetprice: 0,
+                    apprestrict: getRandomAddress(),
+                  })
+                  .then(iexecUser.order.signDatasetorder);
+                const orderHash = await iexecUser.order.hashDatasetorder(order);
+                return {
+                  order,
+                  orderHash,
+                  signer: ownerAddress,
+                };
+              }),
+          );
+
+          anyAppAllowedOrders.push(
+            ...appAllowed,
+            ...appNotAllowed,
+            ...publicOrders,
+          );
+          allOrders.push(...appNotAllowed);
 
           const workerpoolAllowed = await Promise.all(
             Array(5)
@@ -4625,6 +4791,32 @@ describe('API', () => {
           workerpoolAllowedOrders.push(...workerpoolAllowed, ...publicOrders);
           allOrders.push(...workerpoolAllowed);
 
+          const workerpoolNotAllowed = await Promise.all(
+            Array(5)
+              .fill(null)
+              .map(async () => {
+                const order = await iexecUser.order
+                  .createDatasetorder({
+                    dataset: datasetAddress,
+                    datasetprice: 0,
+                    workerpoolrestrict: getRandomAddress(),
+                  })
+                  .then(iexecUser.order.signDatasetorder);
+                const orderHash = await iexecUser.order.hashDatasetorder(order);
+                return {
+                  order,
+                  orderHash,
+                  signer: ownerAddress,
+                };
+              }),
+          );
+          anyWorkerpoolAllowedOrders.push(
+            ...workerpoolAllowed,
+            ...workerpoolNotAllowed,
+            ...publicOrders,
+          );
+          allOrders.push(...workerpoolNotAllowed);
+
           const requesterAllowed = await Promise.all(
             Array(5)
               .fill(null)
@@ -4646,6 +4838,32 @@ describe('API', () => {
           );
           requesterAllowedOrders.push(...requesterAllowed, ...publicOrders);
           allOrders.push(...requesterAllowed);
+
+          const requesterNotAllowed = await Promise.all(
+            Array(5)
+              .fill(null)
+              .map(async () => {
+                const order = await iexecUser.order
+                  .createDatasetorder({
+                    dataset: datasetAddress,
+                    datasetprice: 0,
+                    requesterrestrict: getRandomAddress(),
+                  })
+                  .then(iexecUser.order.signDatasetorder);
+                const orderHash = await iexecUser.order.hashDatasetorder(order);
+                return {
+                  order,
+                  orderHash,
+                  signer: ownerAddress,
+                };
+              }),
+          );
+          anyRequesterAllowedOrders.push(
+            ...requesterAllowed,
+            ...requesterNotAllowed,
+            ...publicOrders,
+          );
+          allOrders.push(...requesterNotAllowed);
 
           const consumed = await Promise.all(
             Array(10)
@@ -4968,6 +5186,24 @@ describe('API', () => {
           });
         });
 
+        test('GET /datasetorders (any app filter)', async () => {
+          const { data, status } = await request
+            .get(
+              buildQuery('/datasetorders', {
+                chainId, // *
+                dataset: datasetAddress, // *
+                app: 'any',
+              }),
+            )
+            .then(parseResult);
+          expect(status).toBe(OK_STATUS);
+          expect(data.ok).toBe(true);
+          expect(data.count).toBe(anyAppAllowedOrders.length);
+          expect(data.orders).toBeDefined();
+          expect(Array.isArray(data.orders)).toBe(true);
+          expect(data.orders.length).toBe(20);
+        });
+
         test('GET /datasetorders (workerpool filter)', async () => {
           const { data, status } = await request
             .get(
@@ -4992,6 +5228,24 @@ describe('API', () => {
           });
         });
 
+        test('GET /datasetorders (any workerpool filter)', async () => {
+          const { data, status } = await request
+            .get(
+              buildQuery('/datasetorders', {
+                chainId, // *
+                dataset: datasetAddress, // *
+                workerpool: 'any',
+              }),
+            )
+            .then(parseResult);
+          expect(status).toBe(OK_STATUS);
+          expect(data.ok).toBe(true);
+          expect(data.count).toBe(anyWorkerpoolAllowedOrders.length);
+          expect(data.orders).toBeDefined();
+          expect(Array.isArray(data.orders)).toBe(true);
+          expect(data.orders.length).toBe(20);
+        });
+
         test('GET /datasetorders (requester filter)', async () => {
           const { data, status } = await request
             .get(
@@ -5014,6 +5268,24 @@ describe('API', () => {
                 e.order.requesterrestrict === utils.NULL_ADDRESS,
             ).toBe(true);
           });
+        });
+
+        test('GET /datasetorders (any requester filter)', async () => {
+          const { data, status } = await request
+            .get(
+              buildQuery('/datasetorders', {
+                chainId, // *
+                dataset: datasetAddress, // *
+                requester: 'any',
+              }),
+            )
+            .then(parseResult);
+          expect(status).toBe(OK_STATUS);
+          expect(data.ok).toBe(true);
+          expect(data.count).toBe(anyRequesterAllowedOrders.length);
+          expect(data.orders).toBeDefined();
+          expect(Array.isArray(data.orders)).toBe(true);
+          expect(data.orders.length).toBe(20);
         });
 
         test('GET /datasetorders (minTag filter)', async () => {
@@ -5106,9 +5378,12 @@ describe('API', () => {
         const ownersOrders = [];
         const workerpoolSpecificOrders = [];
         const category1Orders = [];
-        const datasetAllowedOrders = [];
         const appAllowedOrders = [];
+        const datasetAllowedOrders = [];
         const requesterAllowedOrders = [];
+        const anyAppAllowedOrders = [];
+        const anyDatasetAllowedOrders = [];
+        const anyRequesterAllowedOrders = [];
         const minTeeTagOrders = [];
         const maxGpuTagOrders = [];
         const minMaxTeeTagOrders = [];
@@ -5415,31 +5690,6 @@ describe('API', () => {
           minTeeTagOrders.push(...tagTeeGpu);
           allOrders.push(...tagTeeGpu);
 
-          const datasetAllowed = await Promise.all(
-            Array(5)
-              .fill(null)
-              .map(async () => {
-                const order = await iexecUser.order
-                  .createWorkerpoolorder({
-                    workerpool: otherAddress,
-                    workerpoolprice: 0,
-                    datasetrestrict: allowedDataset,
-                    category: 0,
-                  })
-                  .then(iexecUser.order.signWorkerpoolorder);
-                const orderHash = await iexecUser.order.hashWorkerpoolorder(
-                  order,
-                );
-                return {
-                  order,
-                  orderHash,
-                  signer: ownerAddress,
-                };
-              }),
-          );
-          datasetAllowedOrders.push(...datasetAllowed, ...publicOrders);
-          allOrders.push(...datasetAllowed);
-
           const appAllowed = await Promise.all(
             Array(5)
               .fill(null)
@@ -5465,6 +5715,89 @@ describe('API', () => {
           appAllowedOrders.push(...appAllowed, ...publicOrders);
           allOrders.push(...appAllowed);
 
+          const appNotAllowed = await Promise.all(
+            Array(5)
+              .fill(null)
+              .map(async () => {
+                const order = await iexecUser.order
+                  .createWorkerpoolorder({
+                    workerpool: otherAddress,
+                    workerpoolprice: 0,
+                    apprestrict: getRandomAddress(),
+                    category: 0,
+                  })
+                  .then(iexecUser.order.signWorkerpoolorder);
+                const orderHash = await iexecUser.order.hashWorkerpoolorder(
+                  order,
+                );
+                return {
+                  order,
+                  orderHash,
+                  signer: ownerAddress,
+                };
+              }),
+          );
+          anyAppAllowedOrders.push(
+            ...appAllowed,
+            ...appNotAllowed,
+            ...publicOrders,
+          );
+          allOrders.push(...appNotAllowed);
+
+          const datasetAllowed = await Promise.all(
+            Array(5)
+              .fill(null)
+              .map(async () => {
+                const order = await iexecUser.order
+                  .createWorkerpoolorder({
+                    workerpool: otherAddress,
+                    workerpoolprice: 0,
+                    datasetrestrict: allowedDataset,
+                    category: 0,
+                  })
+                  .then(iexecUser.order.signWorkerpoolorder);
+                const orderHash = await iexecUser.order.hashWorkerpoolorder(
+                  order,
+                );
+                return {
+                  order,
+                  orderHash,
+                  signer: ownerAddress,
+                };
+              }),
+          );
+          datasetAllowedOrders.push(...datasetAllowed, ...publicOrders);
+          allOrders.push(...datasetAllowed);
+
+          const datasetNotAllowed = await Promise.all(
+            Array(5)
+              .fill(null)
+              .map(async () => {
+                const order = await iexecUser.order
+                  .createWorkerpoolorder({
+                    workerpool: otherAddress,
+                    workerpoolprice: 0,
+                    datasetrestrict: getRandomAddress(),
+                    category: 0,
+                  })
+                  .then(iexecUser.order.signWorkerpoolorder);
+                const orderHash = await iexecUser.order.hashWorkerpoolorder(
+                  order,
+                );
+                return {
+                  order,
+                  orderHash,
+                  signer: ownerAddress,
+                };
+              }),
+          );
+          anyDatasetAllowedOrders.push(
+            ...datasetAllowed,
+            ...datasetNotAllowed,
+            ...publicOrders,
+          );
+          allOrders.push(...datasetNotAllowed);
+
           const requesterAllowed = await Promise.all(
             Array(5)
               .fill(null)
@@ -5489,6 +5822,35 @@ describe('API', () => {
           );
           requesterAllowedOrders.push(...requesterAllowed, ...publicOrders);
           allOrders.push(...requesterAllowed);
+
+          const requesterNotAllowed = await Promise.all(
+            Array(5)
+              .fill(null)
+              .map(async () => {
+                const order = await iexecUser.order
+                  .createWorkerpoolorder({
+                    workerpool: otherAddress,
+                    workerpoolprice: 0,
+                    requesterrestrict: getRandomAddress(),
+                    category: 0,
+                  })
+                  .then(iexecUser.order.signWorkerpoolorder);
+                const orderHash = await iexecUser.order.hashWorkerpoolorder(
+                  order,
+                );
+                return {
+                  order,
+                  orderHash,
+                  signer: ownerAddress,
+                };
+              }),
+          );
+          anyRequesterAllowedOrders.push(
+            ...requesterAllowed,
+            ...requesterNotAllowed,
+            ...publicOrders,
+          );
+          allOrders.push(...requesterNotAllowed);
 
           const consumed = await Promise.all(
             Array(10)
@@ -5811,29 +6173,6 @@ describe('API', () => {
           });
         });
 
-        test('GET /workerpoolorders (dataset filter)', async () => {
-          const { data, status } = await request
-            .get(
-              buildQuery('/workerpoolorders', {
-                chainId, // *
-                dataset: allowedDataset,
-              }),
-            )
-            .then(parseResult);
-          expect(status).toBe(OK_STATUS);
-          expect(data.ok).toBe(true);
-          expect(data.count).toBe(datasetAllowedOrders.length);
-          expect(data.orders).toBeDefined();
-          expect(Array.isArray(data.orders)).toBe(true);
-          expect(data.orders.length).toBe(20);
-          data.orders.forEach((e) => {
-            expect(
-              e.order.datasetrestrict === allowedDataset ||
-                e.order.datasetrestrict === utils.NULL_ADDRESS,
-            ).toBe(true);
-          });
-        });
-
         test('GET /workerpoolorders (app filter)', async () => {
           const { data, status } = await request
             .get(
@@ -5857,6 +6196,63 @@ describe('API', () => {
           });
         });
 
+        test('GET /workerpoolorders (any app filter)', async () => {
+          const { data, status } = await request
+            .get(
+              buildQuery('/workerpoolorders', {
+                chainId, // *
+                app: 'any',
+              }),
+            )
+            .then(parseResult);
+          expect(status).toBe(OK_STATUS);
+          expect(data.ok).toBe(true);
+          expect(data.count).toBe(anyAppAllowedOrders.length);
+          expect(data.orders).toBeDefined();
+          expect(Array.isArray(data.orders)).toBe(true);
+          expect(data.orders.length).toBe(20);
+        });
+
+        test('GET /workerpoolorders (dataset filter)', async () => {
+          const { data, status } = await request
+            .get(
+              buildQuery('/workerpoolorders', {
+                chainId, // *
+                dataset: allowedDataset,
+              }),
+            )
+            .then(parseResult);
+          expect(status).toBe(OK_STATUS);
+          expect(data.ok).toBe(true);
+          expect(data.count).toBe(datasetAllowedOrders.length);
+          expect(data.orders).toBeDefined();
+          expect(Array.isArray(data.orders)).toBe(true);
+          expect(data.orders.length).toBe(20);
+          data.orders.forEach((e) => {
+            expect(
+              e.order.datasetrestrict === allowedDataset ||
+                e.order.datasetrestrict === utils.NULL_ADDRESS,
+            ).toBe(true);
+          });
+        });
+
+        test('GET /workerpoolorders (any dataset filter)', async () => {
+          const { data, status } = await request
+            .get(
+              buildQuery('/workerpoolorders', {
+                chainId, // *
+                dataset: 'any',
+              }),
+            )
+            .then(parseResult);
+          expect(status).toBe(OK_STATUS);
+          expect(data.ok).toBe(true);
+          expect(data.count).toBe(anyDatasetAllowedOrders.length);
+          expect(data.orders).toBeDefined();
+          expect(Array.isArray(data.orders)).toBe(true);
+          expect(data.orders.length).toBe(20);
+        });
+
         test('GET /workerpoolorders (requester filter)', async () => {
           const { data, status } = await request
             .get(
@@ -5878,6 +6274,23 @@ describe('API', () => {
                 e.order.requesterrestrict === utils.NULL_ADDRESS,
             ).toBe(true);
           });
+        });
+
+        test('GET /workerpoolorders (any requester filter)', async () => {
+          const { data, status } = await request
+            .get(
+              buildQuery('/workerpoolorders', {
+                chainId, // *
+                requester: 'any',
+              }),
+            )
+            .then(parseResult);
+          expect(status).toBe(OK_STATUS);
+          expect(data.ok).toBe(true);
+          expect(data.count).toBe(anyRequesterAllowedOrders.length);
+          expect(data.orders).toBeDefined();
+          expect(Array.isArray(data.orders)).toBe(true);
+          expect(data.orders.length).toBe(20);
         });
 
         test('GET /workerpoolorders (minTag filter)', async () => {
@@ -5977,6 +6390,7 @@ describe('API', () => {
         let minVolumeOrders; // standard filtered by minVolume
         let maxTrust5Orders; // standard filtered by maxTrust
         let workerpoolAllowedOrders; // standard extended with workerpool exclusive
+        let anyWorkerpoolAllowedOrders; // standard extended with any workerpool
 
         // test addresses
         let requesterAddress;
@@ -6356,6 +6770,34 @@ describe('API', () => {
           );
           allOrders.push(...workerpoolAllowed);
 
+          const workerpoolNotAllowed = await Promise.all(
+            Array(2)
+              .fill(null)
+              .map(async () => {
+                const order = await iexecUser1.order
+                  .createRequestorder({
+                    app: getRandomAddress(),
+                    workerpool: getRandomAddress(),
+                    workerpoolmaxprice: 0,
+                    category: 0,
+                  })
+                  .then((o) =>
+                    iexecUser1.order.signRequestorder(o, {
+                      checkRequest: false,
+                    }),
+                  );
+                const orderHash = await iexecUser1.order.hashRequestorder(
+                  order,
+                );
+                return {
+                  order,
+                  orderHash,
+                  signer: otherAddress,
+                };
+              }),
+          );
+          allOrders.push(...workerpoolNotAllowed);
+
           const maxTrust5 = await Promise.all(
             Array(2)
               .fill(null)
@@ -6503,6 +6945,11 @@ describe('API', () => {
 
           // extended result
           workerpoolAllowedOrders = [...publicOrders, ...workerpoolAllowed];
+          anyWorkerpoolAllowedOrders = [
+            ...publicOrders,
+            ...workerpoolAllowed,
+            ...workerpoolNotAllowed,
+          ];
 
           await addRequestorders(chainId, allOrders);
         });
@@ -6921,6 +7368,23 @@ describe('API', () => {
                 e.order.workerpool === utils.NULL_ADDRESS,
             ).toBe(true);
           });
+        });
+
+        test('GET /requestorders (any workerpool orders)', async () => {
+          const { data, status } = await request
+            .get(
+              buildQuery('/requestorders', {
+                chainId, // *
+                workerpool: 'any',
+              }),
+            )
+            .then(parseResult);
+          expect(status).toBe(OK_STATUS);
+          expect(data.ok).toBe(true);
+          expect(data.count).toBe(anyWorkerpoolAllowedOrders.length);
+          expect(data.orders).toBeDefined();
+          expect(Array.isArray(data.orders)).toBe(true);
+          expect(data.orders.length).toBe(20);
         });
       });
     });

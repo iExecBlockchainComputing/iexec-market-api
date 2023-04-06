@@ -1,4 +1,13 @@
 const BN = require('bn.js');
+const {
+  OPEN,
+  FILLED,
+  CANCELED,
+  DEAD,
+  UNPUBLISH_ORDERHASH,
+  UNPUBLISH_LAST,
+  UNPUBLISH_ALL,
+} = require('./keywords');
 
 const OBJ_MAP = {
   EIP712Domain: {
@@ -94,16 +103,16 @@ const OBJ_MAP = {
 };
 
 const STATUS_MAP = {
-  OPEN: 'open',
-  FILLED: 'filled',
-  CANCELED: 'canceled',
-  DEAD: 'dead',
+  OPEN,
+  FILLED,
+  CANCELED,
+  DEAD,
 };
 
 const UNPUBLISH_TARGET_MAP = {
-  ORDERHASH: 'unpublish_orderHash',
-  LAST: 'unpublish_last',
-  ALL: 'unpublish_all',
+  ORDERHASH: UNPUBLISH_ORDERHASH,
+  LAST: UNPUBLISH_LAST,
+  ALL: UNPUBLISH_ALL,
 };
 
 const TAG_MAP = {
