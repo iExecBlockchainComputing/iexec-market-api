@@ -85,20 +85,42 @@ const maxTrustClause = (maxTrust) =>
   (maxTrust || maxTrust === 0) && { 'order.trust': { $lte: maxTrust } };
 
 const isAny = (value) => value === ANY;
-const getRestrictClause = (restrictName) => (restrictValue) => {
-  const restrictYey = `order.${restrictName}`;
+
+const getRequiredAddressOrAnyClause = (key) => (value) => {
+  const restrictKey = `order.${key}`;
+  if (value === undefined) {
+    throw Error('Invalid value, must be address our "any"');
+  }
   return (
-    !isAny(restrictValue) && {
-      [restrictYey]: restrictValue
-        ? { $in: [NULL_ADDRESS, restrictValue] }
-        : NULL_ADDRESS,
+    !isAny(value) && {
+      [restrictKey]: value,
     }
   );
 };
-const apprestrictClause = getRestrictClause('apprestrict');
-const datasetrestrictClause = getRestrictClause('datasetrestrict');
-const workerpoolrestrictClause = getRestrictClause('workerpoolrestrict');
-const requesterrestrictClause = getRestrictClause('requesterrestrict');
+
+const requiredAppOrAnyClause = getRequiredAddressOrAnyClause('app');
+const requiredDatasetOrAnyClause = getRequiredAddressOrAnyClause('dataset');
+const requiredWorkerpoolOrAnyClause =
+  getRequiredAddressOrAnyClause('workerpool');
+const requiredRequesterOrAnyClause = getRequiredAddressOrAnyClause('requester');
+const requiredBeneficiaryOrAnyClause =
+  getRequiredAddressOrAnyClause('beneficiary');
+
+const getAddressOrAnyRestrictClause = (key) => (value) => {
+  const restrictKey = `order.${key}`;
+  return (
+    !isAny(value) && {
+      [restrictKey]: value ? { $in: [NULL_ADDRESS, value] } : NULL_ADDRESS,
+    }
+  );
+};
+const apprestrictOrAnyClause = getAddressOrAnyRestrictClause('apprestrict');
+const datasetrestrictOrAnyClause =
+  getAddressOrAnyRestrictClause('datasetrestrict');
+const workerpoolrestrictOrAnyClause =
+  getAddressOrAnyRestrictClause('workerpoolrestrict');
+const requesterrestrictOrAnyClause =
+  getAddressOrAnyRestrictClause('requesterrestrict');
 
 const fetchIExecDomain = async (iExecContract = throwIfMissing()) => {
   const { name, version, chainId, verifyingContract } = await wrapEthCall(
@@ -612,11 +634,11 @@ const getApporders = async ({
     const ApporderModel = await apporderModel.getModel(chainId);
     const request = {
       status: STATUS_MAP.OPEN,
-      ...(app && { 'order.app': app }),
+      ...(app && requiredAppOrAnyClause(app)),
       ...(appOwner && { signer: appOwner }),
-      ...datasetrestrictClause(dataset),
-      ...workerpoolrestrictClause(workerpool),
-      ...requesterrestrictClause(requester),
+      ...datasetrestrictOrAnyClause(dataset),
+      ...workerpoolrestrictOrAnyClause(workerpool),
+      ...requesterrestrictOrAnyClause(requester),
       ...minVolumeClause(minVolume),
       ...tagClause({ minTag, maxTag }),
     };
@@ -681,11 +703,11 @@ const getDatasetorders = async ({
     const DatasetorderModel = await datasetorderModel.getModel(chainId);
     const request = {
       status: STATUS_MAP.OPEN,
-      ...(dataset && { 'order.dataset': dataset }),
+      ...(dataset && requiredDatasetOrAnyClause(dataset)),
       ...(datasetOwner && { signer: datasetOwner }),
-      ...apprestrictClause(app),
-      ...workerpoolrestrictClause(workerpool),
-      ...requesterrestrictClause(requester),
+      ...apprestrictOrAnyClause(app),
+      ...workerpoolrestrictOrAnyClause(workerpool),
+      ...requesterrestrictOrAnyClause(requester),
       ...minVolumeClause(minVolume),
       ...tagClause({ minTag, maxTag }),
     };
@@ -753,11 +775,11 @@ const getWorkerpoolorders = async ({
     const request = {
       status: STATUS_MAP.OPEN,
       ...(category !== undefined && { 'order.category': category }),
-      ...(workerpool && { 'order.workerpool': workerpool }),
+      ...(workerpool && requiredWorkerpoolOrAnyClause(workerpool)),
       ...(workerpoolOwner && { signer: workerpoolOwner }),
-      ...apprestrictClause(app),
-      ...datasetrestrictClause(dataset),
-      ...requesterrestrictClause(requester),
+      ...apprestrictOrAnyClause(app),
+      ...datasetrestrictOrAnyClause(dataset),
+      ...requesterrestrictOrAnyClause(requester),
       ...minTrustClause(minTrust),
       ...minVolumeClause(minVolume),
       ...tagClause({ minTag, maxTag }),
@@ -826,15 +848,11 @@ const getRequestorders = async ({
     const request = {
       status: STATUS_MAP.OPEN,
       ...(category !== undefined && { 'order.category': category }),
-      ...(app && { 'order.app': app }),
-      ...(dataset && { 'order.dataset': dataset }),
-      ...(requester && { 'order.requester': requester }),
-      ...(beneficiary && { 'order.beneficiary': beneficiary }),
-      ...(!isAny(workerpool) && {
-        'order.workerpool': workerpool
-          ? { $in: [NULL_ADDRESS, workerpool] }
-          : NULL_ADDRESS,
-      }),
+      ...(app && requiredAppOrAnyClause(app)),
+      ...(dataset && requiredDatasetOrAnyClause(dataset)),
+      ...(requester && requiredRequesterOrAnyClause(requester)),
+      ...(beneficiary && requiredBeneficiaryOrAnyClause(beneficiary)),
+      ...getAddressOrAnyRestrictClause('workerpool')(workerpool),
       ...maxTrustClause(maxTrust),
       ...minVolumeClause(minVolume),
       ...tagClause({ minTag, maxTag }),

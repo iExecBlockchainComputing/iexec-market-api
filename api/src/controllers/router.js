@@ -256,8 +256,8 @@ router.get('/apporders', bodyParser(), async (ctx) => {
     chainId: chainIdSchema().required(),
     app: string().when('appOwner', {
       is: (value) => !!value,
-      then: addressSchema().notRequired(),
-      otherwise: addressSchema().required('app or appOwner is required'),
+      then: addressOrAnySchema().notRequired(),
+      otherwise: addressOrAnySchema().required('app or appOwner is required'),
     }),
     appOwner: addressSchema(),
     dataset: addressOrAnySchema(),
@@ -331,8 +331,8 @@ router.get('/datasetorders', bodyParser(), async (ctx) => {
     chainId: chainIdSchema().required(),
     dataset: string().when('datasetOwner', {
       is: (value) => !!value,
-      then: addressSchema().notRequired(),
-      otherwise: addressSchema().required(
+      then: addressOrAnySchema().notRequired(),
+      otherwise: addressOrAnySchema().required(
         'dataset or datasetOwner is required',
       ),
     }),
@@ -408,7 +408,7 @@ router.get('/workerpoolorders', bodyParser(), async (ctx) => {
     page,
   } = await object({
     chainId: chainIdSchema().required(),
-    workerpool: addressSchema(),
+    workerpool: addressOrAnySchema(),
     workerpoolOwner: addressSchema(),
     app: addressOrAnySchema(),
     dataset: addressOrAnySchema(),
@@ -485,10 +485,10 @@ router.get('/requestorders', bodyParser(), async (ctx) => {
     page,
   } = await object({
     chainId: chainIdSchema().required(),
-    app: addressSchema(),
-    dataset: addressSchema(),
-    requester: addressSchema(),
-    beneficiary: addressSchema(),
+    app: addressOrAnySchema(),
+    dataset: addressOrAnySchema(),
+    requester: addressOrAnySchema(),
+    beneficiary: addressOrAnySchema(),
     category: positiveIntSchema(),
     minTag: bytes32Schema(),
     maxTag: bytes32Schema(),
