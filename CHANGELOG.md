@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## next
+## v6.2.0
 
 - add `"any"` as allowed keyword wherever an address was expected for GET `/apporders`, `/datasetorders`, `/workerpoolorders`, `/requestorders`
 
