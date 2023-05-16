@@ -3674,6 +3674,8 @@ describe('API', () => {
         const maxGpuTagOrders = [];
         const minMaxTeeTagOrders = [];
         const minVolumeOrders = [];
+        let consumedOrders;
+        let deadOrders;
         let appAddress;
         let otherAddress;
         let resourceOwnerAddress;
@@ -4010,7 +4012,7 @@ describe('API', () => {
           );
           allOrders.push(...requesterNotAllowed);
 
-          const consumed = await Promise.all(
+          consumedOrders = await Promise.all(
             Array(10)
               .fill(null)
               .map(async () => {
@@ -4026,9 +4028,9 @@ describe('API', () => {
                 };
               }),
           );
-          allOrders.push(...consumed);
+          allOrders.push(...consumedOrders);
 
-          const dead = await Promise.all(
+          deadOrders = await Promise.all(
             Array(5)
               .fill(null)
               .map(async () => {
@@ -4044,7 +4046,7 @@ describe('API', () => {
                 };
               }),
           );
-          allOrders.push(...dead);
+          allOrders.push(...deadOrders);
 
           const otherApp = await Promise.all(
             Array(10)
@@ -4251,6 +4253,27 @@ describe('API', () => {
           });
           expect(res2.data.orders.length).toBe(publicOrders.length - 20);
           expect(res2.data.nextPage).toBeUndefined();
+        });
+
+        test('GET /apporders (any app, any dataset, any requester, any workerpool)', async () => {
+          const { data, status } = await request
+            .get(
+              buildQuery('/apporders', {
+                chainId, // *
+                app: 'any', // *
+                dataset: 'any',
+                requester: 'any',
+                workerpool: 'any',
+              }),
+            )
+            .then(parseResult);
+          expect(status).toBe(OK_STATUS);
+          expect(data.ok).toBe(true);
+          expect(data.count).toBe(
+            allOrders.length - consumedOrders.length - deadOrders.length,
+          );
+          expect(data.orders).toBeDefined();
+          expect(Array.isArray(data.orders)).toBe(true);
         });
 
         test('GET /apporders (appOwner filter)', async () => {
@@ -4518,6 +4541,8 @@ describe('API', () => {
         const maxGpuTagOrders = [];
         const minMaxTeeTagOrders = [];
         const minVolumeOrders = [];
+        let consumedOrders;
+        let deadOrders;
         let datasetAddress;
         let otherAddress;
         let resourceOwnerAddress;
@@ -4865,7 +4890,7 @@ describe('API', () => {
           );
           allOrders.push(...requesterNotAllowed);
 
-          const consumed = await Promise.all(
+          consumedOrders = await Promise.all(
             Array(10)
               .fill(null)
               .map(async () => {
@@ -4884,9 +4909,9 @@ describe('API', () => {
                 };
               }),
           );
-          allOrders.push(...consumed);
+          allOrders.push(...consumedOrders);
 
-          const dead = await Promise.all(
+          deadOrders = await Promise.all(
             Array(5)
               .fill(null)
               .map(async () => {
@@ -4905,7 +4930,7 @@ describe('API', () => {
                 };
               }),
           );
-          allOrders.push(...dead);
+          allOrders.push(...deadOrders);
 
           const otherDataset = await Promise.all(
             Array(10)
@@ -5119,6 +5144,27 @@ describe('API', () => {
           });
           expect(res2.data.orders.length).toBe(publicOrders.length - 20);
           expect(res2.data.nextPage).toBeUndefined();
+        });
+
+        test('GET /datasetorders (any dataset, any app, any requester, any workerpool)', async () => {
+          const { data, status } = await request
+            .get(
+              buildQuery('/datasetorders', {
+                chainId, // *
+                dataset: 'any', // *
+                app: 'any',
+                requester: 'any',
+                workerpool: 'any',
+              }),
+            )
+            .then(parseResult);
+          expect(status).toBe(OK_STATUS);
+          expect(data.ok).toBe(true);
+          expect(data.count).toBe(
+            allOrders.length - consumedOrders.length - deadOrders.length,
+          );
+          expect(data.orders).toBeDefined();
+          expect(Array.isArray(data.orders)).toBe(true);
         });
 
         test('GET /datasetorders (datasetOwner filter)', async () => {
@@ -5389,6 +5435,8 @@ describe('API', () => {
         const minMaxTeeTagOrders = [];
         const minVolumeOrders = [];
         const minTrustOrders = [];
+        let deadOrders;
+        let consumedOrders;
         let workerpoolAddress;
         let otherAddress;
         let resourceOwnerAddress;
@@ -5852,7 +5900,7 @@ describe('API', () => {
           );
           allOrders.push(...requesterNotAllowed);
 
-          const consumed = await Promise.all(
+          consumedOrders = await Promise.all(
             Array(10)
               .fill(null)
               .map(async () => {
@@ -5874,9 +5922,9 @@ describe('API', () => {
                 };
               }),
           );
-          allOrders.push(...consumed);
+          allOrders.push(...consumedOrders);
 
-          const dead = await Promise.all(
+          deadOrders = await Promise.all(
             Array(5)
               .fill(null)
               .map(async () => {
@@ -5898,7 +5946,7 @@ describe('API', () => {
                 };
               }),
           );
-          allOrders.push(...dead);
+          allOrders.push(...deadOrders);
 
           await addWorkerpoolorders(chainId, allOrders);
         });
@@ -6071,6 +6119,27 @@ describe('API', () => {
           });
           expect(res2.data.orders.length).toBe(publicOrders.length - 20);
           expect(res2.data.nextPage).toBeUndefined();
+        });
+
+        test('GET /workerpoolorders (any app, any dataset, any requester, any workerpool)', async () => {
+          const { data, status } = await request
+            .get(
+              buildQuery('/workerpoolorders', {
+                chainId, // *
+                dataset: 'any',
+                app: 'any',
+                requester: 'any',
+                workerpool: 'any',
+              }),
+            )
+            .then(parseResult);
+          expect(status).toBe(OK_STATUS);
+          expect(data.ok).toBe(true);
+          expect(data.count).toBe(
+            allOrders.length - consumedOrders.length - deadOrders.length,
+          );
+          expect(data.orders).toBeDefined();
+          expect(Array.isArray(data.orders)).toBe(true);
         });
 
         test('GET /workerpoolorders (workerpool filter)', async () => {
@@ -6378,6 +6447,8 @@ describe('API', () => {
 
         // order orders
         const allOrders = []; // all orders in DB
+        let consumedOrders; // flagged as consumed
+        let deadOrders; // flagged as dead (unmatchable)
         let publicOrders; // standard result
         let requesterSpecificOrders; // standard filtered by requester
         let beneficiarySpecificOrders; // standard filtered by beneficiary
@@ -6854,7 +6925,7 @@ describe('API', () => {
           );
           allOrders.push(...exceedMaxTrust5);
 
-          const consumed = await Promise.all(
+          consumedOrders = await Promise.all(
             Array(5)
               .fill(null)
               .map(async () => {
@@ -6880,9 +6951,9 @@ describe('API', () => {
                 };
               }),
           );
-          allOrders.push(...consumed);
+          allOrders.push(...consumedOrders);
 
-          const dead = await Promise.all(
+          deadOrders = await Promise.all(
             Array(2)
               .fill(null)
               .map(async () => {
@@ -6908,7 +6979,7 @@ describe('API', () => {
                 };
               }),
           );
-          allOrders.push(...dead);
+          allOrders.push(...deadOrders);
 
           // standard result
           publicOrders = [
@@ -7128,6 +7199,26 @@ describe('API', () => {
           expect(res2.data.nextPage).toBeUndefined();
         });
 
+        test('GET /requestorders (any app, any dataset, any requester, any workerpool)', async () => {
+          const { data, status } = await request
+            .get(
+              buildQuery('/requestorders', {
+                chainId, // *
+                dataset: 'any',
+                app: 'any',
+                requester: 'any',
+                workerpool: 'any',
+              }),
+            )
+            .then(parseResult);
+          expect(status).toBe(OK_STATUS);
+          expect(data.ok).toBe(true);
+          expect(data.count).toBe(
+            allOrders.length - consumedOrders.length - deadOrders.length,
+          );
+          expect(data.orders).toBeDefined();
+          expect(Array.isArray(data.orders)).toBe(true);
+        });
         test('GET /requestorders (requester filter)', async () => {
           const { data, status } = await request
             .get(

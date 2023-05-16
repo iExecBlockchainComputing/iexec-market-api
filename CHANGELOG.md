@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v6.2.0
+
+- add `"any"` as allowed keyword wherever an address was expected for GET `/apporders`, `/datasetorders`, `/workerpoolorders`, `/requestorders`
+
 ## v6.1.0
 
 - add `"any"` as allowed keyword on restrict filtering fields for GET `/apporders`, `/datasetorders`, `/workerpoolorders`
