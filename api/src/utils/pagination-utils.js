@@ -5,7 +5,7 @@ const getDbPage = ({ page, pageIndex, pageSize }) => {
     const limit = pageSize || defaultPageSize;
     return {
       limit,
-      skip: limit * (pageSize || 0),
+      skip: limit * (pageIndex || 0),
     };
   }
   // legacy pagination deprecated
