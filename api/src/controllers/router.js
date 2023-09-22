@@ -40,6 +40,7 @@ const {
   addressOrAnySchema,
 } = require('../utils/validator');
 const { UNPUBLISH_TARGET_MAP } = require('../utils/order-utils');
+const { maxPageSize, minPageSize } = require('../config').api;
 
 const log = logger.extend('controllers:router');
 
@@ -98,20 +99,31 @@ router.get('/categories/:catid', bodyParser(), async (ctx) => {
 
 router.get('/categories', bodyParser(), async (ctx) => {
   log('GET /categories');
-  const { chainId, catid, minWorkClockTimeRef, maxWorkClockTimeRef, page } =
-    await object({
-      chainId: chainIdSchema().required(),
-      catid: positiveIntSchema(),
-      minWorkClockTimeRef: positiveIntSchema(),
-      maxWorkClockTimeRef: positiveIntSchema(),
-      page: positiveIntSchema(),
-    }).validate(ctx.query);
+  const {
+    chainId,
+    catid,
+    minWorkClockTimeRef,
+    maxWorkClockTimeRef,
+    page,
+    pageIndex,
+    pageSize,
+  } = await object({
+    chainId: chainIdSchema().required(),
+    catid: positiveIntSchema(),
+    minWorkClockTimeRef: positiveIntSchema(),
+    maxWorkClockTimeRef: positiveIntSchema(),
+    page: positiveIntSchema(),
+    pageIndex: positiveIntSchema(),
+    pageSize: positiveIntSchema().max(maxPageSize).min(minPageSize),
+  }).validate(ctx.query);
   const { categories, count, nextPage } = await getCategories({
     chainId,
     catid,
     minWorkClockTimeRef,
     maxWorkClockTimeRef,
     page,
+    pageIndex,
+    pageSize,
   });
   ctx.body = {
     ok: true,
@@ -160,6 +172,8 @@ router.get('/deals', bodyParser(), async (ctx) => {
     workerpoolorderHash,
     requestorderHash,
     page,
+    pageIndex,
+    pageSize,
   } = await object({
     chainId: chainIdSchema().required(),
     category: positiveIntSchema(),
@@ -176,6 +190,8 @@ router.get('/deals', bodyParser(), async (ctx) => {
     workerpoolorderHash: bytes32Schema(),
     requestorderHash: bytes32Schema(),
     page: positiveIntSchema(),
+    pageIndex: positiveIntSchema(),
+    pageSize: positiveIntSchema().max(maxPageSize).min(minPageSize),
   }).validate(ctx.query);
   const { deals, count, nextPage } = await getDeals({
     chainId,
@@ -193,6 +209,8 @@ router.get('/deals', bodyParser(), async (ctx) => {
     workerpoolorderHash,
     requestorderHash,
     page,
+    pageIndex,
+    pageSize,
   });
   ctx.body = {
     ok: true,
@@ -252,6 +270,8 @@ router.get('/apporders', bodyParser(), async (ctx) => {
     maxTag,
     minVolume,
     page,
+    pageIndex,
+    pageSize,
   } = await object({
     chainId: chainIdSchema().required(),
     app: string().when('appOwner', {
@@ -267,6 +287,8 @@ router.get('/apporders', bodyParser(), async (ctx) => {
     maxTag: bytes32Schema(),
     minVolume: positiveStrictIntSchema(),
     page: positiveIntSchema(),
+    pageIndex: positiveIntSchema(),
+    pageSize: positiveIntSchema().max(maxPageSize).min(minPageSize),
   }).validate(ctx.query);
   const { orders, count, nextPage } = await getApporders({
     chainId,
@@ -279,6 +301,8 @@ router.get('/apporders', bodyParser(), async (ctx) => {
     maxTag,
     minVolume,
     page,
+    pageIndex,
+    pageSize,
   });
   ctx.body = {
     ok: true,
@@ -327,6 +351,8 @@ router.get('/datasetorders', bodyParser(), async (ctx) => {
     maxTag,
     minVolume,
     page,
+    pageIndex,
+    pageSize,
   } = await object({
     chainId: chainIdSchema().required(),
     dataset: string().when('datasetOwner', {
@@ -344,6 +370,8 @@ router.get('/datasetorders', bodyParser(), async (ctx) => {
     maxTag: bytes32Schema(),
     minVolume: positiveStrictIntSchema(),
     page: positiveIntSchema(),
+    pageIndex: positiveIntSchema(),
+    pageSize: positiveIntSchema().max(maxPageSize).min(minPageSize),
   }).validate(ctx.query);
   const { orders, count, nextPage } = await getDatasetorders({
     chainId,
@@ -356,6 +384,8 @@ router.get('/datasetorders', bodyParser(), async (ctx) => {
     maxTag,
     minVolume,
     page,
+    pageIndex,
+    pageSize,
   });
   ctx.body = {
     ok: true,
@@ -406,6 +436,8 @@ router.get('/workerpoolorders', bodyParser(), async (ctx) => {
     minTrust,
     minVolume,
     page,
+    pageIndex,
+    pageSize,
   } = await object({
     chainId: chainIdSchema().required(),
     workerpool: addressOrAnySchema(),
@@ -419,6 +451,8 @@ router.get('/workerpoolorders', bodyParser(), async (ctx) => {
     minVolume: positiveStrictIntSchema(),
     minTrust: positiveIntSchema(),
     page: positiveIntSchema(),
+    pageIndex: positiveIntSchema(),
+    pageSize: positiveIntSchema().max(maxPageSize).min(minPageSize),
   }).validate(ctx.query);
   const { orders, count, nextPage } = await getWorkerpoolorders({
     chainId,
@@ -433,6 +467,8 @@ router.get('/workerpoolorders', bodyParser(), async (ctx) => {
     minTrust,
     minVolume,
     page,
+    pageIndex,
+    pageSize,
   });
   ctx.body = {
     ok: true,
@@ -483,6 +519,8 @@ router.get('/requestorders', bodyParser(), async (ctx) => {
     minVolume,
     workerpool,
     page,
+    pageIndex,
+    pageSize,
   } = await object({
     chainId: chainIdSchema().required(),
     app: addressOrAnySchema(),
@@ -496,6 +534,8 @@ router.get('/requestorders', bodyParser(), async (ctx) => {
     minVolume: positiveStrictIntSchema(),
     workerpool: addressOrAnySchema(),
     page: positiveIntSchema(),
+    pageIndex: positiveIntSchema(),
+    pageSize: positiveIntSchema().max(maxPageSize).min(minPageSize),
   }).validate(ctx.query);
   const { orders, count, nextPage } = await getRequestorders({
     chainId,
@@ -510,6 +550,8 @@ router.get('/requestorders', bodyParser(), async (ctx) => {
     minVolume,
     workerpool,
     page,
+    pageIndex,
+    pageSize,
   });
   ctx.body = {
     ok: true,

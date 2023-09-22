@@ -1,8 +1,7 @@
 const dealModel = require('../models/dealModel');
 const { logger } = require('../utils/logger');
 const { throwIfMissing, ObjectNotFoundError } = require('../utils/error');
-
-const PAGE_LENGTH = 20;
+const { getDbPage, getClientNextPage } = require('../utils/pagination-utils');
 
 const log = logger.extend('services:deal');
 
@@ -63,6 +62,8 @@ const getDeals = async ({
   workerpoolorderHash,
   requestorderHash,
   page,
+  pageIndex,
+  pageSize,
 } = {}) => {
   try {
     const DealModel = await dealModel.getModel(chainId);
@@ -111,8 +112,12 @@ const getDeals = async ({
       blockNumber: 'desc',
       dealid: 'asc', // make sort deterministic
     };
-    const limit = PAGE_LENGTH;
-    const skip = page || 0;
+
+    const { skip, limit } = getDbPage({
+      page,
+      pageIndex,
+      pageSize,
+    });
 
     const count = await DealModel.find(request).countDocuments();
     const deals = await DealModel.find(request)
@@ -120,7 +125,11 @@ const getDeals = async ({
       .limit(limit)
       .skip(skip);
 
-    const nextPage = deals.length === limit ? skip + limit : undefined;
+    const { nextPage } = getClientNextPage({
+      resultLength: deals.length,
+      limit,
+      skip,
+    });
 
     return {
       deals: deals.map((e) => e.toJSON()),
