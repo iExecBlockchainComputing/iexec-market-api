@@ -4143,6 +4143,67 @@ describe('API', () => {
           expect(data.orders).toBeUndefined();
         });
 
+        test('GET /apporders (invalid pageSize)', async () => {
+          await request
+            .get(
+              buildQuery('/apporders', {
+                app: appAddress, // *
+                chainId, // *
+                pageSize: 1,
+              }),
+            )
+            .then(parseResult)
+            .then(({ data, status }) => {
+              expect(status).toBe(VALIDATION_ERROR_STATUS);
+              expect(data.ok).toBe(false);
+              expect(data.error).toBe(
+                'pageSize must be greater than or equal to 10',
+              );
+              expect(data.count).toBeUndefined();
+              expect(data.orders).toBeUndefined();
+            });
+
+          await request
+            .get(
+              buildQuery('/apporders', {
+                app: appAddress, // *
+                chainId, // *
+                pageSize: 1001,
+              }),
+            )
+            .then(parseResult)
+            .then(({ data, status }) => {
+              expect(status).toBe(VALIDATION_ERROR_STATUS);
+              expect(data.ok).toBe(false);
+              expect(data.error).toBe(
+                'pageSize must be less than or equal to 1000',
+              );
+              expect(data.count).toBeUndefined();
+              expect(data.orders).toBeUndefined();
+            });
+        });
+
+        test('GET /apporders (invalid pageIndex)', async () => {
+          await request
+            .get(
+              buildQuery('/apporders', {
+                app: appAddress, // *
+                chainId, // *
+                pageIndex: -1,
+              }),
+            )
+            .then(parseResult)
+            .then(({ data, status }) => {
+              expect(status).toBe(VALIDATION_ERROR_STATUS);
+              expect(data.ok).toBe(false);
+              expect(data.error).toBe(
+                'pageIndex must be greater than or equal to 0',
+              );
+              expect(data.count).toBeUndefined();
+              expect(data.orders).toBeUndefined();
+            });
+        });
+
         test('GET /apporders (no match)', async () => {
           const { data, status } = await request
             .get(
@@ -5028,6 +5089,67 @@ describe('API', () => {
           expect(data.error).toBe('chainId is a required field');
           expect(data.count).toBeUndefined();
           expect(data.orders).toBeUndefined();
+        });
+
+        test('GET /datasetorders (invalid pageSize)', async () => {
+          await request
+            .get(
+              buildQuery('/datasetorders', {
+                dataset: datasetAddress, // *
+                chainId, // *
+                pageSize: 1,
+              }),
+            )
+            .then(parseResult)
+            .then(({ data, status }) => {
+              expect(status).toBe(VALIDATION_ERROR_STATUS);
+              expect(data.ok).toBe(false);
+              expect(data.error).toBe(
+                'pageSize must be greater than or equal to 10',
+              );
+              expect(data.count).toBeUndefined();
+              expect(data.orders).toBeUndefined();
+            });
+
+          await request
+            .get(
+              buildQuery('/datasetorders', {
+                dataset: datasetAddress, // *
+                chainId, // *
+                pageSize: 1001,
+              }),
+            )
+            .then(parseResult)
+            .then(({ data, status }) => {
+              expect(status).toBe(VALIDATION_ERROR_STATUS);
+              expect(data.ok).toBe(false);
+              expect(data.error).toBe(
+                'pageSize must be less than or equal to 1000',
+              );
+              expect(data.count).toBeUndefined();
+              expect(data.orders).toBeUndefined();
+            });
+        });
+
+        test('GET /datasetorders (invalid pageIndex)', async () => {
+          await request
+            .get(
+              buildQuery('/datasetorders', {
+                dataset: datasetAddress, // *
+                chainId, // *
+                pageIndex: -1,
+              }),
+            )
+            .then(parseResult)
+            .then(({ data, status }) => {
+              expect(status).toBe(VALIDATION_ERROR_STATUS);
+              expect(data.ok).toBe(false);
+              expect(data.error).toBe(
+                'pageIndex must be greater than or equal to 0',
+              );
+              expect(data.count).toBeUndefined();
+              expect(data.orders).toBeUndefined();
+            });
         });
 
         test('GET /datasetorders (no match)', async () => {
@@ -6005,6 +6127,64 @@ describe('API', () => {
           expect(data.error).toBe('chainId is a required field');
           expect(data.count).toBeUndefined();
           expect(data.orders).toBeUndefined();
+        });
+
+        test('GET /workerpoolorders (invalid pageSize)', async () => {
+          await request
+            .get(
+              buildQuery('/workerpoolorders', {
+                chainId, // *
+                pageSize: 1,
+              }),
+            )
+            .then(parseResult)
+            .then(({ data, status }) => {
+              expect(status).toBe(VALIDATION_ERROR_STATUS);
+              expect(data.ok).toBe(false);
+              expect(data.error).toBe(
+                'pageSize must be greater than or equal to 10',
+              );
+              expect(data.count).toBeUndefined();
+              expect(data.orders).toBeUndefined();
+            });
+
+          await request
+            .get(
+              buildQuery('/workerpoolorders', {
+                chainId, // *
+                pageSize: 1001,
+              }),
+            )
+            .then(parseResult)
+            .then(({ data, status }) => {
+              expect(status).toBe(VALIDATION_ERROR_STATUS);
+              expect(data.ok).toBe(false);
+              expect(data.error).toBe(
+                'pageSize must be less than or equal to 1000',
+              );
+              expect(data.count).toBeUndefined();
+              expect(data.orders).toBeUndefined();
+            });
+        });
+
+        test('GET /workerpoolorders (invalid pageIndex)', async () => {
+          await request
+            .get(
+              buildQuery('/workerpoolorders', {
+                chainId, // *
+                pageIndex: -1,
+              }),
+            )
+            .then(parseResult)
+            .then(({ data, status }) => {
+              expect(status).toBe(VALIDATION_ERROR_STATUS);
+              expect(data.ok).toBe(false);
+              expect(data.error).toBe(
+                'pageIndex must be greater than or equal to 0',
+              );
+              expect(data.count).toBeUndefined();
+              expect(data.orders).toBeUndefined();
+            });
         });
 
         test('GET /workerpoolorders (no match)', async () => {
@@ -7081,6 +7261,64 @@ describe('API', () => {
           expect(data.orders).toBeUndefined();
         });
 
+        test('GET /requestorders (invalid pageSize)', async () => {
+          await request
+            .get(
+              buildQuery('/requestorders', {
+                chainId, // *
+                pageSize: 1,
+              }),
+            )
+            .then(parseResult)
+            .then(({ data, status }) => {
+              expect(status).toBe(VALIDATION_ERROR_STATUS);
+              expect(data.ok).toBe(false);
+              expect(data.error).toBe(
+                'pageSize must be greater than or equal to 10',
+              );
+              expect(data.count).toBeUndefined();
+              expect(data.orders).toBeUndefined();
+            });
+
+          await request
+            .get(
+              buildQuery('/requestorders', {
+                chainId, // *
+                pageSize: 1001,
+              }),
+            )
+            .then(parseResult)
+            .then(({ data, status }) => {
+              expect(status).toBe(VALIDATION_ERROR_STATUS);
+              expect(data.ok).toBe(false);
+              expect(data.error).toBe(
+                'pageSize must be less than or equal to 1000',
+              );
+              expect(data.count).toBeUndefined();
+              expect(data.orders).toBeUndefined();
+            });
+        });
+
+        test('GET /requestorders (invalid pageIndex)', async () => {
+          await request
+            .get(
+              buildQuery('/requestorders', {
+                chainId, // *
+                pageIndex: -1,
+              }),
+            )
+            .then(parseResult)
+            .then(({ data, status }) => {
+              expect(status).toBe(VALIDATION_ERROR_STATUS);
+              expect(data.ok).toBe(false);
+              expect(data.error).toBe(
+                'pageIndex must be greater than or equal to 0',
+              );
+              expect(data.count).toBeUndefined();
+              expect(data.orders).toBeUndefined();
+            });
+        });
+
         test('GET /requestorders (no match)', async () => {
           const { data, status } = await request
             .get(
@@ -7573,6 +7811,64 @@ describe('API', () => {
         expect(data.nextPage).toBeUndefined();
       });
 
+      test('GET /categories (invalid pageSize)', async () => {
+        await request
+          .get(
+            buildQuery('/categories', {
+              chainId, // *
+              pageSize: 1,
+            }),
+          )
+          .then(parseResult)
+          .then(({ data, status }) => {
+            expect(status).toBe(VALIDATION_ERROR_STATUS);
+            expect(data.ok).toBe(false);
+            expect(data.error).toBe(
+              'pageSize must be greater than or equal to 10',
+            );
+            expect(data.count).toBeUndefined();
+            expect(data.categories).toBeUndefined();
+          });
+
+        await request
+          .get(
+            buildQuery('/categories', {
+              chainId, // *
+              pageSize: 1001,
+            }),
+          )
+          .then(parseResult)
+          .then(({ data, status }) => {
+            expect(status).toBe(VALIDATION_ERROR_STATUS);
+            expect(data.ok).toBe(false);
+            expect(data.error).toBe(
+              'pageSize must be less than or equal to 1000',
+            );
+            expect(data.count).toBeUndefined();
+            expect(data.categories).toBeUndefined();
+          });
+      });
+
+      test('GET /categories (invalid pageIndex)', async () => {
+        await request
+          .get(
+            buildQuery('/categories', {
+              chainId, // *
+              pageIndex: -1,
+            }),
+          )
+          .then(parseResult)
+          .then(({ data, status }) => {
+            expect(status).toBe(VALIDATION_ERROR_STATUS);
+            expect(data.ok).toBe(false);
+            expect(data.error).toBe(
+              'pageIndex must be greater than or equal to 0',
+            );
+            expect(data.count).toBeUndefined();
+            expect(data.categories).toBeUndefined();
+          });
+      });
+
       test('GET /categories (sort + pagination)', async () => {
         const res1 = await request
           .get(
@@ -7790,6 +8086,64 @@ describe('API', () => {
         expect(data.count).toBeUndefined();
         expect(data.deals).toBeUndefined();
         expect(data.nextPage).toBeUndefined();
+      });
+
+      test('GET /deals (invalid pageSize)', async () => {
+        await request
+          .get(
+            buildQuery('/deals', {
+              chainId, // *
+              pageSize: 1,
+            }),
+          )
+          .then(parseResult)
+          .then(({ data, status }) => {
+            expect(status).toBe(VALIDATION_ERROR_STATUS);
+            expect(data.ok).toBe(false);
+            expect(data.error).toBe(
+              'pageSize must be greater than or equal to 10',
+            );
+            expect(data.count).toBeUndefined();
+            expect(data.deals).toBeUndefined();
+          });
+
+        await request
+          .get(
+            buildQuery('/deals', {
+              chainId, // *
+              pageSize: 1001,
+            }),
+          )
+          .then(parseResult)
+          .then(({ data, status }) => {
+            expect(status).toBe(VALIDATION_ERROR_STATUS);
+            expect(data.ok).toBe(false);
+            expect(data.error).toBe(
+              'pageSize must be less than or equal to 1000',
+            );
+            expect(data.count).toBeUndefined();
+            expect(data.deals).toBeUndefined();
+          });
+      });
+
+      test('GET /deals (invalid pageIndex)', async () => {
+        await request
+          .get(
+            buildQuery('/deals', {
+              chainId, // *
+              pageIndex: -1,
+            }),
+          )
+          .then(parseResult)
+          .then(({ data, status }) => {
+            expect(status).toBe(VALIDATION_ERROR_STATUS);
+            expect(data.ok).toBe(false);
+            expect(data.error).toBe(
+              'pageIndex must be greater than or equal to 0',
+            );
+            expect(data.count).toBeUndefined();
+            expect(data.deals).toBeUndefined();
+          });
       });
 
       test('GET /deals (sort + pagination)', async () => {
