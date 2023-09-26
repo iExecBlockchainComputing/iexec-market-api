@@ -245,7 +245,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AppOrderWithMetadata'
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - $ref: '#/components/schemas/AppOrderWithMetadata'
 
   /apporders:
     get:
@@ -312,6 +314,31 @@ paths:
                         type: array
                         items:
                           $ref: '#/components/schemas/AppOrderWithMetadata'
+    post:
+      description: publish an apporder on the market
+      parameters:
+        - $ref: '#/components/parameters/ChainId'
+        - $ref: '#/components/parameters/Authorization'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                order:
+                  $ref: '#/components/schemas/AppOrder'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      published:
+                        $ref: '#/components/schemas/AppOrderWithMetadata'
 
   /datasetorders/{orderHash}:
     get:
@@ -328,7 +355,12 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DatasetOrderWithMetadata'
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      published:
+                        $ref: '#/components/schemas/DatasetOrderWithMetadata'
 
   /datasetorders:
     get:
@@ -395,6 +427,31 @@ paths:
                         type: array
                         items:
                           $ref: '#/components/schemas/DatasetOrderWithMetadata'
+    post:
+      description: publish a datasetorder on the market
+      parameters:
+        - $ref: '#/components/parameters/ChainId'
+        - $ref: '#/components/parameters/Authorization'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                order:
+                  $ref: '#/components/schemas/DatasetOrder'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      published:
+                        $ref: '#/components/schemas/DatasetOrderWithMetadata'
 
   /workerpoolorders/{orderHash}:
     get:
@@ -411,7 +468,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/WorkerpoolOrderWithMetadata'
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - $ref: '#/components/schemas/WorkerpoolOrderWithMetadata'
 
   /workerpoolorders:
     get:
@@ -488,6 +547,31 @@ paths:
                         type: array
                         items:
                           $ref: '#/components/schemas/WorkerpoolOrderWithMetadata'
+    post:
+      description: publish a workerpoolorder on the market
+      parameters:
+        - $ref: '#/components/parameters/ChainId'
+        - $ref: '#/components/parameters/Authorization'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                order:
+                  $ref: '#/components/schemas/WorkerpoolOrder'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      published:
+                        $ref: '#/components/schemas/WorkerpoolOrderWithMetadata'
 
   /requestorders/{orderHash}:
     get:
@@ -504,7 +588,9 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/RequestOrderWithMetadata'
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - $ref: '#/components/schemas/RequestOrderWithMetadata'
 
   /requestorders:
     get:
@@ -579,6 +665,31 @@ paths:
                         type: array
                         items:
                           $ref: '#/components/schemas/RequestOrderWithMetadata'
+    post:
+      description: publish a requestorder on the market
+      parameters:
+        - $ref: '#/components/parameters/ChainId'
+        - $ref: '#/components/parameters/Authorization'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                order:
+                  $ref: '#/components/schemas/RequestOrder'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      published:
+                        $ref: '#/components/schemas/RequestOrderWithMetadata'
 
 components:
   parameters:
@@ -590,6 +701,13 @@ components:
       schema:
         type: number
         example: 134
+    Authorization:
+      name: authorization
+      in: header
+      description: authorization (signed challenge)
+      required: true
+      schema:
+        type: string
     OrderHash:
       name: orderHash
       in: path
