@@ -1,0 +1,102 @@
+openapi: 3.0.3
+info:
+  title: iExec market API
+  description: >-
+    This is a sample Pet Store Server based on the OpenAPI 3.0 specification. 
+    You can find out more about
+  version: 0.0.0
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+servers:
+  - url: https://api.market.iex.ec
+tags:
+  - name: apporders
+    description: manage your apporders and browse the apporders market
+  - name: datasetorders
+    description: manage your datasetorders and browse the datasetorders market
+paths:
+  /version:
+    get:
+      description: get the API version
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                  version:
+                    type: string
+                    example: 0.0.0
+  /challenge:
+    get:
+      description: get a challenge to sign for autenticated operations
+      parameters:
+        - name: chainId
+          in: query
+          description: chain id
+          required: true
+          schema:
+            type: number
+            example: 134
+        - name: address
+          in: query
+          description: ethereum address of the wallet to authenticate
+          required: true
+          schema:
+            type: string
+            example: '0xF048eF3d7E3B33A465E0599E641BB29421f7Df92'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                  data:
+                    type: object
+                    properties:
+                      types:
+                        type: object
+                        properties:
+                          EIP712Domain:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                name:
+                                  type: string
+                                type:
+                                  type: string
+                          Challenge:
+                            type: array
+                            items:
+                              type: object
+                              properties:
+                                name:
+                                  type: string
+                                type:
+                                  type: string
+                  domain:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                      version:
+                        type: string
+                      chainId:
+                        type: string
+                  primaryType:
+                    type: string
+                  message:
+                    type: object
+                    properties:
+                      challenge:
+                        type: string
