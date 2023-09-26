@@ -339,6 +339,42 @@ paths:
                     properties:
                       published:
                         $ref: '#/components/schemas/AppOrderWithMetadata'
+    put:
+      description: unpublish apporders
+      parameters:
+        - $ref: '#/components/parameters/ChainId'
+        - $ref: '#/components/parameters/Authorization'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                target:
+                  type: string
+                  enum:
+                    - unpublish_orderHash
+                    - unpublish_last
+                    - unpublish_all
+                orderHash:
+                  type: string
+                app:
+                  type: string
+
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      unpublished:
+                        type: array
+                        items:
+                          type: string
 
   /datasetorders/{orderHash}:
     get:
@@ -452,6 +488,42 @@ paths:
                     properties:
                       published:
                         $ref: '#/components/schemas/DatasetOrderWithMetadata'
+    put:
+      description: unpublish datasetorders
+      parameters:
+        - $ref: '#/components/parameters/ChainId'
+        - $ref: '#/components/parameters/Authorization'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                target:
+                  type: string
+                  enum:
+                    - unpublish_orderHash
+                    - unpublish_last
+                    - unpublish_all
+                orderHash:
+                  type: string
+                dataset:
+                  type: string
+
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      unpublished:
+                        type: array
+                        items:
+                          type: string
 
   /workerpoolorders/{orderHash}:
     get:
@@ -572,6 +644,42 @@ paths:
                     properties:
                       published:
                         $ref: '#/components/schemas/WorkerpoolOrderWithMetadata'
+    put:
+      description: unpublish workerpoolorders
+      parameters:
+        - $ref: '#/components/parameters/ChainId'
+        - $ref: '#/components/parameters/Authorization'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                target:
+                  type: string
+                  enum:
+                    - unpublish_orderHash
+                    - unpublish_last
+                    - unpublish_all
+                orderHash:
+                  type: string
+                workerpool:
+                  type: string
+
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      unpublished:
+                        type: array
+                        items:
+                          type: string
 
   /requestorders/{orderHash}:
     get:
@@ -690,6 +798,42 @@ paths:
                     properties:
                       published:
                         $ref: '#/components/schemas/RequestOrderWithMetadata'
+    put:
+      description: unpublish requestorders
+      parameters:
+        - $ref: '#/components/parameters/ChainId'
+        - $ref: '#/components/parameters/Authorization'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                target:
+                  type: string
+                  enum:
+                    - unpublish_orderHash
+                    - unpublish_last
+                    - unpublish_all
+                orderHash:
+                  type: string
+                requester:
+                  type: string
+
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      unpublished:
+                        type: array
+                        items:
+                          type: string
 
 components:
   parameters:
@@ -922,6 +1066,11 @@ components:
           type: string
         status:
           type: string
+          enum:
+            - open
+            - filled
+            - canceled
+            - dead
         remaining:
           type: number
 
