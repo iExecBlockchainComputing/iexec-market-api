@@ -112,7 +112,6 @@ router.get('/categories', bodyParser(), async (ctx) => {
   log('GET /categories');
   const {
     chainId,
-    catid,
     minWorkClockTimeRef,
     maxWorkClockTimeRef,
     page,
@@ -120,7 +119,6 @@ router.get('/categories', bodyParser(), async (ctx) => {
     pageSize,
   } = await object({
     chainId: chainIdSchema().required(),
-    catid: positiveIntSchema(),
     minWorkClockTimeRef: positiveIntSchema(),
     maxWorkClockTimeRef: positiveIntSchema(),
     page: positiveIntSchema(),
@@ -129,7 +127,6 @@ router.get('/categories', bodyParser(), async (ctx) => {
   }).validate(ctx.query);
   const { categories, count, nextPage } = await getCategories({
     chainId,
-    catid,
     minWorkClockTimeRef,
     maxWorkClockTimeRef,
     page,
