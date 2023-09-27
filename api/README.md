@@ -56,7 +56,7 @@ npm test
   - filter by app/requester/dataset/workerpool/appOwner/minTag/maxTag/maxPrice/minVolume
   - order by price asc + publicationTimestamp asc + orderHash asc
   - paginate pageIndex + pageSize
-    - response {ok, orders: []{orderHash, order, remaining, status, publicationTimestamp}, count, ([nextPage] _DEPRECATED_)}
+  - response {ok, orders: []{orderHash, order, remaining, status, publicationTimestamp}, count, ([nextPage] _DEPRECATED_)}
 
 - POST /apporders
 
@@ -83,7 +83,7 @@ npm test
   - filter by dataset/app/requester/workerpool/datasetOwner/minTag/maxTag/maxPrice/minVolume
   - order by price asc + publicationTimestamp asc + orderHash asc
   - paginate pageIndex + pageSize
-    - response {ok, orders: []{orderHash, order, remaining, status, publicationTimestamp}, count, ([nextPage] _DEPRECATED_)}
+  - response {ok, orders: []{orderHash, order, remaining, status, publicationTimestamp}, count, ([nextPage] _DEPRECATED_)}
 
 - POST /datasetorders
 
@@ -110,7 +110,7 @@ npm test
   - filter by category/workerpool/app/requester/dataset/workerpoolOwner/minTag/maxTag/minTrust/minVolume [maxPrice]
   - order by price asc + publicationTimestamp asc + orderHash asc
   - paginate pageIndex + pageSize
-    - response {ok, orders: []{orderHash, order, remaining, status, publicationTimestamp}, count, ([nextPage] _DEPRECATED_)}
+  - response {ok, orders: []{orderHash, order, remaining, status, publicationTimestamp}, count, ([nextPage] _DEPRECATED_)}
 
 - POST /workerpoolorders
 
@@ -137,7 +137,7 @@ npm test
   - filter by category/requester/beneficiary/app/dataset/workerpool/minTag/maxTag/maxTrust/minVolume
   - order by workerpoolmaxprice desc + publicationTimestamp asc + orderHash asc
   - paginate pageIndex + pageSize
-    - response {ok, orders: []{orderHash, order, remaining, status, publicationTimestamp}, count, ([nextPage] _DEPRECATED_)}
+  - response {ok, orders: []{orderHash, order, remaining, status, publicationTimestamp}, count, ([nextPage] _DEPRECATED_)}
 
 - POST /requestorders
 
@@ -164,7 +164,7 @@ npm test
   - filter by minWorkClockTimeRef/maxWorkClockTimeRef
   - order by workClockTimeRef asc + catid asc
   - paginate pageIndex + pageSize
-    - response {ok, categories: []Category, count, ([nextPage] _DEPRECATED_)}
+  - response {ok, categories: []Category, count, ([nextPage] _DEPRECATED_)}
 
 - GET /deals
 
@@ -172,7 +172,7 @@ npm test
   - filter by category/requester/beneficiary/workerpoolowner/apporderHash/ datasetorderHash/workerpoolorderHash/requestorderHash/workerpool/app/dataset
   - order by blocknumber desc + dealid asc
   - paginate pageIndex + pageSize
-    - response {ok, deals:[]Deal, count, ([nextPage] _DEPRECATED_)}
+  - response {ok, deals:[]Deal, count, ([nextPage] _DEPRECATED_)}
 
 ## Socket.IO
 
