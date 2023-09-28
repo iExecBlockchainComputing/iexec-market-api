@@ -236,9 +236,6 @@ paths:
       parameters:
         - $ref: '#/components/parameters/ChainId'
         - $ref: '#/components/parameters/OrderHash'
-        - $ref: '#/components/parameters/PageIndex'
-        - $ref: '#/components/parameters/PageSize'
-        - $ref: '#/components/parameters/Page'
       responses:
         '200':
           description: successful operation
@@ -382,9 +379,6 @@ paths:
       parameters:
         - $ref: '#/components/parameters/ChainId'
         - $ref: '#/components/parameters/OrderHash'
-        - $ref: '#/components/parameters/PageIndex'
-        - $ref: '#/components/parameters/PageSize'
-        - $ref: '#/components/parameters/Page'
       responses:
         '200':
           description: successful operation
@@ -531,9 +525,6 @@ paths:
       parameters:
         - $ref: '#/components/parameters/ChainId'
         - $ref: '#/components/parameters/OrderHash'
-        - $ref: '#/components/parameters/PageIndex'
-        - $ref: '#/components/parameters/PageSize'
-        - $ref: '#/components/parameters/Page'
       responses:
         '200':
           description: successful operation
@@ -687,9 +678,6 @@ paths:
       parameters:
         - $ref: '#/components/parameters/ChainId'
         - $ref: '#/components/parameters/OrderHash'
-        - $ref: '#/components/parameters/PageIndex'
-        - $ref: '#/components/parameters/PageSize'
-        - $ref: '#/components/parameters/Page'
       responses:
         '200':
           description: successful operation
