@@ -40,7 +40,7 @@ npm test
 
 ## API
 
-The API is documented with [OpenAPI](./openapi.yaml)
+The API is documented with [OpenAPI](./openapi.yaml).
 
 A swagger interface is exposed under the `/docs` endpoint.
 
