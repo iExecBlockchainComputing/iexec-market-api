@@ -848,7 +848,8 @@ components:
     Authorization:
       name: authorization
       in: header
-      description: authorization (signed challenge)
+      description: authorization \<challenge hash\>\_\<challenge sign\>\_\<signer address\>
+      example: '0x7ff13783ecb384e98174335a8dd1d0bcda3809f5b2cec2e007a2f4aaa40ed6b0_0x0ae7e415bc0021fe90df0f8f1a312501bc968772ec73ab39620b300b13d2b212607d1adc4741f771568ac52fbc5c042787a2bf7df2872f4a7fac93d3a46fe2341b_0x7bd4783FDCAD405A28052a0d1f11236A741da593'
       required: true
       schema:
         type: string
