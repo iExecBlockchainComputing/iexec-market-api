@@ -52,11 +52,11 @@ npm test
 
 - GET /apporders
 
-  - query chainId\* app\* | appOwner\* requester dataset workerpool minTag maxTag minVolume page
+  - query chainId\* app\* | appOwner\* requester dataset workerpool minTag maxTag minVolume pageIndex pageSize (page _DEPRECATED_)
   - filter by app/requester/dataset/workerpool/appOwner/minTag/maxTag/maxPrice/minVolume
   - order by price asc + publicationTimestamp asc + orderHash asc
-  - paginate skip
-  - response {ok, orders: []{orderHash, order, remaining, status, publicationTimestamp}, count, [nextPage]}
+  - paginate pageIndex + pageSize
+  - response {ok, orders: []{orderHash, order, remaining, status, publicationTimestamp}, count, ([nextPage] _DEPRECATED_)}
 
 - POST /apporders
 
@@ -79,11 +79,11 @@ npm test
 
 - GET /datasetorders
 
-  - query chainId\* dataset\* | datasetOwner\* app requester workerpool minTag maxTag minVolume page
+  - query chainId\* dataset\* | datasetOwner\* app requester workerpool minTag maxTag minVolume pageIndex pageSize (page _DEPRECATED_)
   - filter by dataset/app/requester/workerpool/datasetOwner/minTag/maxTag/maxPrice/minVolume
   - order by price asc + publicationTimestamp asc + orderHash asc
-  - paginate skip
-  - response {ok, orders: []{orderHash, order, remaining, status, publicationTimestamp}, count, [nextPage]}
+  - paginate pageIndex + pageSize
+  - response {ok, orders: []{orderHash, order, remaining, status, publicationTimestamp}, count, ([nextPage] _DEPRECATED_)}
 
 - POST /datasetorders
 
@@ -109,8 +109,8 @@ npm test
   - query chainId\* category workerpool workerpoolOwner app requester dataset minTag maxTag minTrust minVolume [maxPrice] page
   - filter by category/workerpool/app/requester/dataset/workerpoolOwner/minTag/maxTag/minTrust/minVolume [maxPrice]
   - order by price asc + publicationTimestamp asc + orderHash asc
-  - paginate skip
-  - response {ok, orders: []{orderHash, order, remaining, status, publicationTimestamp}, count, [nextPage]}
+  - paginate pageIndex + pageSize
+  - response {ok, orders: []{orderHash, order, remaining, status, publicationTimestamp}, count, ([nextPage] _DEPRECATED_)}
 
 - POST /workerpoolorders
 
@@ -133,11 +133,11 @@ npm test
 
 - GET /requestorders
 
-  - query chainId\* category requester beneficiary workerpool app dataset minTag maxTag maxTrust minVolume [minPrice] page
+  - query chainId\* category requester beneficiary workerpool app dataset minTag maxTag maxTrust minVolume minPrice pageIndex pageSize (page _DEPRECATED_)
   - filter by category/requester/beneficiary/app/dataset/workerpool/minTag/maxTag/maxTrust/minVolume
   - order by workerpoolmaxprice desc + publicationTimestamp asc + orderHash asc
-  - paginate skip
-  - response {ok, orders: []{orderHash, order, remaining, status, publicationTimestamp}, count, [nextPage]}
+  - paginate pageIndex + pageSize
+  - response {ok, orders: []{orderHash, order, remaining, status, publicationTimestamp}, count, ([nextPage] _DEPRECATED_)}
 
 - POST /requestorders
 
@@ -160,19 +160,19 @@ npm test
 
 - GET /categories
 
-  - query chainId\* minWorkClockTimeRef maxWorkClockTimeRef page
+  - query chainId\* minWorkClockTimeRef maxWorkClockTimeRef pageIndex pageSize (page _DEPRECATED_)
   - filter by minWorkClockTimeRef/maxWorkClockTimeRef
   - order by workClockTimeRef asc + catid asc
-  - paginate skip
-  - response {ok, categories: []Category, count, [nextPage]}
+  - paginate pageIndex + pageSize
+  - response {ok, categories: []Category, count, ([nextPage] _DEPRECATED_)}
 
 - GET /deals
 
-  - query chainId\* category requester beneficiary workerpoolowner requestorderHash, apporderHash, datasetorderHash, workerpoolorderHash, workerpool app dataset page
+  - query chainId\* category requester beneficiary workerpoolowner requestorderHash, apporderHash, datasetorderHash, workerpoolorderHash, workerpool app dataset pageIndex pageSize (page _DEPRECATED_)
   - filter by category/requester/beneficiary/workerpoolowner/apporderHash/ datasetorderHash/workerpoolorderHash/requestorderHash/workerpool/app/dataset
   - order by blocknumber desc + dealid asc
-  - paginate blocknumber + dealid
-  - response {ok, deals:[]Deal, count, [nextPage]}
+  - paginate pageIndex + pageSize
+  - response {ok, deals:[]Deal, count, ([nextPage] _DEPRECATED_)}
 
 ## Socket.IO
 

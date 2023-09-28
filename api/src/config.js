@@ -174,6 +174,13 @@ log('maxOpenOrdersPerWallet', maxOpenOrdersPerWallet);
 const serverPort = parseInt(PORT, 10) || 3000;
 log('serverPort', serverPort);
 
+const api = {
+  defaultPageSize: 20,
+  minPageSize: 10,
+  maxPageSize: 1000,
+};
+log('api', api);
+
 module.exports = {
   chains,
   supportedChainsIds,
@@ -183,4 +190,5 @@ module.exports = {
   rateLimit,
   maxOpenOrdersPerWallet,
   serverPort,
+  api,
 };

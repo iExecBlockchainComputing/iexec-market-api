@@ -4143,6 +4143,67 @@ describe('API', () => {
           expect(data.orders).toBeUndefined();
         });
 
+        test('GET /apporders (invalid pageSize)', async () => {
+          await request
+            .get(
+              buildQuery('/apporders', {
+                app: appAddress, // *
+                chainId, // *
+                pageSize: 1,
+              }),
+            )
+            .then(parseResult)
+            .then(({ data, status }) => {
+              expect(status).toBe(VALIDATION_ERROR_STATUS);
+              expect(data.ok).toBe(false);
+              expect(data.error).toBe(
+                'pageSize must be greater than or equal to 10',
+              );
+              expect(data.count).toBeUndefined();
+              expect(data.orders).toBeUndefined();
+            });
+
+          await request
+            .get(
+              buildQuery('/apporders', {
+                app: appAddress, // *
+                chainId, // *
+                pageSize: 1001,
+              }),
+            )
+            .then(parseResult)
+            .then(({ data, status }) => {
+              expect(status).toBe(VALIDATION_ERROR_STATUS);
+              expect(data.ok).toBe(false);
+              expect(data.error).toBe(
+                'pageSize must be less than or equal to 1000',
+              );
+              expect(data.count).toBeUndefined();
+              expect(data.orders).toBeUndefined();
+            });
+        });
+
+        test('GET /apporders (invalid pageIndex)', async () => {
+          await request
+            .get(
+              buildQuery('/apporders', {
+                app: appAddress, // *
+                chainId, // *
+                pageIndex: -1,
+              }),
+            )
+            .then(parseResult)
+            .then(({ data, status }) => {
+              expect(status).toBe(VALIDATION_ERROR_STATUS);
+              expect(data.ok).toBe(false);
+              expect(data.error).toBe(
+                'pageIndex must be greater than or equal to 0',
+              );
+              expect(data.count).toBeUndefined();
+              expect(data.orders).toBeUndefined();
+            });
+        });
+
         test('GET /apporders (no match)', async () => {
           const { data, status } = await request
             .get(
@@ -4162,6 +4223,116 @@ describe('API', () => {
         });
 
         test('GET /apporders (sort + pagination)', async () => {
+          const res1 = await request
+            .get(
+              buildQuery('/apporders', {
+                chainId, // *
+                app: appAddress, // *
+                pageSize: 25,
+              }),
+            )
+            .then(parseResult);
+          expect(res1.status).toBe(OK_STATUS);
+          expect(res1.data.ok).toBe(true);
+          expect(res1.data.count).toBe(publicOrders.length);
+          expect(res1.data.orders).toBeDefined();
+          expect(Array.isArray(res1.data.orders)).toBe(true);
+          res1.data.orders.reduce((prev, curr) => {
+            expect(typeof curr.orderHash).toBe('string');
+            expect(typeof curr.chainId).toBe('number');
+            expect(curr.tagArray).toBeUndefined();
+            expect(typeof curr.remaining).toBe('number');
+            expect(typeof curr.status).toBe('string');
+            expect(typeof curr.publicationTimestamp).toBe('string');
+            expect(typeof curr.signer).toBe('string');
+            expect(curr.order.app).toBe(appAddress);
+            expect(typeof curr.order.appprice).toBe('number');
+            expect(typeof curr.order.volume).toBe('number');
+            expect(typeof curr.order.tag).toBe('string');
+            expect(typeof curr.order.datasetrestrict).toBe('string');
+            expect(typeof curr.order.workerpoolrestrict).toBe('string');
+            expect(typeof curr.order.requesterrestrict).toBe('string');
+            expect(typeof curr.order.salt).toBe('string');
+            expect(typeof curr.order.sign).toBe('string');
+            if (prev) {
+              expect(prev.order.appprice <= curr.order.appprice).toBe(true);
+              if (prev.order.appprice === curr.order.appprice) {
+                expect(
+                  prev.publicationTimestamp <= curr.publicationTimestamp,
+                ).toBe(true);
+                if (prev.publicationTimestamp === curr.publicationTimestamp) {
+                  expect(prev.orderHash <= curr.orderHash).toBe(true);
+                }
+              }
+            }
+            return curr;
+          });
+          expect(res1.data.orders.length).toBe(25);
+          const res2 = await request
+            .get(
+              buildQuery('/apporders', {
+                chainId, // *
+                app: appAddress, // *
+                pageIndex: 1,
+                pageSize: 25,
+              }),
+            )
+            .then(parseResult);
+          expect(res2.status).toBe(OK_STATUS);
+          expect(res2.data.ok).toBe(true);
+          expect(res2.data.count).toBe(publicOrders.length);
+          expect(res2.data.orders).toBeDefined();
+          expect(Array.isArray(res2.data.orders)).toBe(true);
+          res2.data.orders.reduce((prev, curr) => {
+            expect(typeof curr.orderHash).toBe('string');
+            expect(typeof curr.chainId).toBe('number');
+            expect(curr.tagArray).toBeUndefined();
+            expect(typeof curr.remaining).toBe('number');
+            expect(typeof curr.status).toBe('string');
+            expect(typeof curr.publicationTimestamp).toBe('string');
+            expect(typeof curr.signer).toBe('string');
+            expect(curr.order.app).toBe(appAddress);
+            expect(typeof curr.order.appprice).toBe('number');
+            expect(typeof curr.order.volume).toBe('number');
+            expect(typeof curr.order.tag).toBe('string');
+            expect(typeof curr.order.datasetrestrict).toBe('string');
+            expect(typeof curr.order.workerpoolrestrict).toBe('string');
+            expect(typeof curr.order.requesterrestrict).toBe('string');
+            expect(typeof curr.order.salt).toBe('string');
+            expect(typeof curr.order.sign).toBe('string');
+            if (prev) {
+              expect(prev.order.appprice <= curr.order.appprice).toBe(true);
+              if (prev.order.appprice === curr.order.appprice) {
+                expect(
+                  prev.publicationTimestamp <= curr.publicationTimestamp,
+                ).toBe(true);
+                if (prev.publicationTimestamp === curr.publicationTimestamp) {
+                  expect(prev.orderHash <= curr.orderHash).toBe(true);
+                }
+              }
+            }
+            return curr;
+          });
+          expect(res2.data.orders.length).toBe(res1.data.count - 25);
+          const res3 = await request
+            .get(
+              buildQuery('/apporders', {
+                chainId, // *
+                app: appAddress, // *
+                pageIndex: 100,
+                pageSize: 25,
+              }),
+            )
+            .then(parseResult);
+          expect(res3.status).toBe(OK_STATUS);
+          expect(res3.data.ok).toBe(true);
+          expect(res3.data.count).toBe(publicOrders.length);
+          expect(res3.data.orders).toBeDefined();
+          expect(Array.isArray(res3.data.orders)).toBe(true);
+          expect(res3.data.orders.length).toBe(0);
+        });
+
+        test('GET /apporders (sort + legacy pagination)', async () => {
           const res1 = await request
             .get(
               buildQuery('/apporders', {
@@ -5030,6 +5201,67 @@ describe('API', () => {
           expect(data.orders).toBeUndefined();
         });
 
+        test('GET /datasetorders (invalid pageSize)', async () => {
+          await request
+            .get(
+              buildQuery('/datasetorders', {
+                dataset: datasetAddress, // *
+                chainId, // *
+                pageSize: 1,
+              }),
+            )
+            .then(parseResult)
+            .then(({ data, status }) => {
+              expect(status).toBe(VALIDATION_ERROR_STATUS);
+              expect(data.ok).toBe(false);
+              expect(data.error).toBe(
+                'pageSize must be greater than or equal to 10',
+              );
+              expect(data.count).toBeUndefined();
+              expect(data.orders).toBeUndefined();
+            });
+
+          await request
+            .get(
+              buildQuery('/datasetorders', {
+                dataset: datasetAddress, // *
+                chainId, // *
+                pageSize: 1001,
+              }),
+            )
+            .then(parseResult)
+            .then(({ data, status }) => {
+              expect(status).toBe(VALIDATION_ERROR_STATUS);
+              expect(data.ok).toBe(false);
+              expect(data.error).toBe(
+                'pageSize must be less than or equal to 1000',
+              );
+              expect(data.count).toBeUndefined();
+              expect(data.orders).toBeUndefined();
+            });
+        });
+
+        test('GET /datasetorders (invalid pageIndex)', async () => {
+          await request
+            .get(
+              buildQuery('/datasetorders', {
+                dataset: datasetAddress, // *
+                chainId, // *
+                pageIndex: -1,
+              }),
+            )
+            .then(parseResult)
+            .then(({ data, status }) => {
+              expect(status).toBe(VALIDATION_ERROR_STATUS);
+              expect(data.ok).toBe(false);
+              expect(data.error).toBe(
+                'pageIndex must be greater than or equal to 0',
+              );
+              expect(data.count).toBeUndefined();
+              expect(data.orders).toBeUndefined();
+            });
+        });
+
         test('GET /datasetorders (no match)', async () => {
           const { data, status } = await request
             .get(
@@ -5049,6 +5281,120 @@ describe('API', () => {
         });
 
         test('GET /datasetorders (sort + pagination)', async () => {
+          const res1 = await request
+            .get(
+              buildQuery('/datasetorders', {
+                chainId, // *
+                dataset: datasetAddress, // *
+                pageSize: 25,
+              }),
+            )
+            .then(parseResult);
+          expect(res1.status).toBe(OK_STATUS);
+          expect(res1.data.ok).toBe(true);
+          expect(res1.data.count).toBe(publicOrders.length);
+          expect(res1.data.orders).toBeDefined();
+          expect(Array.isArray(res1.data.orders)).toBe(true);
+          res1.data.orders.reduce((prev, curr) => {
+            expect(typeof curr.orderHash).toBe('string');
+            expect(typeof curr.chainId).toBe('number');
+            expect(curr.tagArray).toBeUndefined();
+            expect(typeof curr.remaining).toBe('number');
+            expect(typeof curr.status).toBe('string');
+            expect(typeof curr.publicationTimestamp).toBe('string');
+            expect(typeof curr.signer).toBe('string');
+            expect(curr.order.dataset).toBe(datasetAddress);
+            expect(typeof curr.order.datasetprice).toBe('number');
+            expect(typeof curr.order.volume).toBe('number');
+            expect(typeof curr.order.tag).toBe('string');
+            expect(typeof curr.order.apprestrict).toBe('string');
+            expect(typeof curr.order.workerpoolrestrict).toBe('string');
+            expect(typeof curr.order.requesterrestrict).toBe('string');
+            expect(typeof curr.order.salt).toBe('string');
+            expect(typeof curr.order.sign).toBe('string');
+            if (prev) {
+              expect(prev.order.datasetprice <= curr.order.datasetprice).toBe(
+                true,
+              );
+              if (prev.order.datasetprice === curr.order.datasetprice) {
+                expect(
+                  prev.publicationTimestamp <= curr.publicationTimestamp,
+                ).toBe(true);
+                if (prev.publicationTimestamp === curr.publicationTimestamp) {
+                  expect(prev.orderHash <= curr.orderHash).toBe(true);
+                }
+              }
+            }
+            return curr;
+          });
+          expect(res1.data.orders.length).toBe(25);
+          const res2 = await request
+            .get(
+              buildQuery('/datasetorders', {
+                chainId, // *
+                dataset: datasetAddress, // *
+                pageIndex: 1,
+                pageSize: 25,
+              }),
+            )
+            .then(parseResult);
+          expect(res2.status).toBe(OK_STATUS);
+          expect(res2.data.ok).toBe(true);
+          expect(res2.data.count).toBe(publicOrders.length);
+          expect(res2.data.orders).toBeDefined();
+          expect(Array.isArray(res2.data.orders)).toBe(true);
+          res2.data.orders.reduce((prev, curr) => {
+            expect(typeof curr.orderHash).toBe('string');
+            expect(typeof curr.chainId).toBe('number');
+            expect(curr.tagArray).toBeUndefined();
+            expect(typeof curr.remaining).toBe('number');
+            expect(typeof curr.status).toBe('string');
+            expect(typeof curr.publicationTimestamp).toBe('string');
+            expect(typeof curr.signer).toBe('string');
+            expect(curr.order.dataset).toBe(datasetAddress);
+            expect(typeof curr.order.datasetprice).toBe('number');
+            expect(typeof curr.order.volume).toBe('number');
+            expect(typeof curr.order.tag).toBe('string');
+            expect(typeof curr.order.apprestrict).toBe('string');
+            expect(typeof curr.order.workerpoolrestrict).toBe('string');
+            expect(typeof curr.order.requesterrestrict).toBe('string');
+            expect(typeof curr.order.salt).toBe('string');
+            expect(typeof curr.order.sign).toBe('string');
+            if (prev) {
+              expect(prev.order.datasetprice <= curr.order.datasetprice).toBe(
+                true,
+              );
+              if (prev.order.datasetprice === curr.order.datasetprice) {
+                expect(
+                  prev.publicationTimestamp <= curr.publicationTimestamp,
+                ).toBe(true);
+                if (prev.publicationTimestamp === curr.publicationTimestamp) {
+                  expect(prev.orderHash <= curr.orderHash).toBe(true);
+                }
+              }
+            }
+            return curr;
+          });
+          expect(res2.data.orders.length).toBe(res1.data.count - 25);
+          const res3 = await request
+            .get(
+              buildQuery('/datasetorders', {
+                chainId, // *
+                dataset: datasetAddress, // *
+                pageIndex: 100,
+                pageSize: 25,
+              }),
+            )
+            .then(parseResult);
+          expect(res3.status).toBe(OK_STATUS);
+          expect(res3.data.ok).toBe(true);
+          expect(res3.data.count).toBe(publicOrders.length);
+          expect(res3.data.orders).toBeDefined();
+          expect(Array.isArray(res3.data.orders)).toBe(true);
+          expect(res3.data.orders.length).toBe(0);
+        });
+
+        test('GET /datasetorders (sort + legacy pagination)', async () => {
           const res1 = await request
             .get(
               buildQuery('/datasetorders', {
@@ -6007,6 +6353,64 @@ describe('API', () => {
           expect(data.orders).toBeUndefined();
         });
 
+        test('GET /workerpoolorders (invalid pageSize)', async () => {
+          await request
+            .get(
+              buildQuery('/workerpoolorders', {
+                chainId, // *
+                pageSize: 1,
+              }),
+            )
+            .then(parseResult)
+            .then(({ data, status }) => {
+              expect(status).toBe(VALIDATION_ERROR_STATUS);
+              expect(data.ok).toBe(false);
+              expect(data.error).toBe(
+                'pageSize must be greater than or equal to 10',
+              );
+              expect(data.count).toBeUndefined();
+              expect(data.orders).toBeUndefined();
+            });
+
+          await request
+            .get(
+              buildQuery('/workerpoolorders', {
+                chainId, // *
+                pageSize: 1001,
+              }),
+            )
+            .then(parseResult)
+            .then(({ data, status }) => {
+              expect(status).toBe(VALIDATION_ERROR_STATUS);
+              expect(data.ok).toBe(false);
+              expect(data.error).toBe(
+                'pageSize must be less than or equal to 1000',
+              );
+              expect(data.count).toBeUndefined();
+              expect(data.orders).toBeUndefined();
+            });
+        });
+
+        test('GET /workerpoolorders (invalid pageIndex)', async () => {
+          await request
+            .get(
+              buildQuery('/workerpoolorders', {
+                chainId, // *
+                pageIndex: -1,
+              }),
+            )
+            .then(parseResult)
+            .then(({ data, status }) => {
+              expect(status).toBe(VALIDATION_ERROR_STATUS);
+              expect(data.ok).toBe(false);
+              expect(data.error).toBe(
+                'pageIndex must be greater than or equal to 0',
+              );
+              expect(data.count).toBeUndefined();
+              expect(data.orders).toBeUndefined();
+            });
+        });
+
         test('GET /workerpoolorders (no match)', async () => {
           const { data, status } = await request
             .get(
@@ -6026,6 +6430,117 @@ describe('API', () => {
         });
 
         test('GET /workerpoolorders (sort + pagination)', async () => {
+          const res1 = await request
+            .get(
+              buildQuery('/workerpoolorders', {
+                chainId, // *
+                pageSize: 25,
+              }),
+            )
+            .then(parseResult);
+          expect(res1.status).toBe(OK_STATUS);
+          expect(res1.data.ok).toBe(true);
+          expect(res1.data.count).toBe(publicOrders.length);
+          expect(res1.data.orders).toBeDefined();
+          expect(Array.isArray(res1.data.orders)).toBe(true);
+          res1.data.orders.reduce((prev, curr) => {
+            expect(typeof curr.orderHash).toBe('string');
+            expect(typeof curr.chainId).toBe('number');
+            expect(curr.tagArray).toBeUndefined();
+            expect(typeof curr.remaining).toBe('number');
+            expect(typeof curr.status).toBe('string');
+            expect(typeof curr.publicationTimestamp).toBe('string');
+            expect(typeof curr.signer).toBe('string');
+            expect(typeof curr.order.workerpool).toBe('string');
+            expect(typeof curr.order.workerpoolprice).toBe('number');
+            expect(typeof curr.order.volume).toBe('number');
+            expect(typeof curr.order.tag).toBe('string');
+            expect(typeof curr.order.datasetrestrict).toBe('string');
+            expect(typeof curr.order.apprestrict).toBe('string');
+            expect(typeof curr.order.requesterrestrict).toBe('string');
+            expect(typeof curr.order.salt).toBe('string');
+            expect(typeof curr.order.sign).toBe('string');
+            if (prev) {
+              expect(
+                prev.order.workerpoolprice <= curr.order.workerpoolprice,
+              ).toBe(true);
+              if (prev.order.workerpoolprice === curr.order.workerpoolprice) {
+                expect(
+                  prev.publicationTimestamp <= curr.publicationTimestamp,
+                ).toBe(true);
+                if (prev.publicationTimestamp === curr.publicationTimestamp) {
+                  expect(prev.orderHash <= curr.orderHash).toBe(true);
+                }
+              }
+            }
+            return curr;
+          });
+          expect(res1.data.orders.length).toBe(25);
+          const res2 = await request
+            .get(
+              buildQuery('/workerpoolorders', {
+                chainId, // *
+                pageSize: 25,
+                pageIndex: 1,
+              }),
+            )
+            .then(parseResult);
+          expect(res2.status).toBe(OK_STATUS);
+          expect(res2.data.ok).toBe(true);
+          expect(res2.data.count).toBe(publicOrders.length);
+          expect(res2.data.orders).toBeDefined();
+          expect(Array.isArray(res2.data.orders)).toBe(true);
+          res2.data.orders.reduce((prev, curr) => {
+            expect(typeof curr.orderHash).toBe('string');
+            expect(typeof curr.chainId).toBe('number');
+            expect(curr.tagArray).toBeUndefined();
+            expect(typeof curr.remaining).toBe('number');
+            expect(typeof curr.status).toBe('string');
+            expect(typeof curr.publicationTimestamp).toBe('string');
+            expect(typeof curr.signer).toBe('string');
+            expect(typeof curr.order.workerpool).toBe('string');
+            expect(typeof curr.order.workerpoolprice).toBe('number');
+            expect(typeof curr.order.volume).toBe('number');
+            expect(typeof curr.order.tag).toBe('string');
+            expect(typeof curr.order.datasetrestrict).toBe('string');
+            expect(typeof curr.order.apprestrict).toBe('string');
+            expect(typeof curr.order.requesterrestrict).toBe('string');
+            expect(typeof curr.order.salt).toBe('string');
+            expect(typeof curr.order.sign).toBe('string');
+            if (prev) {
+              expect(
+                prev.order.workerpoolprice <= curr.order.workerpoolprice,
+              ).toBe(true);
+              if (prev.order.workerpoolprice === curr.order.workerpoolprice) {
+                expect(
+                  prev.publicationTimestamp <= curr.publicationTimestamp,
+                ).toBe(true);
+                if (prev.publicationTimestamp === curr.publicationTimestamp) {
+                  expect(prev.orderHash <= curr.orderHash).toBe(true);
+                }
+              }
+            }
+            return curr;
+          });
+          expect(res2.data.orders.length).toBe(res1.data.count - 25);
+          const res3 = await request
+            .get(
+              buildQuery('/workerpoolorders', {
+                chainId, // *
+                pageSize: 25,
+                pageIndex: 100,
+              }),
+            )
+            .then(parseResult);
+          expect(res3.status).toBe(OK_STATUS);
+          expect(res3.data.ok).toBe(true);
+          expect(res3.data.count).toBe(publicOrders.length);
+          expect(res3.data.orders).toBeDefined();
+          expect(Array.isArray(res3.data.orders)).toBe(true);
+          expect(res3.data.orders.length).toBe(0);
+        });
+
+        test('GET /workerpoolorders (sort + legacy pagination)', async () => {
           const res1 = await request
             .get(
               buildQuery('/workerpoolorders', {
@@ -7081,6 +7596,64 @@ describe('API', () => {
           expect(data.orders).toBeUndefined();
         });
 
+        test('GET /requestorders (invalid pageSize)', async () => {
+          await request
+            .get(
+              buildQuery('/requestorders', {
+                chainId, // *
+                pageSize: 1,
+              }),
+            )
+            .then(parseResult)
+            .then(({ data, status }) => {
+              expect(status).toBe(VALIDATION_ERROR_STATUS);
+              expect(data.ok).toBe(false);
+              expect(data.error).toBe(
+                'pageSize must be greater than or equal to 10',
+              );
+              expect(data.count).toBeUndefined();
+              expect(data.orders).toBeUndefined();
+            });
+
+          await request
+            .get(
+              buildQuery('/requestorders', {
+                chainId, // *
+                pageSize: 1001,
+              }),
+            )
+            .then(parseResult)
+            .then(({ data, status }) => {
+              expect(status).toBe(VALIDATION_ERROR_STATUS);
+              expect(data.ok).toBe(false);
+              expect(data.error).toBe(
+                'pageSize must be less than or equal to 1000',
+              );
+              expect(data.count).toBeUndefined();
+              expect(data.orders).toBeUndefined();
+            });
+        });
+
+        test('GET /requestorders (invalid pageIndex)', async () => {
+          await request
+            .get(
+              buildQuery('/requestorders', {
+                chainId, // *
+                pageIndex: -1,
+              }),
+            )
+            .then(parseResult)
+            .then(({ data, status }) => {
+              expect(status).toBe(VALIDATION_ERROR_STATUS);
+              expect(data.ok).toBe(false);
+              expect(data.error).toBe(
+                'pageIndex must be greater than or equal to 0',
+              );
+              expect(data.count).toBeUndefined();
+              expect(data.orders).toBeUndefined();
+            });
+        });
+
         test('GET /requestorders (no match)', async () => {
           const { data, status } = await request
             .get(
@@ -7100,6 +7673,120 @@ describe('API', () => {
         });
 
         test('GET /requestorders (sort + pagination)', async () => {
+          const res1 = await request
+            .get(
+              buildQuery('/requestorders', {
+                chainId, // *
+                pageSize: 25,
+              }),
+            )
+            .then(parseResult);
+          expect(res1.status).toBe(OK_STATUS);
+          expect(res1.data.ok).toBe(true);
+          expect(res1.data.count).toBe(publicOrders.length);
+          expect(res1.data.orders).toBeDefined();
+          expect(Array.isArray(res1.data.orders)).toBe(true);
+          res1.data.orders.reduce((prev, curr) => {
+            expect(typeof curr.orderHash).toBe('string');
+            expect(typeof curr.chainId).toBe('number');
+            expect(curr.tagArray).toBeUndefined();
+            expect(typeof curr.remaining).toBe('number');
+            expect(typeof curr.status).toBe('string');
+            expect(typeof curr.publicationTimestamp).toBe('string');
+            expect(typeof curr.signer).toBe('string');
+            expect(typeof curr.order.workerpool).toBe('string');
+            expect(typeof curr.order.workerpoolmaxprice).toBe('number');
+            expect(typeof curr.order.volume).toBe('number');
+            expect(typeof curr.order.tag).toBe('string');
+            expect(typeof curr.order.dataset).toBe('string');
+            expect(typeof curr.order.app).toBe('string');
+            expect(curr.order.workerpool).toBe(utils.NULL_ADDRESS);
+            expect(typeof curr.order.salt).toBe('string');
+            expect(typeof curr.order.sign).toBe('string');
+            if (prev) {
+              expect(
+                prev.order.workerpoolmaxprice >= curr.order.workerpoolmaxprice,
+              ).toBe(true);
+              if (
+                prev.order.workerpoolmaxprice === curr.order.workerpoolmaxprice
+              ) {
+                expect(
+                  prev.publicationTimestamp <= curr.publicationTimestamp,
+                ).toBe(true);
+                if (prev.publicationTimestamp === curr.publicationTimestamp) {
+                  expect(prev.orderHash <= curr.orderHash).toBe(true);
+                }
+              }
+            }
+            return curr;
+          });
+          expect(res1.data.orders.length).toBe(25);
+          const res2 = await request
+            .get(
+              buildQuery('/requestorders', {
+                chainId, // *
+                pageSize: 25,
+                pageIndex: 1,
+              }),
+            )
+            .then(parseResult);
+          expect(res2.status).toBe(OK_STATUS);
+          expect(res2.data.ok).toBe(true);
+          expect(res2.data.count).toBe(publicOrders.length);
+          expect(res2.data.orders).toBeDefined();
+          expect(Array.isArray(res2.data.orders)).toBe(true);
+          res2.data.orders.reduce((prev, curr) => {
+            expect(typeof curr.orderHash).toBe('string');
+            expect(typeof curr.chainId).toBe('number');
+            expect(curr.tagArray).toBeUndefined();
+            expect(typeof curr.remaining).toBe('number');
+            expect(typeof curr.status).toBe('string');
+            expect(typeof curr.publicationTimestamp).toBe('string');
+            expect(typeof curr.signer).toBe('string');
+            expect(curr.order.workerpool).toBe(utils.NULL_ADDRESS);
+            expect(typeof curr.order.workerpoolmaxprice).toBe('number');
+            expect(typeof curr.order.volume).toBe('number');
+            expect(typeof curr.order.tag).toBe('string');
+            expect(typeof curr.order.dataset).toBe('string');
+            expect(typeof curr.order.app).toBe('string');
+            expect(typeof curr.order.workerpool).toBe('string');
+            expect(typeof curr.order.salt).toBe('string');
+            expect(typeof curr.order.sign).toBe('string');
+            if (prev) {
+              expect(
+                prev.order.workerpoolmaxprice >= curr.order.workerpoolmaxprice,
+              ).toBe(true);
+              if (
+                prev.order.workerpoolmaxprice === curr.order.workerpoolmaxprice
+              ) {
+                expect(
+                  prev.publicationTimestamp <= curr.publicationTimestamp,
+                ).toBe(true);
+                if (prev.publicationTimestamp === curr.publicationTimestamp) {
+                  expect(prev.orderHash <= curr.orderHash).toBe(true);
+                }
+              }
+            }
+            return curr;
+          });
+          expect(res2.data.orders.length).toBe(res1.data.count - 25);
+          const res3 = await request
+            .get(
+              buildQuery('/requestorders', {
+                chainId, // *
+                pageSize: 25,
+                pageIndex: 100,
+              }),
+            )
+            .then(parseResult);
+          expect(res3.status).toBe(OK_STATUS);
+          expect(res3.data.ok).toBe(true);
+          expect(res3.data.count).toBe(publicOrders.length);
+          expect(res3.data.orders).toBeDefined();
+          expect(res3.data.orders.length).toBe(0);
+        });
+
+        test('GET /requestorders (sort + legacy pagination)', async () => {
           const res1 = await request
             .get(
               buildQuery('/requestorders', {
@@ -7573,7 +8260,138 @@ describe('API', () => {
         expect(data.nextPage).toBeUndefined();
       });
 
+      test('GET /categories (invalid pageSize)', async () => {
+        await request
+          .get(
+            buildQuery('/categories', {
+              chainId, // *
+              pageSize: 1,
+            }),
+          )
+          .then(parseResult)
+          .then(({ data, status }) => {
+            expect(status).toBe(VALIDATION_ERROR_STATUS);
+            expect(data.ok).toBe(false);
+            expect(data.error).toBe(
+              'pageSize must be greater than or equal to 10',
+            );
+            expect(data.count).toBeUndefined();
+            expect(data.categories).toBeUndefined();
+          });
+
+        await request
+          .get(
+            buildQuery('/categories', {
+              chainId, // *
+              pageSize: 1001,
+            }),
+          )
+          .then(parseResult)
+          .then(({ data, status }) => {
+            expect(status).toBe(VALIDATION_ERROR_STATUS);
+            expect(data.ok).toBe(false);
+            expect(data.error).toBe(
+              'pageSize must be less than or equal to 1000',
+            );
+            expect(data.count).toBeUndefined();
+            expect(data.categories).toBeUndefined();
+          });
+      });
+
+      test('GET /categories (invalid pageIndex)', async () => {
+        await request
+          .get(
+            buildQuery('/categories', {
+              chainId, // *
+              pageIndex: -1,
+            }),
+          )
+          .then(parseResult)
+          .then(({ data, status }) => {
+            expect(status).toBe(VALIDATION_ERROR_STATUS);
+            expect(data.ok).toBe(false);
+            expect(data.error).toBe(
+              'pageIndex must be greater than or equal to 0',
+            );
+            expect(data.count).toBeUndefined();
+            expect(data.categories).toBeUndefined();
+          });
+      });
+
       test('GET /categories (sort + pagination)', async () => {
+        const res1 = await request
+          .get(
+            buildQuery('/categories', {
+              chainId, // *
+              pageSize: 25,
+            }),
+          )
+          .then(parseResult);
+        expect(res1.status).toBe(OK_STATUS);
+        expect(res1.data.ok).toBe(true);
+        expect(res1.data.count).toBe(30);
+        expect(res1.data.categories).toBeDefined();
+        expect(Array.isArray(res1.data.categories)).toBe(true);
+        res1.data.categories.reduce((prev, curr) => {
+          expect(typeof curr.catid).toBe('number');
+          expect(typeof curr.chainId).toBe('number');
+          expect(typeof curr.name).toBe('string');
+          expect(typeof curr.description).toBe('string');
+          expect(typeof curr.workClockTimeRef).toBe('number');
+          expect(typeof curr.transactionHash).toBe('string');
+          expect(typeof curr.blockNumber).toBe('number');
+          expect(typeof curr.blockTimestamp).toBe('string');
+          if (prev) {
+            expect(prev.workClockTimeRef <= curr.workClockTimeRef).toBe(true);
+            if (prev.workClockTimeRef === curr.workClockTimeRef) {
+              expect(prev.catid <= curr.catid).toBe(true);
+            }
+          }
+          return curr;
+        });
+        expect(res1.data.categories.length).toBe(25);
+        const res2 = await request
+          .get(
+            buildQuery('/categories', {
+              chainId, // *
+              pageSize: 25,
+              pageIndex: 1,
+            }),
+          )
+          .then(parseResult);
+        expect(res2.status).toBe(OK_STATUS);
+        expect(res2.data.ok).toBe(true);
+        expect(res2.data.count).toBe(30);
+        expect(res2.data.categories).toBeDefined();
+        expect(Array.isArray(res2.data.categories)).toBe(true);
+        res2.data.categories.reduce((prev, curr) => {
+          expect(curr.workClockTimeRef).toBeDefined();
+          if (prev) {
+            expect(prev.workClockTimeRef <= curr.workClockTimeRef).toBe(true);
+            if (prev.workClockTimeRef === curr.workClockTimeRef) {
+              expect(prev.catid <= curr.catid).toBe(true);
+            }
+          }
+          return curr;
+        });
+        expect(res2.data.categories.length).toBe(res1.data.count - 25);
+        const res3 = await request
+          .get(
+            buildQuery('/categories', {
+              chainId, // *
+              pageSize: 25,
+              pageIndex: 100,
+            }),
+          )
+          .then(parseResult);
+        expect(res3.status).toBe(OK_STATUS);
+        expect(res3.data.ok).toBe(true);
+        expect(res3.data.count).toBe(30);
+        expect(res3.data.categories).toBeDefined();
+        expect(res3.data.categories.length).toBe(0);
+      });
+
+      test('GET /categories (sort + legacy pagination)', async () => {
         const res1 = await request
           .get(
             buildQuery('/categories', {
@@ -7792,7 +8610,192 @@ describe('API', () => {
         expect(data.nextPage).toBeUndefined();
       });
 
+      test('GET /deals (invalid pageSize)', async () => {
+        await request
+          .get(
+            buildQuery('/deals', {
+              chainId, // *
+              pageSize: 1,
+            }),
+          )
+          .then(parseResult)
+          .then(({ data, status }) => {
+            expect(status).toBe(VALIDATION_ERROR_STATUS);
+            expect(data.ok).toBe(false);
+            expect(data.error).toBe(
+              'pageSize must be greater than or equal to 10',
+            );
+            expect(data.count).toBeUndefined();
+            expect(data.deals).toBeUndefined();
+          });
+
+        await request
+          .get(
+            buildQuery('/deals', {
+              chainId, // *
+              pageSize: 1001,
+            }),
+          )
+          .then(parseResult)
+          .then(({ data, status }) => {
+            expect(status).toBe(VALIDATION_ERROR_STATUS);
+            expect(data.ok).toBe(false);
+            expect(data.error).toBe(
+              'pageSize must be less than or equal to 1000',
+            );
+            expect(data.count).toBeUndefined();
+            expect(data.deals).toBeUndefined();
+          });
+      });
+
+      test('GET /deals (invalid pageIndex)', async () => {
+        await request
+          .get(
+            buildQuery('/deals', {
+              chainId, // *
+              pageIndex: -1,
+            }),
+          )
+          .then(parseResult)
+          .then(({ data, status }) => {
+            expect(status).toBe(VALIDATION_ERROR_STATUS);
+            expect(data.ok).toBe(false);
+            expect(data.error).toBe(
+              'pageIndex must be greater than or equal to 0',
+            );
+            expect(data.count).toBeUndefined();
+            expect(data.deals).toBeUndefined();
+          });
+      });
+
       test('GET /deals (sort + pagination)', async () => {
+        const res1 = await request
+          .get(
+            buildQuery('/deals', {
+              chainId, // *
+              pageSize: 25,
+            }),
+          )
+          .then(parseResult);
+        expect(res1.status).toBe(OK_STATUS);
+        expect(res1.data.ok).toBe(true);
+        expect(res1.data.count).toBe(allDeals.length);
+        expect(res1.data.deals).toBeDefined();
+        expect(Array.isArray(res1.data.deals)).toBe(true);
+        res1.data.deals.reduce((prev, curr) => {
+          expect(typeof curr.dealid).toBe('string');
+          expect(typeof curr.chainId).toBe('number');
+          expect(typeof curr.app.pointer).toBe('string');
+          expect(typeof curr.app.owner).toBe('string');
+          expect(typeof curr.app.price).toBe('number');
+          expect(typeof curr.dataset.pointer).toBe('string');
+          expect(typeof curr.dataset.owner).toBe('string');
+          expect(typeof curr.dataset.price).toBe('number');
+          expect(typeof curr.workerpool.pointer).toBe('string');
+          expect(typeof curr.workerpool.owner).toBe('string');
+          expect(typeof curr.workerpool.price).toBe('number');
+          expect(typeof curr.appHash).toBe('string');
+          expect(typeof curr.datasetHash).toBe('string');
+          expect(typeof curr.workerpoolHash).toBe('string');
+          expect(typeof curr.requestHash).toBe('string');
+          expect(typeof curr.requester).toBe('string');
+          expect(typeof curr.beneficiary).toBe('string');
+          expect(typeof curr.callback).toBe('string');
+          expect(typeof curr.botFirst).toBe('number');
+          expect(typeof curr.botSize).toBe('number');
+          expect(typeof curr.category).toBe('number');
+          expect(typeof curr.volume).toBe('number');
+          expect(typeof curr.trust).toBe('number');
+          expect(typeof curr.startTime).toBe('number');
+          expect(typeof curr.params).toBe('string');
+          expect(typeof curr.tag).toBe('string');
+          expect(typeof curr.schedulerRewardRatio).toBe('number');
+          expect(typeof curr.workerStake).toBe('number');
+          expect(typeof curr.transactionHash).toBe('string');
+          expect(typeof curr.blockNumber).toBe('number');
+          expect(typeof curr.blockTimestamp).toBe('string');
+          if (prev) {
+            expect(prev.blockNumber >= curr.blockNumber).toBe(true);
+            if (prev.blockNumber === curr.blockNumber) {
+              expect(prev.dealid <= curr.dealid).toBe(true);
+            }
+          }
+          return curr;
+        });
+        expect(res1.data.deals.length).toBe(25);
+        const res2 = await request
+          .get(
+            buildQuery('/deals', {
+              chainId, // *
+              pageIndex: 1,
+              pageSize: 25,
+            }),
+          )
+          .then(parseResult);
+        expect(res2.status).toBe(OK_STATUS);
+        expect(res2.data.ok).toBe(true);
+        expect(res2.data.count).toBe(allDeals.length);
+        expect(res2.data.deals).toBeDefined();
+        expect(Array.isArray(res2.data.deals)).toBe(true);
+        res2.data.deals.reduce((prev, curr) => {
+          expect(typeof curr.dealid).toBe('string');
+          expect(typeof curr.chainId).toBe('number');
+          expect(typeof curr.app.pointer).toBe('string');
+          expect(typeof curr.app.owner).toBe('string');
+          expect(typeof curr.app.price).toBe('number');
+          expect(typeof curr.dataset.pointer).toBe('string');
+          expect(typeof curr.dataset.owner).toBe('string');
+          expect(typeof curr.dataset.price).toBe('number');
+          expect(typeof curr.workerpool.pointer).toBe('string');
+          expect(typeof curr.workerpool.owner).toBe('string');
+          expect(typeof curr.workerpool.price).toBe('number');
+          expect(typeof curr.appHash).toBe('string');
+          expect(typeof curr.datasetHash).toBe('string');
+          expect(typeof curr.workerpoolHash).toBe('string');
+          expect(typeof curr.requestHash).toBe('string');
+          expect(typeof curr.requester).toBe('string');
+          expect(typeof curr.beneficiary).toBe('string');
+          expect(typeof curr.callback).toBe('string');
+          expect(typeof curr.botFirst).toBe('number');
+          expect(typeof curr.botSize).toBe('number');
+          expect(typeof curr.category).toBe('number');
+          expect(typeof curr.volume).toBe('number');
+          expect(typeof curr.trust).toBe('number');
+          expect(typeof curr.startTime).toBe('number');
+          expect(typeof curr.params).toBe('string');
+          expect(typeof curr.tag).toBe('string');
+          expect(typeof curr.schedulerRewardRatio).toBe('number');
+          expect(typeof curr.workerStake).toBe('number');
+          expect(typeof curr.transactionHash).toBe('string');
+          expect(typeof curr.blockNumber).toBe('number');
+          expect(typeof curr.blockTimestamp).toBe('string');
+          if (prev) {
+            expect(prev.blockNumber >= curr.blockNumber).toBe(true);
+            if (prev.blockNumber === curr.blockNumber) {
+              expect(prev.dealid <= curr.dealid).toBe(true);
+            }
+          }
+          return curr;
+        });
+        expect(res2.data.deals.length).toBe(res1.data.count - 25);
+        const res3 = await request
+          .get(
+            buildQuery('/deals', {
+              chainId, // *
+              pageIndex: 100,
+              pageSize: 25,
+            }),
+          )
+          .then(parseResult);
+        expect(res3.status).toBe(OK_STATUS);
+        expect(res3.data.ok).toBe(true);
+        expect(res3.data.count).toBe(allDeals.length);
+        expect(res3.data.deals).toBeDefined();
+        expect(Array.isArray(res3.data.deals)).toBe(true);
+        expect(res3.data.deals.length).toBe(0);
+      });
+
+      test('GET /deals (sort + legacy pagination)', async () => {
         const res1 = await request
           .get(
             buildQuery('/deals', {
