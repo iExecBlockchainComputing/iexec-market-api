@@ -36,11 +36,16 @@ const getCategories = async ({
   try {
     const CategoryModel = await categoryModel.getModel(chainId);
     const request = {
-      ...(minWorkClockTimeRef !== undefined && {
-        workClockTimeRef: { $gte: minWorkClockTimeRef },
-      }),
-      ...(maxWorkClockTimeRef !== undefined && {
-        workClockTimeRef: { $lte: maxWorkClockTimeRef },
+      ...((minWorkClockTimeRef !== undefined ||
+        maxWorkClockTimeRef !== undefined) && {
+        workClockTimeRef: {
+          ...(minWorkClockTimeRef !== undefined && {
+            $gte: minWorkClockTimeRef,
+          }),
+          ...(maxWorkClockTimeRef !== undefined && {
+            $lte: maxWorkClockTimeRef,
+          }),
+        },
       }),
     };
     const sort = {
