@@ -1,5 +1,7 @@
 const Router = require('koa-router');
 const bodyParser = require('koa-bodyparser');
+const yamljs = require('yamljs');
+const { koaSwagger } = require('koa2-swagger-ui');
 const { authentify } = require('./auth');
 const { getVersion } = require('../services/version');
 const { getChallenge } = require('../services/auth');
@@ -45,6 +47,15 @@ const { maxPageSize, minPageSize } = require('../config').api;
 const log = logger.extend('controllers:router');
 
 const router = new Router();
+
+// docs
+router.get(
+  '/docs',
+  koaSwagger({
+    routePrefix: false,
+    swaggerOptions: { spec: yamljs.load('./openapi.yaml') },
+  }),
+);
 
 // version
 router.get('/version', async (ctx) => {
@@ -101,7 +112,6 @@ router.get('/categories', bodyParser(), async (ctx) => {
   log('GET /categories');
   const {
     chainId,
-    catid,
     minWorkClockTimeRef,
     maxWorkClockTimeRef,
     page,
@@ -109,7 +119,6 @@ router.get('/categories', bodyParser(), async (ctx) => {
     pageSize,
   } = await object({
     chainId: chainIdSchema().required(),
-    catid: positiveIntSchema(),
     minWorkClockTimeRef: positiveIntSchema(),
     maxWorkClockTimeRef: positiveIntSchema(),
     page: positiveIntSchema(),
@@ -118,7 +127,6 @@ router.get('/categories', bodyParser(), async (ctx) => {
   }).validate(ctx.query);
   const { categories, count, nextPage } = await getCategories({
     chainId,
-    catid,
     minWorkClockTimeRef,
     maxWorkClockTimeRef,
     page,
