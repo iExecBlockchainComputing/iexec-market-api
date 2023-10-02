@@ -1,8 +1,7 @@
 const categoryModel = require('../models/categoryModel');
 const { logger } = require('../utils/logger');
 const { throwIfMissing, ObjectNotFoundError } = require('../utils/error');
-
-const PAGE_LENGTH = 20;
+const { getDbPage, getClientNextPage } = require('../utils/pagination-utils');
 
 const log = logger.extend('services:category');
 
@@ -31,23 +30,34 @@ const getCategories = async ({
   minWorkClockTimeRef,
   maxWorkClockTimeRef,
   page,
+  pageIndex,
+  pageSize,
 } = {}) => {
   try {
     const CategoryModel = await categoryModel.getModel(chainId);
     const request = {
-      ...(minWorkClockTimeRef !== undefined && {
-        workClockTimeRef: { $gte: minWorkClockTimeRef },
-      }),
-      ...(maxWorkClockTimeRef !== undefined && {
-        workClockTimeRef: { $lte: maxWorkClockTimeRef },
+      ...((minWorkClockTimeRef !== undefined ||
+        maxWorkClockTimeRef !== undefined) && {
+        workClockTimeRef: {
+          ...(minWorkClockTimeRef !== undefined && {
+            $gte: minWorkClockTimeRef,
+          }),
+          ...(maxWorkClockTimeRef !== undefined && {
+            $lte: maxWorkClockTimeRef,
+          }),
+        },
       }),
     };
     const sort = {
       workClockTimeRef: 'asc',
       catid: 'asc', // make sort deterministic
     };
-    const limit = PAGE_LENGTH;
-    const skip = page || 0;
+
+    const { skip, limit } = getDbPage({
+      page,
+      pageIndex,
+      pageSize,
+    });
 
     const count = await CategoryModel.find(request).countDocuments();
     const categories = await CategoryModel.find(request)
@@ -55,7 +65,11 @@ const getCategories = async ({
       .limit(limit)
       .skip(skip);
 
-    const nextPage = categories.length === limit ? skip + limit : undefined;
+    const { nextPage } = getClientNextPage({
+      resultLength: categories.length,
+      limit,
+      skip,
+    });
 
     return {
       categories: categories.map((e) => e.toJSON()),

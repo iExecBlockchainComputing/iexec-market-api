@@ -1,5 +1,13 @@
 # CHANGELOG
 
+## v6.3.0
+
+- changed API pagination
+  - paginable requests now have optional params `pageSize` (min `10`, max `1000`, default `20`) and `pageIndex` (default `0`)
+  - \[DEPRECATED\] the legacy `page` param is deprecated
+- added OpenAPI spec for the API
+- added a `/docs` endpoint hosting a Swagger UI
+
 ## v6.2.0
 
 - add `"any"` as allowed keyword wherever an address was expected for GET `/apporders`, `/datasetorders`, `/workerpoolorders`, `/requestorders`

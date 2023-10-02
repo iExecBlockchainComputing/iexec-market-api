@@ -41,8 +41,7 @@ const {
 const { isEnterpriseFlavour } = require('../utils/iexec-utils');
 const { flavour, maxOpenOrdersPerWallet } = require('../config');
 const { ANY } = require('../utils/keywords');
-
-const PAGE_LENGTH = 20;
+const { getDbPage, getClientNextPage } = require('../utils/pagination-utils');
 
 const log = logger.extend('services:order');
 
@@ -629,6 +628,8 @@ const getApporders = async ({
   maxTag,
   minVolume,
   page,
+  pageIndex,
+  pageSize,
 } = {}) => {
   try {
     const ApporderModel = await apporderModel.getModel(chainId);
@@ -647,8 +648,12 @@ const getApporders = async ({
       publicationTimestamp: 'asc',
       orderHash: 'asc', // make sort deterministic
     };
-    const limit = PAGE_LENGTH;
-    const skip = page || 0;
+
+    const { skip, limit } = getDbPage({
+      page,
+      pageIndex,
+      pageSize,
+    });
 
     const count = await ApporderModel.find(request).countDocuments();
     const orders = await ApporderModel.find(request)
@@ -656,7 +661,11 @@ const getApporders = async ({
       .limit(limit)
       .skip(skip);
 
-    const nextPage = orders.length === limit ? skip + limit : undefined;
+    const { nextPage } = getClientNextPage({
+      resultLength: orders.length,
+      limit,
+      skip,
+    });
 
     return {
       orders: orders.map((e) => e.toJSON()),
@@ -698,6 +707,8 @@ const getDatasetorders = async ({
   maxTag,
   minVolume,
   page,
+  pageIndex,
+  pageSize,
 } = {}) => {
   try {
     const DatasetorderModel = await datasetorderModel.getModel(chainId);
@@ -716,8 +727,12 @@ const getDatasetorders = async ({
       publicationTimestamp: 'asc',
       orderHash: 'asc', // make sort deterministic
     };
-    const limit = PAGE_LENGTH;
-    const skip = page || 0;
+
+    const { skip, limit } = getDbPage({
+      page,
+      pageIndex,
+      pageSize,
+    });
 
     const count = await DatasetorderModel.find(request).countDocuments();
     const orders = await DatasetorderModel.find(request)
@@ -725,7 +740,11 @@ const getDatasetorders = async ({
       .limit(limit)
       .skip(skip);
 
-    const nextPage = orders.length === limit ? skip + limit : undefined;
+    const { nextPage } = getClientNextPage({
+      resultLength: orders.length,
+      limit,
+      skip,
+    });
 
     return {
       orders: orders.map((e) => e.toJSON()),
@@ -769,6 +788,8 @@ const getWorkerpoolorders = async ({
   minTrust,
   minVolume,
   page,
+  pageIndex,
+  pageSize,
 } = {}) => {
   try {
     const WorkerpoolorderModel = await workerpoolorderModel.getModel(chainId);
@@ -789,8 +810,12 @@ const getWorkerpoolorders = async ({
       publicationTimestamp: 'asc',
       orderHash: 'asc', // make sort deterministic
     };
-    const limit = PAGE_LENGTH;
-    const skip = page || 0;
+
+    const { skip, limit } = getDbPage({
+      page,
+      pageIndex,
+      pageSize,
+    });
 
     const count = await WorkerpoolorderModel.find(request).countDocuments();
     const orders = await WorkerpoolorderModel.find(request)
@@ -798,7 +823,11 @@ const getWorkerpoolorders = async ({
       .limit(limit)
       .skip(skip);
 
-    const nextPage = orders.length === limit ? skip + limit : undefined;
+    const { nextPage } = getClientNextPage({
+      resultLength: orders.length,
+      limit,
+      skip,
+    });
 
     return {
       orders: orders.map((e) => e.toJSON()),
@@ -842,6 +871,8 @@ const getRequestorders = async ({
   minVolume,
   workerpool,
   page,
+  pageIndex,
+  pageSize,
 } = {}) => {
   try {
     const RequestorderModel = await requestorderModel.getModel(chainId);
@@ -862,8 +893,12 @@ const getRequestorders = async ({
       publicationTimestamp: 'asc',
       orderHash: 'asc', // make sort deterministic
     };
-    const limit = PAGE_LENGTH;
-    const skip = page || 0;
+
+    const { skip, limit } = getDbPage({
+      page,
+      pageIndex,
+      pageSize,
+    });
 
     const count = await RequestorderModel.find(request).countDocuments();
     const orders = await RequestorderModel.find(request)
@@ -871,7 +906,11 @@ const getRequestorders = async ({
       .limit(limit)
       .skip(skip);
 
-    const nextPage = orders.length === limit ? skip + limit : undefined;
+    const { nextPage } = getClientNextPage({
+      resultLength: orders.length,
+      limit,
+      skip,
+    });
 
     return {
       orders: orders.map((e) => e.toJSON()),

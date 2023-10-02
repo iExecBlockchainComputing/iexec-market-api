@@ -1,0 +1,1198 @@
+openapi: 3.0.3
+info:
+  title: iExec market API
+  description: >-
+    iExec market API OpenAPI specification
+  version: 6.3.0
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+servers:
+  - url: https://api.market.iex.ec
+  - url: http://localhost:3000
+
+paths:
+  /version:
+    get:
+      description: get the API version
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - $ref: '#/components/schemas/Version'
+
+  /metrics:
+    get:
+      description: get market API metrics
+      parameters:
+        - $ref: '#/components/parameters/ChainId'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - $ref: '#/components/schemas/Metrics'
+
+  /challenge:
+    get:
+      description: get a challenge to sign for authenticated operations
+      parameters:
+        - $ref: '#/components/parameters/ChainId'
+        - name: address
+          in: query
+          description: ethereum address of the wallet to authenticate
+          required: true
+          schema:
+            type: string
+            example: '0xF048eF3d7E3B33A465E0599E641BB29421f7Df92'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - $ref: '#/components/schemas/EIP712'
+
+  /categories/{catId}:
+    get:
+      description: get a protocol category by id
+      parameters:
+        - $ref: '#/components/parameters/ChainId'
+        - name: catId
+          in: path
+          description: category id
+          required: true
+          schema:
+            type: number
+            example: 0
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - $ref: '#/components/schemas/Category'
+
+  /categories:
+    get:
+      description: get the protocol categories
+      parameters:
+        - $ref: '#/components/parameters/ChainId'
+        - name: minWorkClockTimeRef
+          in: query
+          description: smallest workClockTimeRef to filter results on
+          schema:
+            type: number
+        - name: maxWorkClockTimeRef
+          in: query
+          description: biggest workClockTimeRef to filter results on
+          schema:
+            type: number
+        - $ref: '#/components/parameters/PageIndex'
+        - $ref: '#/components/parameters/PageSize'
+        - $ref: '#/components/parameters/Page'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - $ref: '#/components/schemas/PaginableResponse'
+                  - type: object
+                    properties:
+                      categories:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Category'
+
+  /deals/{dealId}:
+    get:
+      description: get a deal by id
+      parameters:
+        - $ref: '#/components/parameters/ChainId'
+        - name: dealId
+          in: path
+          description: deal id
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - $ref: '#/components/schemas/Deal'
+
+  /deals:
+    get:
+      description: get the protocol deals
+      parameters:
+        - $ref: '#/components/parameters/ChainId'
+        - name: category
+          in: query
+          description: category id to filter results on
+          schema:
+            type: number
+        - name: requester
+          in: query
+          description: requester address to filter results on
+          schema:
+            type: string
+        - name: beneficiary
+          in: query
+          description: beneficiary address to filter results on
+          schema:
+            type: string
+        - name: app
+          in: query
+          description: app address to filter results on
+          schema:
+            type: string
+        - name: dataset
+          in: query
+          description: dataset address to filter results on
+          schema:
+            type: string
+        - name: workerpool
+          in: query
+          description: workerpool address to filter results on
+          schema:
+            type: string
+        - name: appOwner
+          in: query
+          description: app owner address to filter results on
+          schema:
+            type: string
+        - name: datasetOwner
+          in: query
+          description: dataset owner address to filter results on
+          schema:
+            type: string
+        - name: workerpoolOwner
+          in: query
+          description: workerpool owner address to filter results on
+          schema:
+            type: string
+        - name: apporderHash
+          in: query
+          description: apporder hash to filter results on
+          schema:
+            type: string
+        - name: datasetorderHash
+          in: query
+          description: datasetorder hash to filter results on
+          schema:
+            type: string
+        - name: workerpoolorderHash
+          in: query
+          description: workerpoolorder hash to filter results on
+          schema:
+            type: string
+        - name: requestHash
+          in: query
+          description: requestorder hash to filter results on
+          schema:
+            type: string
+        - $ref: '#/components/parameters/PageIndex'
+        - $ref: '#/components/parameters/PageSize'
+        - $ref: '#/components/parameters/Page'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - $ref: '#/components/schemas/PaginableResponse'
+                  - type: object
+                    properties:
+                      deals:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/Deal'
+
+  /apporders/{orderHash}:
+    get:
+      description: get a apporder by hash
+      parameters:
+        - $ref: '#/components/parameters/ChainId'
+        - $ref: '#/components/parameters/OrderHash'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - $ref: '#/components/schemas/AppOrderWithMetadata'
+
+  /apporders:
+    get:
+      description: browse the apporders market
+      parameters:
+        - $ref: '#/components/parameters/ChainId'
+        - name: app
+          in: query
+          description: app address to filter results on (accepts address or "any")
+          schema:
+            type: string
+            example: 'any'
+        - name: appOwner
+          in: query
+          description: app owner address to filter results on
+          schema:
+            type: string
+        - name: minTag
+          in: query
+          description: minimum tag to filter results on
+          schema:
+            type: string
+        - name: maxTag
+          in: query
+          description: maximum tag to filter results on
+          schema:
+            type: string
+        - name: minVolume
+          in: query
+          description: minimum volume to filter results on
+          schema:
+            type: number
+        - name: dataset
+          in: query
+          description: datasetrestrict address to include in results
+          schema:
+            type: string
+        - name: workerpool
+          in: query
+          description: workerpoolrestrict address to include in results
+          schema:
+            type: string
+        - name: requester
+          in: query
+          description: requesterrestrict address to include in results
+          schema:
+            type: string
+        - $ref: '#/components/parameters/PageIndex'
+        - $ref: '#/components/parameters/PageSize'
+        - $ref: '#/components/parameters/Page'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - $ref: '#/components/schemas/PaginableResponse'
+                  - type: object
+                    properties:
+                      orders:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/AppOrderWithMetadata'
+    post:
+      description: publish an apporder on the market
+      parameters:
+        - $ref: '#/components/parameters/ChainId'
+        - $ref: '#/components/parameters/Authorization'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                order:
+                  $ref: '#/components/schemas/AppOrder'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      published:
+                        $ref: '#/components/schemas/AppOrderWithMetadata'
+    put:
+      description: unpublish apporders
+      parameters:
+        - $ref: '#/components/parameters/ChainId'
+        - $ref: '#/components/parameters/Authorization'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                target:
+                  type: string
+                  enum:
+                    - unpublish_orderHash
+                    - unpublish_last
+                    - unpublish_all
+                orderHash:
+                  type: string
+                app:
+                  type: string
+
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      unpublished:
+                        type: array
+                        items:
+                          type: string
+
+  /datasetorders/{orderHash}:
+    get:
+      description: get a datasetorder by hash
+      parameters:
+        - $ref: '#/components/parameters/ChainId'
+        - $ref: '#/components/parameters/OrderHash'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      published:
+                        $ref: '#/components/schemas/DatasetOrderWithMetadata'
+
+  /datasetorders:
+    get:
+      description: browse the datasetorders market
+      parameters:
+        - $ref: '#/components/parameters/ChainId'
+        - name: dataset
+          in: query
+          description: dataset address to filter results on (accepts address or "any")
+          schema:
+            type: string
+            example: 'any'
+        - name: datasetOwner
+          in: query
+          description: dataset owner address to filter results on
+          schema:
+            type: string
+        - name: minTag
+          in: query
+          description: minimum tag to filter results on
+          schema:
+            type: string
+        - name: maxTag
+          in: query
+          description: maximum tag to filter results on
+          schema:
+            type: string
+        - name: minVolume
+          in: query
+          description: minimum volume to filter results on
+          schema:
+            type: number
+        - name: app
+          in: query
+          description: apprestrict address to include in results
+          schema:
+            type: string
+        - name: workerpool
+          in: query
+          description: workerpoolrestrict address to include in results
+          schema:
+            type: string
+        - name: requester
+          in: query
+          description: requesterrestrict address to include in results
+          schema:
+            type: string
+        - $ref: '#/components/parameters/PageIndex'
+        - $ref: '#/components/parameters/PageSize'
+        - $ref: '#/components/parameters/Page'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - $ref: '#/components/schemas/PaginableResponse'
+                  - type: object
+                    properties:
+                      orders:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/DatasetOrderWithMetadata'
+    post:
+      description: publish a datasetorder on the market
+      parameters:
+        - $ref: '#/components/parameters/ChainId'
+        - $ref: '#/components/parameters/Authorization'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                order:
+                  $ref: '#/components/schemas/DatasetOrder'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      published:
+                        $ref: '#/components/schemas/DatasetOrderWithMetadata'
+    put:
+      description: unpublish datasetorders
+      parameters:
+        - $ref: '#/components/parameters/ChainId'
+        - $ref: '#/components/parameters/Authorization'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                target:
+                  type: string
+                  enum:
+                    - unpublish_orderHash
+                    - unpublish_last
+                    - unpublish_all
+                orderHash:
+                  type: string
+                dataset:
+                  type: string
+
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      unpublished:
+                        type: array
+                        items:
+                          type: string
+
+  /workerpoolorders/{orderHash}:
+    get:
+      description: get a workerpoolorder by hash
+      parameters:
+        - $ref: '#/components/parameters/ChainId'
+        - $ref: '#/components/parameters/OrderHash'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - $ref: '#/components/schemas/WorkerpoolOrderWithMetadata'
+
+  /workerpoolorders:
+    get:
+      description: browse the workerpoolorders market
+      parameters:
+        - $ref: '#/components/parameters/ChainId'
+        - name: workerpool
+          in: query
+          description: workerpool address to filter results on (accepts address or "any")
+          schema:
+            type: string
+            example: 'any'
+        - name: workerpoolOwner
+          in: query
+          description: workerpool owner address to filter results on
+          schema:
+            type: string
+        - name: category
+          in: query
+          description: category id to filter results on
+          schema:
+            type: number
+        - name: minTag
+          in: query
+          description: minimum tag to filter results on
+          schema:
+            type: string
+        - name: maxTag
+          in: query
+          description: maximum tag to filter results on
+          schema:
+            type: string
+        - name: minVolume
+          in: query
+          description: minimum volume to filter results on
+          schema:
+            type: number
+        - name: minTrust
+          in: query
+          description: minimum trust to filter results on
+          schema:
+            type: number
+        - name: app
+          in: query
+          description: apprestrict address to include in results
+          schema:
+            type: string
+        - name: dataset
+          in: query
+          description: datasetrestrict address to include in results
+          schema:
+            type: string
+        - name: requester
+          in: query
+          description: requesterrestrict address to include in results
+          schema:
+            type: string
+        - $ref: '#/components/parameters/PageIndex'
+        - $ref: '#/components/parameters/PageSize'
+        - $ref: '#/components/parameters/Page'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - $ref: '#/components/schemas/PaginableResponse'
+                  - type: object
+                    properties:
+                      orders:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/WorkerpoolOrderWithMetadata'
+    post:
+      description: publish a workerpoolorder on the market
+      parameters:
+        - $ref: '#/components/parameters/ChainId'
+        - $ref: '#/components/parameters/Authorization'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                order:
+                  $ref: '#/components/schemas/WorkerpoolOrder'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      published:
+                        $ref: '#/components/schemas/WorkerpoolOrderWithMetadata'
+    put:
+      description: unpublish workerpoolorders
+      parameters:
+        - $ref: '#/components/parameters/ChainId'
+        - $ref: '#/components/parameters/Authorization'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                target:
+                  type: string
+                  enum:
+                    - unpublish_orderHash
+                    - unpublish_last
+                    - unpublish_all
+                orderHash:
+                  type: string
+                workerpool:
+                  type: string
+
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      unpublished:
+                        type: array
+                        items:
+                          type: string
+
+  /requestorders/{orderHash}:
+    get:
+      description: get a requestorder by hash
+      parameters:
+        - $ref: '#/components/parameters/ChainId'
+        - $ref: '#/components/parameters/OrderHash'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - $ref: '#/components/schemas/RequestOrderWithMetadata'
+
+  /requestorders:
+    get:
+      description: browse the requestorders market
+      parameters:
+        - $ref: '#/components/parameters/ChainId'
+        - name: app
+          in: query
+          description: app address to filter results on (accepts address or "any")
+          schema:
+            type: string
+            example: 'any'
+        - name: dataset
+          in: query
+          description: dataset address to filter results on (accepts address or "any")
+          schema:
+            type: string
+            example: 'any'
+        - name: requester
+          in: query
+          description: requester address to filter results on (accepts address or "any")
+          schema:
+            type: string
+            example: 'any'
+        - name: beneficiary
+          in: query
+          description: beneficiary address to filter results on (accepts address or "any")
+          schema:
+            type: string
+            example: 'any'
+        - name: category
+          in: query
+          description: category id to filter results on
+          schema:
+            type: number
+        - name: minTag
+          in: query
+          description: minimum tag to filter results on
+          schema:
+            type: string
+        - name: maxTag
+          in: query
+          description: maximum tag to filter results on
+          schema:
+            type: string
+        - name: minVolume
+          in: query
+          description: minimum volume to filter results on
+          schema:
+            type: number
+        - name: maxTrust
+          in: query
+          description: maximum trust to filter results on
+          schema:
+            type: number
+        - $ref: '#/components/parameters/PageIndex'
+        - $ref: '#/components/parameters/PageSize'
+        - $ref: '#/components/parameters/Page'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: object
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - $ref: '#/components/schemas/PaginableResponse'
+                  - type: object
+                    properties:
+                      orders:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/RequestOrderWithMetadata'
+    post:
+      description: publish a requestorder on the market
+      parameters:
+        - $ref: '#/components/parameters/ChainId'
+        - $ref: '#/components/parameters/Authorization'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                order:
+                  $ref: '#/components/schemas/RequestOrder'
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      published:
+                        $ref: '#/components/schemas/RequestOrderWithMetadata'
+    put:
+      description: unpublish requestorders
+      parameters:
+        - $ref: '#/components/parameters/ChainId'
+        - $ref: '#/components/parameters/Authorization'
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                target:
+                  type: string
+                  enum:
+                    - unpublish_orderHash
+                    - unpublish_last
+                    - unpublish_all
+                orderHash:
+                  type: string
+                requester:
+                  type: string
+
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/ApiResponse'
+                  - type: object
+                    properties:
+                      unpublished:
+                        type: array
+                        items:
+                          type: string
+
+components:
+  parameters:
+    ChainId:
+      name: chainId
+      in: query
+      description: chain id
+      required: true
+      schema:
+        type: number
+        example: 134
+    Authorization:
+      name: authorization
+      in: header
+      description: authorization \<challenge hash\>\_\<challenge sign\>\_\<signer address\>
+      example: '0x7ff13783ecb384e98174335a8dd1d0bcda3809f5b2cec2e007a2f4aaa40ed6b0_0x0ae7e415bc0021fe90df0f8f1a312501bc968772ec73ab39620b300b13d2b212607d1adc4741f771568ac52fbc5c042787a2bf7df2872f4a7fac93d3a46fe2341b_0x7bd4783FDCAD405A28052a0d1f11236A741da593'
+      required: true
+      schema:
+        type: string
+    OrderHash:
+      name: orderHash
+      in: path
+      required: true
+      description: order hash
+      schema:
+        type: string
+    Page:
+      name: page
+      in: query
+      description: deprecated pagination param
+      deprecated: true
+      schema:
+        type: number
+    PageIndex:
+      name: pageIndex
+      in: query
+      schema:
+        type: number
+    PageSize:
+      name: pageSize
+      in: query
+      schema:
+        type: number
+
+  schemas:
+    ApiResponse:
+      properties:
+        ok:
+          type: boolean
+    ApiErrorResponse:
+      properties:
+        ok:
+          type: boolean
+          example: false
+        error:
+          type: string
+    PaginableResponse:
+      properties:
+        count:
+          type: number
+    Version:
+      properties:
+        version:
+          type: string
+          example: 0.0.0
+    Metrics:
+      properties:
+        lastBlock:
+          type: number
+        checkpointBlock:
+          type: number
+        apporders:
+          type: number
+        datasetorders:
+          type: number
+        workerpoolorders:
+          type: number
+        requestorders:
+          type: number
+    EIP712:
+      properties:
+        ok:
+          type: boolean
+        data:
+          type: object
+          properties:
+            types:
+              type: object
+              properties:
+                EIP712Domain:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                      type:
+                        type: string
+                Challenge:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                      type:
+                        type: string
+        domain:
+          type: object
+          properties:
+            name:
+              type: string
+            version:
+              type: string
+            chainId:
+              type: string
+        primaryType:
+          type: string
+        message:
+          type: object
+          properties:
+            challenge:
+              type: string
+    Category:
+      properties:
+        catid:
+          type: number
+        chainId:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+        workClockTimeRef:
+          type: number
+        transactionHash:
+          type: string
+        blockNumber:
+          type: number
+        blockTimestamp:
+          type: string
+    Deal:
+      properties:
+        chainId:
+          type: number
+        dealId:
+          type: string
+        app:
+          type: object
+          properties:
+            pointer:
+              description: app address
+              type: string
+            owner:
+              type: string
+            price:
+              type: number
+        dataset:
+          type: object
+          properties:
+            pointer:
+              description: dataset address
+              type: string
+            owner:
+              type: string
+            price:
+              type: number
+        workerpool:
+          type: object
+          properties:
+            pointer:
+              description: workerpool address
+              type: string
+            owner:
+              type: string
+            price:
+              type: number
+        appHash:
+          description: apporder hash
+          type: string
+        datasetHash:
+          description: datasetorder hash
+          type: string
+        workerpoolHash:
+          description: workerpoolorder hash
+          type: string
+        requestHash:
+          description: requestorder hash
+          type: string
+        requester:
+          type: string
+        beneficiary:
+          type: string
+        callback:
+          type: string
+        tag:
+          type: string
+        botFirst:
+          type: number
+        botSize:
+          type: number
+        category:
+          type: number
+        params:
+          type: string
+        schedulerRewardRatio:
+          type: number
+        startTime:
+          type: number
+        trust:
+          type: number
+        volume:
+          type: number
+        workerStake:
+          type: number
+        transactionHash:
+          type: string
+        blockNumber:
+          type: number
+        blockTimestamp:
+          type: string
+    OrderMetadata:
+      properties:
+        chainId:
+          type: number
+        orderHash:
+          type: string
+        publicationTimestamp:
+          type: string
+        signer:
+          type: string
+        status:
+          type: string
+          enum:
+            - open
+            - filled
+            - canceled
+            - dead
+        remaining:
+          type: number
+
+    AppOrder:
+      properties:
+        app:
+          type: string
+        appprice:
+          type: number
+        volume:
+          type: number
+        tag:
+          type: string
+        datasetrestrict:
+          type: string
+        workerpoolrestrict:
+          type: string
+        requesterrestrict:
+          type: string
+        salt:
+          type: string
+        sign:
+          type: string
+
+    DatasetOrder:
+      properties:
+        dataset:
+          type: string
+        datasetprice:
+          type: number
+        volume:
+          type: number
+        tag:
+          type: string
+        apprestrict:
+          type: string
+        workerpoolrestrict:
+          type: string
+        requesterrestrict:
+          type: string
+        salt:
+          type: string
+        sign:
+          type: string
+
+    WorkerpoolOrder:
+      properties:
+        workerpool:
+          type: string
+        workerpoolprice:
+          type: number
+        volume:
+          type: number
+        tag:
+          type: string
+        category:
+          type: number
+        trust:
+          type: number
+        datasetrestrict:
+          type: string
+        workerpoolrestrict:
+          type: string
+        requesterrestrict:
+          type: string
+        salt:
+          type: string
+        sign:
+          type: string
+
+    RequestOrder:
+      properties:
+        app:
+          type: string
+        dataset:
+          type: string
+        workerpool:
+          type: string
+        requester:
+          type: string
+        beneficiary:
+          type: string
+        callback:
+          type: string
+        params:
+          type: string
+        appmaxprice:
+          type: number
+        datasetmaxprice:
+          type: number
+        workerpoolmaxprice:
+          type: number
+        volume:
+          type: number
+        tag:
+          type: string
+        category:
+          type: number
+        trust:
+          type: number
+        salt:
+          type: string
+        sign:
+          type: string
+
+    AppOrderWithMetadata:
+      allOf:
+        - $ref: '#/components/schemas/OrderMetadata'
+        - type: object
+          properties:
+            order:
+              $ref: '#/components/schemas/AppOrder'
+
+    DatasetOrderWithMetadata:
+      allOf:
+        - $ref: '#/components/schemas/OrderMetadata'
+        - type: object
+          properties:
+            order:
+              $ref: '#/components/schemas/DatasetOrder'
+
+    WorkerpoolOrderWithMetadata:
+      allOf:
+        - $ref: '#/components/schemas/OrderMetadata'
+        - type: object
+          properties:
+            order:
+              $ref: '#/components/schemas/WorkerpoolOrder'
+
+    RequestOrderWithMetadata:
+      allOf:
+        - $ref: '#/components/schemas/OrderMetadata'
+        - type: object
+          properties:
+            order:
+              $ref: '#/components/schemas/RequestOrder'
