@@ -10,5 +10,6 @@ COPY api/package-lock.json package-lock.json
 RUN npm ci --omit=dev
 
 COPY api/src ./src
+COPY api/openapi.yaml .
 
 CMD ["npm", "start"]
