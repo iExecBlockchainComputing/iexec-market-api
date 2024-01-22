@@ -120,6 +120,8 @@ const TAG_MAP = {
   gpu: 9,
 };
 
+const IS_STRICT_FILTER = false;
+
 const tagToArray = (tag) => {
   const tagBinString = new BN(tag.substr(2), 'hex').toString(2);
   const bitsArray = [];
@@ -147,6 +149,7 @@ module.exports = {
   STATUS_MAP,
   TAG_MAP,
   UNPUBLISH_TARGET_MAP,
+  IS_STRICT_FILTER,
   tagToArray,
   excludeTagArray,
 };

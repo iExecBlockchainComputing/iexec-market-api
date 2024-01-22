@@ -35,6 +35,7 @@ const {
   STATUS_MAP,
   UNPUBLISH_TARGET_MAP,
   TAG_MAP,
+  IS_STRICT_FILTER,
   tagToArray,
   excludeTagArray,
 } = require('../utils/order-utils');
@@ -105,11 +106,13 @@ const requiredRequesterOrAnyClause = getRequiredAddressOrAnyClause('requester');
 const requiredBeneficiaryOrAnyClause =
   getRequiredAddressOrAnyClause('beneficiary');
 
-const getAddressOrAnyRestrictClause = (key) => (value) => {
+const getAddressOrAnyRestrictClause = (key) => (value, isStrict) => {
   const restrictKey = `order.${key}`;
   return (
     !isAny(value) && {
-      [restrictKey]: value ? { $in: [NULL_ADDRESS, value] } : NULL_ADDRESS,
+      [restrictKey]: value
+        ? { $in: isStrict ? [value] : [NULL_ADDRESS, value] }
+        : NULL_ADDRESS,
     }
   );
 };
@@ -700,6 +703,7 @@ const getDatasetorders = async ({
   chainId = throwIfMissing(),
   dataset,
   app,
+  isAppStrict = IS_STRICT_FILTER,
   workerpool,
   requester,
   datasetOwner,
@@ -716,7 +720,7 @@ const getDatasetorders = async ({
       status: STATUS_MAP.OPEN,
       ...(dataset && requiredDatasetOrAnyClause(dataset)),
       ...(datasetOwner && { signer: datasetOwner }),
-      ...apprestrictOrAnyClause(app),
+      ...apprestrictOrAnyClause(app, isAppStrict),
       ...workerpoolrestrictOrAnyClause(workerpool),
       ...requesterrestrictOrAnyClause(requester),
       ...minVolumeClause(minVolume),

@@ -5262,6 +5262,24 @@ describe('API', () => {
             });
         });
 
+        test('GET /datasetorders (invalid isAppStrict): should return validation error for invalid isAppStrict value', async () => {
+          const { data, status } = await request
+            .get(
+              buildQuery('/datasetorders', {
+                dataset: datasetAddress, // *
+                isAppStrict: 'abc',
+              }),
+            )
+            .then(parseResult);
+          expect(status).toBe(VALIDATION_ERROR_STATUS);
+          expect(data.ok).toBe(false);
+          expect(data.error).toBe(
+            'isAppStrict must be a `boolean` type, but the final value was: `"abc"`.',
+          );
+          expect(data.count).toBeUndefined();
+          expect(data.orders).toBeUndefined();
+        });
+
         test('GET /datasetorders (no match)', async () => {
           const { data, status } = await request
             .get(
@@ -5551,6 +5569,55 @@ describe('API', () => {
           expect(data.orders.length).toBe(minVolumeOrders.length);
           data.orders.forEach((e) => {
             expect(e.remaining >= 1234).toBe(true);
+          });
+        });
+
+        test('GET /datasetorders (isAppStrict = true & app = undefined): should return public orders including "any" app', async () => {
+          const result = await request
+            .get(
+              buildQuery('/datasetorders', {
+                chainId, // *
+                dataset: datasetAddress, // *
+                isAppStrict: true,
+              }),
+            )
+            .then(parseResult);
+          expect(result.status).toBe(OK_STATUS);
+          expect(result.data.ok).toBe(true);
+          expect(result.data.count).toBe(publicOrders.length);
+          expect(result.data.orders).toBeDefined();
+          expect(Array.isArray(result.data.orders)).toBe(true);
+          expect(result.data.orders.length).toBe(20);
+          expect(result.data.nextPage).toBeDefined();
+        });
+
+        test('GET /datasetorders (app filter & isAppStrict): should exclude orders with "any" filtered app)', async () => {
+          const { data, status } = await request
+            .get(
+              buildQuery('/datasetorders', {
+                chainId, // *
+                dataset: datasetAddress, // *
+                app: allowedApp,
+                isAppStrict: true,
+              }),
+            )
+            .then(parseResult);
+
+          const ordersExcludingAnyApp = appAllowedOrders.filter(
+            (order) => order.order.apprestrict !== utils.NULL_ADDRESS,
+          );
+
+          expect(status).toBe(OK_STATUS);
+          expect(data.ok).toBe(true);
+          expect(data.count).toBe(ordersExcludingAnyApp.length);
+          expect(data.orders).toBeDefined();
+          expect(Array.isArray(data.orders)).toBe(true);
+          expect(data.orders.length).toBe(5);
+          data.orders.forEach((e) => {
+            expect(
+              e.order.apprestrict === allowedApp ||
+                e.order.apprestrict !== utils.NULL_ADDRESS,
+            ).toBe(true);
           });
         });
 

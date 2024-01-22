@@ -40,6 +40,7 @@ const {
   positiveIntSchema,
   positiveStrictIntSchema,
   addressOrAnySchema,
+  booleanSchema,
 } = require('../utils/validator');
 const { UNPUBLISH_TARGET_MAP } = require('../utils/order-utils');
 const { maxPageSize, minPageSize } = require('../config').api;
@@ -352,6 +353,7 @@ router.get('/datasetorders', bodyParser(), async (ctx) => {
     chainId,
     dataset,
     app,
+    isAppStrict,
     workerpool,
     requester,
     datasetOwner,
@@ -372,6 +374,7 @@ router.get('/datasetorders', bodyParser(), async (ctx) => {
     }),
     datasetOwner: addressSchema(),
     app: addressOrAnySchema(),
+    isAppStrict: booleanSchema(),
     workerpool: addressOrAnySchema(),
     requester: addressOrAnySchema(),
     minTag: bytes32Schema(),
@@ -385,6 +388,7 @@ router.get('/datasetorders', bodyParser(), async (ctx) => {
     chainId,
     dataset,
     app,
+    isAppStrict,
     workerpool,
     requester,
     datasetOwner,
