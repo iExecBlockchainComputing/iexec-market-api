@@ -428,16 +428,31 @@ paths:
           description: apprestrict address to include in results
           schema:
             type: string
+        - name: isAppStrict
+          in: query
+          description: optional boolean to excludes/includes orders with permissions allowing "any" application
+          schema:
+            type: boolean
         - name: workerpool
           in: query
           description: workerpoolrestrict address to include in results
           schema:
             type: string
+        - name: isWorkerpoolStrict
+          in: query
+          description: optional boolean to excludes/includes orders with permissions allowing "any" workerpool
+          schema:
+            type: boolean
         - name: requester
           in: query
           description: requesterrestrict address to include in results
           schema:
             type: string
+        - name: isRequesterStrict
+          in: query
+          description: optional boolean to excludes/includes orders with permissions allowing "any" requester
+          schema:
+            type: boolean
         - $ref: '#/components/parameters/PageIndex'
         - $ref: '#/components/parameters/PageSize'
         - $ref: '#/components/parameters/Page'
