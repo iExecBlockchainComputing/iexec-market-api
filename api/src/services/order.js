@@ -707,6 +707,7 @@ const getDatasetorders = async ({
   workerpool,
   isWorkerpoolStrict = IS_STRICT_FILTER,
   requester,
+  isRequesterStrict = IS_STRICT_FILTER,
   datasetOwner,
   minTag,
   maxTag,
@@ -723,7 +724,7 @@ const getDatasetorders = async ({
       ...(datasetOwner && { signer: datasetOwner }),
       ...apprestrictOrAnyClause(app, isAppStrict),
       ...workerpoolrestrictOrAnyClause(workerpool, isWorkerpoolStrict),
-      ...requesterrestrictOrAnyClause(requester),
+      ...requesterrestrictOrAnyClause(requester, isRequesterStrict),
       ...minVolumeClause(minVolume),
       ...tagClause({ minTag, maxTag }),
     };
