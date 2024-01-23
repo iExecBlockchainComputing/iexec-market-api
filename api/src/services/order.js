@@ -104,16 +104,15 @@ const requiredWorkerpoolOrAnyClause =
 const requiredRequesterOrAnyClause = getRequiredAddressOrAnyClause('requester');
 const requiredBeneficiaryOrAnyClause =
   getRequiredAddressOrAnyClause('beneficiary');
-
 const getAddressOrAnyRestrictClause = (key) => (value, isStrict) => {
   const restrictKey = `order.${key}`;
-  return (
-    !isAny(value) && {
-      [restrictKey]: value
-        ? { $in: isStrict ? [value] : [NULL_ADDRESS, value] }
-        : NULL_ADDRESS,
-    }
-  );
+  if (isAny(value)) {
+    return null;
+  }
+  if (value) {
+    return { [restrictKey]: isStrict ? value : { $in: [NULL_ADDRESS, value] } };
+  }
+  return { [restrictKey]: NULL_ADDRESS };
 };
 const apprestrictOrAnyClause = getAddressOrAnyRestrictClause('apprestrict');
 const datasetrestrictOrAnyClause =
