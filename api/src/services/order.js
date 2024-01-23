@@ -111,7 +111,9 @@ const getAddressOrAnyRestrictClause = (key) => (value, isStrict) => {
   return (
     !isAny(value) && {
       [restrictKey]: value
-        ? { $in: isStrict ? [value] : [NULL_ADDRESS, value] }
+        ? isStrict
+          ? value
+          : { $in: [NULL_ADDRESS, value] }
         : NULL_ADDRESS,
     }
   );
