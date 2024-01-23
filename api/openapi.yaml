@@ -430,7 +430,7 @@ paths:
             type: string
         - name: isAppStrict
           in: query
-          description: optional boolean to excludes/includes orders with permissions allowing "any" application
+          description: exclude orders with permissions allowing "any" app (default false, ignored if `app` is not specified)
           schema:
             type: boolean
         - name: workerpool
@@ -440,7 +440,7 @@ paths:
             type: string
         - name: isWorkerpoolStrict
           in: query
-          description: optional boolean to excludes/includes orders with permissions allowing "any" workerpool
+          description: exclude orders with permissions allowing "any" workerpool (default false, ignored if `workerpool` is not specified)
           schema:
             type: boolean
         - name: requester
@@ -450,7 +450,7 @@ paths:
             type: string
         - name: isRequesterStrict
           in: query
-          description: optional boolean to excludes/includes orders with permissions allowing "any" requester
+          description: exclude orders with permissions allowing "any" requester (default false, ignored if `requester` is not specified)
           schema:
             type: boolean
         - $ref: '#/components/parameters/PageIndex'
