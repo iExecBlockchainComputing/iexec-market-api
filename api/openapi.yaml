@@ -257,6 +257,11 @@ paths:
           schema:
             type: string
             example: 'any'
+        - name: isAppStrict
+          in: query
+          description: exclude orders with permissions allowing "any" app (default false, ignored if `app` is not specified)
+          schema:
+            type: boolean
         - name: appOwner
           in: query
           description: app owner address to filter results on
@@ -282,16 +287,31 @@ paths:
           description: datasetrestrict address to include in results
           schema:
             type: string
+        - name: isDatasetStrict
+          in: query
+          description: exclude orders with permissions allowing "any" dataset (default false, ignored if `dataset` is not specified)
+          schema:
+            type: boolean
         - name: workerpool
           in: query
           description: workerpoolrestrict address to include in results
           schema:
             type: string
+        - name: isWorkerpoolStrict
+          in: query
+          description: exclude orders with permissions allowing "any" workerpool (default false, ignored if `workerpool` is not specified)
+          schema:
+            type: boolean
         - name: requester
           in: query
           description: requesterrestrict address to include in results
           schema:
             type: string
+        - name: isRequesterStrict
+          in: query
+          description: exclude orders with permissions allowing "any" requester (default false, ignored if `requester` is not specified)
+          schema:
+            type: boolean
         - $ref: '#/components/parameters/PageIndex'
         - $ref: '#/components/parameters/PageSize'
         - $ref: '#/components/parameters/Page'
