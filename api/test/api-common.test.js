@@ -5665,7 +5665,7 @@ describe('API', () => {
           expect(result.data.nextPage).toBeDefined();
         });
 
-        test('GET /datasetorders (app filter & isAppStrict): should exclude orders with "any" filtered app)', async () => {
+        test('GET /datasetorders (app filter & isAppStrict): should exclude orders with "any" app authorized', async () => {
           const { data, status } = await request
             .get(
               buildQuery('/datasetorders', {
@@ -5687,15 +5687,12 @@ describe('API', () => {
           expect(data.orders).toBeDefined();
           expect(Array.isArray(data.orders)).toBe(true);
           expect(data.orders.length).toBe(ordersExcludingAnyApp.length);
-          data.orders.forEach((e) => {
-            expect(
-              e.order.apprestrict === allowedApp ||
-                e.order.apprestrict !== utils.NULL_ADDRESS,
-            ).toBe(true);
-          });
+          data.orders.forEach((e) =>
+            expect(e.order.apprestrict).toBe(allowedApp),
+          );
         });
 
-        test('GET /datasetorders (workerpool filter & isWorkerpoolStrict): should exclude orders with "any" filtered workerpool)', async () => {
+        test('GET /datasetorders (workerpool filter & isWorkerpoolStrict): should exclude orders with "any" workerpool authorized', async () => {
           const { data, status } = await request
             .get(
               buildQuery('/datasetorders', {
@@ -5716,15 +5713,12 @@ describe('API', () => {
           expect(data.orders).toBeDefined();
           expect(Array.isArray(data.orders)).toBe(true);
           expect(data.orders.length).toBe(ordersExcludingAnyWorkerpool.length);
-          data.orders.forEach((e) => {
-            expect(
-              e.order.workerpoolrestrict === allowedWorkerpool ||
-                e.order.workerpoolrestrict === utils.NULL_ADDRESS,
-            ).toBe(true);
-          });
+          data.orders.forEach((e) =>
+            expect(e.order.workerpoolrestrict).toBe(allowedWorkerpool),
+          );
         });
 
-        test('GET /datasetorders (requester filter & isRequesterStrict): should exclude orders with "any" filtered requester)', async () => {
+        test('GET /datasetorders (requester filter & isRequesterStrict): should exclude orders with "any" requester authorized', async () => {
           const { data, status } = await request
             .get(
               buildQuery('/datasetorders', {
@@ -5745,12 +5739,9 @@ describe('API', () => {
           expect(data.orders).toBeDefined();
           expect(Array.isArray(data.orders)).toBe(true);
           expect(data.orders.length).toBe(ordersExcludingAnyRequester.length);
-          data.orders.forEach((e) => {
-            expect(
-              e.order.workerpoolrestrict === allowedWorkerpool ||
-                e.order.workerpoolrestrict === utils.NULL_ADDRESS,
-            ).toBe(true);
-          });
+          data.orders.forEach((e) =>
+            expect(e.order.requesterrestrict).toBe(allowedRequester),
+          );
         });
 
         test('GET /datasetorders (app filter)', async () => {
