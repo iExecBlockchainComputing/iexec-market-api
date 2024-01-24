@@ -749,18 +749,38 @@ paths:
           schema:
             type: string
             example: 'any'
+        - name: isAppStrict
+          in: query
+          description: exclude orders with permissions allowing "any" app (default false, ignored if `app` is not specified)
+          schema:
+            type: boolean
         - name: dataset
           in: query
           description: dataset address to filter results on (accepts address or "any")
           schema:
             type: string
             example: 'any'
+        - name: isDatasetStrict
+          in: query
+          description: exclude orders with permissions allowing "any" dataset (default false, ignored if `dataset` is not specified)
+          schema:
+            type: boolean
         - name: requester
           in: query
           description: requester address to filter results on (accepts address or "any")
           schema:
             type: string
             example: 'any'
+        - name: workerpool
+            in: query
+            description: workerpoolrestrict address to include in results
+            schema:
+              type: string
+        - name: isWorkerpoolStrict
+            in: query
+            description: exclude orders with permissions allowing "any" workerpool (default false, ignored if `workerpool` is not specified)
+            schema:
+              type: boolean
         - name: beneficiary
           in: query
           description: beneficiary address to filter results on (accepts address or "any")

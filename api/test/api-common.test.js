@@ -4563,8 +4563,6 @@ describe('API', () => {
         });
 
         test('GET /apporders (isRequesterStrict = true & requester = undefined): should return public orders including "any" requester', async () => {
-          console.log(chainId, appAddress);
-
           const result = await request
             .get(
               buildQuery('/apporders', {
@@ -8225,6 +8223,60 @@ describe('API', () => {
             });
         });
 
+        test('GET /requestorders (invalid isAppStrict): should return validation error for invalid isAppStrict value', async () => {
+          const { data, status } = await request
+            .get(
+              buildQuery('/requestorders', {
+                chainId, // *
+                isAppStrict: 'abc',
+              }),
+            )
+            .then(parseResult);
+          expect(status).toBe(VALIDATION_ERROR_STATUS);
+          expect(data.ok).toBe(false);
+          expect(data.error).toBe(
+            'isAppStrict must be a `boolean` type, but the final value was: `"abc"`.',
+          );
+          expect(data.count).toBeUndefined();
+          expect(data.orders).toBeUndefined();
+        });
+
+        test('GET /requestorders (invalid isDatasetStrict): should return validation error for invalid isWorkerpoolStrict value', async () => {
+          const { data, status } = await request
+            .get(
+              buildQuery('/requestorders', {
+                chainId, // *
+                isDatasetStrict: 'abc',
+              }),
+            )
+            .then(parseResult);
+          expect(status).toBe(VALIDATION_ERROR_STATUS);
+          expect(data.ok).toBe(false);
+          expect(data.error).toBe(
+            'isDatasetStrict must be a `boolean` type, but the final value was: `"abc"`.',
+          );
+          expect(data.count).toBeUndefined();
+          expect(data.orders).toBeUndefined();
+        });
+
+        test('GET /requestorders (invalid isWorkerpoolStrict): should return validation error for invalid isRequesterStrict value', async () => {
+          const { data, status } = await request
+            .get(
+              buildQuery('/requestorders', {
+                chainId, // *
+                isWorkerpoolStrict: 'abc',
+              }),
+            )
+            .then(parseResult);
+          expect(status).toBe(VALIDATION_ERROR_STATUS);
+          expect(data.ok).toBe(false);
+          expect(data.error).toBe(
+            'isWorkerpoolStrict must be a `boolean` type, but the final value was: `"abc"`.',
+          );
+          expect(data.count).toBeUndefined();
+          expect(data.orders).toBeUndefined();
+        });
+
         test('GET /requestorders (no match)', async () => {
           const { data, status } = await request
             .get(
@@ -8476,6 +8528,133 @@ describe('API', () => {
           );
           expect(data.orders).toBeDefined();
           expect(Array.isArray(data.orders)).toBe(true);
+        });
+
+        test('GET /requestorders (isAppStrict = true & app = undefined): should return public orders including "any" app', async () => {
+          const result = await request
+            .get(
+              buildQuery('/requestorders', {
+                chainId, // *
+                isAppStrict: true,
+              }),
+            )
+            .then(parseResult);
+          expect(result.status).toBe(OK_STATUS);
+          expect(result.data.ok).toBe(true);
+          expect(result.data.count).toBe(publicOrders.length);
+          expect(result.data.orders).toBeDefined();
+          expect(Array.isArray(result.data.orders)).toBe(true);
+          expect(result.data.orders.length).toBe(20);
+          expect(result.data.nextPage).toBeDefined();
+        });
+
+        test('GET /requestorders (isDatasetStrict = true & dataset = undefined): should return public orders including "any" dataset', async () => {
+          const result = await request
+            .get(
+              buildQuery('/requestorders', {
+                chainId, // *
+                isDatasetStrict: true,
+              }),
+            )
+            .then(parseResult);
+          expect(result.status).toBe(OK_STATUS);
+          expect(result.data.ok).toBe(true);
+          expect(result.data.count).toBe(publicOrders.length);
+          expect(result.data.orders).toBeDefined();
+          expect(Array.isArray(result.data.orders)).toBe(true);
+          expect(result.data.orders.length).toBe(20);
+          expect(result.data.nextPage).toBeDefined();
+        });
+
+        test('GET /requestorders (isWorkerpoolStrict = true & workerpool = undefined): should return public orders including "any" workerpool', async () => {
+          const result = await request
+            .get(
+              buildQuery('/requestorders', {
+                chainId, // *
+                isWorkerpoolStrict: true,
+              }),
+            )
+            .then(parseResult);
+          expect(result.status).toBe(OK_STATUS);
+          expect(result.data.ok).toBe(true);
+          expect(result.data.count).toBe(publicOrders.length);
+          expect(result.data.orders).toBeDefined();
+          expect(Array.isArray(result.data.orders)).toBe(true);
+          expect(result.data.orders.length).toBe(20);
+          expect(result.data.nextPage).toBeDefined();
+        });
+
+        test('GET /requestorders (app filter & isAppStrict): should exclude orders with "any" app authorized', async () => {
+          const { data, status } = await request
+            .get(
+              buildQuery('/requestorders', {
+                chainId, // *
+                app: appAddress,
+                isAppStrict: true,
+              }),
+            )
+            .then(parseResult);
+
+          const ordersExcludingAnyApp = appSpecificOrders.filter(
+            (order) => order.order.apprestrict !== utils.NULL_ADDRESS,
+          );
+
+          expect(status).toBe(OK_STATUS);
+          expect(data.ok).toBe(true);
+          expect(data.count).toBe(ordersExcludingAnyApp.length);
+          expect(data.orders).toBeDefined();
+          expect(Array.isArray(data.orders)).toBe(true);
+          expect(data.orders.length).toBe(ordersExcludingAnyApp.length);
+          data.orders.forEach((e) => expect(e.order.app).toBe(appAddress));
+        });
+
+        test('GET /requestorders (dataset filter & isDatasetStrict): should exclude orders with "any" dataset authorized', async () => {
+          const { data, status } = await request
+            .get(
+              buildQuery('/requestorders', {
+                chainId, // *
+                dataset: datasetAddress,
+                isDatasetStrict: true,
+              }),
+            )
+            .then(parseResult);
+          const ordersExcludingAnyDataset = datasetSpecificOrders.filter(
+            (order) => order.order.dataset !== utils.NULL_ADDRESS,
+          );
+          expect(status).toBe(OK_STATUS);
+          expect(data.ok).toBe(true);
+          expect(data.count).toBe(ordersExcludingAnyDataset.length);
+          expect(data.orders).toBeDefined();
+          expect(Array.isArray(data.orders)).toBe(true);
+          expect(data.orders.length).toBe(ordersExcludingAnyDataset.length);
+          data.orders.forEach((e) =>
+            expect(e.order.dataset).toBe(datasetAddress),
+          );
+        });
+
+        test('GET /requestorders (workerpool filter & isWorkerpoolStrict): should exclude orders with "any" workerpool authorized', async () => {
+          const { data, status } = await request
+            .get(
+              buildQuery('/requestorders', {
+                chainId, // *
+                workerpool: allowedWorkerpool,
+                isWorkerpoolStrict: true,
+              }),
+            )
+            .then(parseResult);
+
+          const ordersExcludingAnyWorkerpool = workerpoolAllowedOrders.filter(
+            (order) => order.order.workerpool !== utils.NULL_ADDRESS,
+          );
+          expect(status).toBe(OK_STATUS);
+          expect(data.ok).toBe(true);
+          expect(data.count).toBe(ordersExcludingAnyWorkerpool.length);
+          expect(data.orders).toBeDefined();
+          expect(Array.isArray(data.orders)).toBe(true);
+          expect(data.orders.length).toBe(ordersExcludingAnyWorkerpool.length);
+          data.orders.forEach((e) =>
+            expect(e.order.workerpool).toBe(allowedWorkerpool),
+          );
         });
         test('GET /requestorders (requester filter)', async () => {
           const { data, status } = await request
