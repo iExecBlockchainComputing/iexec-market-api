@@ -8601,7 +8601,7 @@ describe('API', () => {
           const ordersExcludingAnyApp = appSpecificOrders.filter(
             (order) => order.order.apprestrict !== utils.NULL_ADDRESS,
           );
-
+          expect(ordersExcludingAnyApp.length > 0).toBe(true);
           expect(status).toBe(OK_STATUS);
           expect(data.ok).toBe(true);
           expect(data.count).toBe(ordersExcludingAnyApp.length);
@@ -8624,6 +8624,7 @@ describe('API', () => {
           const ordersExcludingAnyDataset = datasetSpecificOrders.filter(
             (order) => order.order.dataset !== utils.NULL_ADDRESS,
           );
+          expect(datasetSpecificOrders.length > 0).toBe(true);
           expect(status).toBe(OK_STATUS);
           expect(data.ok).toBe(true);
           expect(data.count).toBe(ordersExcludingAnyDataset.length);
@@ -8649,6 +8650,7 @@ describe('API', () => {
           const ordersExcludingAnyWorkerpool = workerpoolAllowedOrders.filter(
             (order) => order.order.workerpool !== utils.NULL_ADDRESS,
           );
+          expect(workerpoolAllowedOrders.length > 0).toBe(true);
           expect(status).toBe(OK_STATUS);
           expect(data.ok).toBe(true);
           expect(data.count).toBe(ordersExcludingAnyWorkerpool.length);
