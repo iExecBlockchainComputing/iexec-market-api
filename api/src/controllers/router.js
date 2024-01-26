@@ -545,9 +545,7 @@ router.get('/requestorders', bodyParser(), async (ctx) => {
   const {
     chainId,
     app,
-    isAppStrict,
     dataset,
-    isDatasetStrict,
     requester,
     beneficiary,
     category,
@@ -563,9 +561,7 @@ router.get('/requestorders', bodyParser(), async (ctx) => {
   } = await object({
     chainId: chainIdSchema().required(),
     app: addressOrAnySchema(),
-    isAppStrict: booleanSchema(),
     dataset: addressOrAnySchema(),
-    isDatasetStrict: booleanSchema(),
     requester: addressOrAnySchema(),
     beneficiary: addressOrAnySchema(),
     category: positiveIntSchema(),
@@ -582,9 +578,7 @@ router.get('/requestorders', bodyParser(), async (ctx) => {
   const { orders, count, nextPage } = await getRequestorders({
     chainId,
     app,
-    isAppStrict,
     dataset,
-    isDatasetStrict,
     requester,
     beneficiary,
     category,

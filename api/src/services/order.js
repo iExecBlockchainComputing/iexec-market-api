@@ -871,9 +871,7 @@ const getRequestorder = async ({
 const getRequestorders = async ({
   chainId = throwIfMissing(),
   app,
-  isAppStrict,
   dataset,
-  isDatasetStrict,
   requester,
   beneficiary,
   category,
@@ -892,8 +890,8 @@ const getRequestorders = async ({
     const request = {
       status: STATUS_MAP.OPEN,
       ...(category !== undefined && { 'order.category': category }),
-      ...(app && requiredAppOrAnyClause(app, isAppStrict)),
-      ...(dataset && requiredDatasetOrAnyClause(dataset, isDatasetStrict)),
+      ...(app && requiredAppOrAnyClause(app, true)),
+      ...(dataset && requiredDatasetOrAnyClause(dataset, true)),
       ...(requester && requiredRequesterOrAnyClause(requester)),
       ...(beneficiary && requiredBeneficiaryOrAnyClause(beneficiary)),
       ...getAddressOrAnyRestrictClause('workerpool')(

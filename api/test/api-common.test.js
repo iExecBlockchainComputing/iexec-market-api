@@ -8266,42 +8266,6 @@ describe('API', () => {
             });
         });
 
-        test('GET /requestorders (invalid isAppStrict): should return validation error for invalid isAppStrict value', async () => {
-          const { data, status } = await request
-            .get(
-              buildQuery('/requestorders', {
-                chainId, // *
-                isAppStrict: 'abc',
-              }),
-            )
-            .then(parseResult);
-          expect(status).toBe(VALIDATION_ERROR_STATUS);
-          expect(data.ok).toBe(false);
-          expect(data.error).toBe(
-            'isAppStrict must be a `boolean` type, but the final value was: `"abc"`.',
-          );
-          expect(data.count).toBeUndefined();
-          expect(data.orders).toBeUndefined();
-        });
-
-        test('GET /requestorders (invalid isDatasetStrict): should return validation error for invalid isWorkerpoolStrict value', async () => {
-          const { data, status } = await request
-            .get(
-              buildQuery('/requestorders', {
-                chainId, // *
-                isDatasetStrict: 'abc',
-              }),
-            )
-            .then(parseResult);
-          expect(status).toBe(VALIDATION_ERROR_STATUS);
-          expect(data.ok).toBe(false);
-          expect(data.error).toBe(
-            'isDatasetStrict must be a `boolean` type, but the final value was: `"abc"`.',
-          );
-          expect(data.count).toBeUndefined();
-          expect(data.orders).toBeUndefined();
-        });
-
         test('GET /requestorders (invalid isWorkerpoolStrict): should return validation error for invalid isRequesterStrict value', async () => {
           const { data, status } = await request
             .get(
@@ -8625,63 +8589,6 @@ describe('API', () => {
           expect(Array.isArray(result.data.orders)).toBe(true);
           expect(result.data.orders.length).toBe(20);
           expect(result.data.nextPage).toBeDefined();
-        });
-
-        test('GET /requestorders (app filter & isAppStrict): should exclude orders with "any" app authorized', async () => {
-          const { data, status } = await request
-            .get(
-              buildQuery('/requestorders', {
-                chainId, // *
-                app: appAddress,
-                isAppStrict: true,
-              }),
-            )
-            .then(parseResult);
-
-          const ordersExcludingAnyApp = appSpecificOrders.filter(
-            (order) => order.order.apprestrict !== utils.NULL_ADDRESS,
-          );
-          expect(appSpecificOrders.length).toBeGreaterThan(
-            ordersExcludingAnyApp.length,
-          ); // ensure orders will be filtered
-          expect(ordersExcludingAnyApp.length).toBeGreaterThan(0); // ensure the expected result is not empty
-
-          expect(status).toBe(OK_STATUS);
-          expect(data.ok).toBe(true);
-          expect(data.count).toBe(ordersExcludingAnyApp.length);
-          expect(data.orders).toBeDefined();
-          expect(Array.isArray(data.orders)).toBe(true);
-          expect(data.orders.length).toBe(ordersExcludingAnyApp.length);
-          data.orders.forEach((e) => expect(e.order.app).toBe(appAddress));
-        });
-
-        test('GET /requestorders (dataset filter & isDatasetStrict): should exclude orders with "any" dataset authorized', async () => {
-          const { data, status } = await request
-            .get(
-              buildQuery('/requestorders', {
-                chainId, // *
-                dataset: datasetAddress,
-                isDatasetStrict: true,
-              }),
-            )
-            .then(parseResult);
-          const ordersExcludingAnyDataset = datasetSpecificOrders.filter(
-            (order) => order.order.dataset !== utils.NULL_ADDRESS,
-          );
-          expect(datasetSpecificOrders.length).toBeGreaterThan(
-            ordersExcludingAnyDataset.length,
-          ); // ensure orders will be filtered
-          expect(ordersExcludingAnyDataset.length).toBeGreaterThan(0); // ensure the expected result is not empty
-
-          expect(status).toBe(OK_STATUS);
-          expect(data.ok).toBe(true);
-          expect(data.count).toBe(ordersExcludingAnyDataset.length);
-          expect(data.orders).toBeDefined();
-          expect(Array.isArray(data.orders)).toBe(true);
-          expect(data.orders.length).toBe(ordersExcludingAnyDataset.length);
-          data.orders.forEach((e) =>
-            expect(e.order.dataset).toBe(datasetAddress),
-          );
         });
 
         test('GET /requestorders (workerpool filter & isWorkerpoolStrict): should exclude orders with "any" workerpool authorized', async () => {
