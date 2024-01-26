@@ -4683,6 +4683,10 @@ describe('API', () => {
           const ordersExcludingAnyDataset = datasetAllowedOrders.filter(
             (order) => order.order.datasetrestrict !== utils.NULL_ADDRESS,
           );
+          expect(datasetAllowedOrders.length).toBeGreaterThan(
+            ordersExcludingAnyDataset.length,
+          ); // ensure orders will be filtered
+          expect(ordersExcludingAnyDataset.length).toBeGreaterThan(0); // ensure the expected result is not empty
 
           expect(status).toBe(OK_STATUS);
           expect(data.ok).toBe(true);
@@ -4710,6 +4714,10 @@ describe('API', () => {
           const ordersExcludingAnyWorkerpool = workerpoolAllowedOrders.filter(
             (order) => order.order.workerpoolrestrict !== utils.NULL_ADDRESS,
           );
+          expect(workerpoolAllowedOrders.length).toBeGreaterThan(
+            ordersExcludingAnyWorkerpool.length,
+          ); // ensure orders will be filtered
+          expect(ordersExcludingAnyWorkerpool.length).toBeGreaterThan(0); // ensure the expected result is not empty
 
           expect(status).toBe(OK_STATUS);
           expect(data.ok).toBe(true);
@@ -4737,6 +4745,10 @@ describe('API', () => {
           const ordersExcludingAnyRequester = requesterAllowedOrders.filter(
             (order) => order.order.requesterrestrict !== utils.NULL_ADDRESS,
           );
+          expect(requesterAllowedOrders.length).toBeGreaterThan(
+            ordersExcludingAnyRequester.length,
+          ); // ensure orders will be filtered
+          expect(ordersExcludingAnyRequester.length).toBeGreaterThan(0); // ensure the expected result is not empty
 
           expect(status).toBe(OK_STATUS);
           expect(data.ok).toBe(true);
@@ -5878,6 +5890,10 @@ describe('API', () => {
           const ordersExcludingAnyApp = appAllowedOrders.filter(
             (order) => order.order.apprestrict !== utils.NULL_ADDRESS,
           );
+          expect(appAllowedOrders.length).toBeGreaterThan(
+            ordersExcludingAnyApp.length,
+          ); // ensure orders will be filtered
+          expect(ordersExcludingAnyApp.length).toBeGreaterThan(0); // ensure the expected result is not empty
 
           expect(status).toBe(OK_STATUS);
           expect(data.ok).toBe(true);
@@ -5905,6 +5921,11 @@ describe('API', () => {
           const ordersExcludingAnyWorkerpool = workerpoolAllowedOrders.filter(
             (order) => order.order.workerpoolrestrict !== utils.NULL_ADDRESS,
           );
+          expect(workerpoolAllowedOrders.length).toBeGreaterThan(
+            ordersExcludingAnyWorkerpool.length,
+          ); // ensure orders will be filtered
+          expect(ordersExcludingAnyWorkerpool.length).toBeGreaterThan(0); // ensure the expected result is not empty
+
           expect(status).toBe(OK_STATUS);
           expect(data.ok).toBe(true);
           expect(data.count).toBe(ordersExcludingAnyWorkerpool.length);
@@ -5931,6 +5952,11 @@ describe('API', () => {
           const ordersExcludingAnyRequester = requesterAllowedOrders.filter(
             (order) => order.order.requesterrestrict !== utils.NULL_ADDRESS,
           );
+          expect(requesterAllowedOrders.length).toBeGreaterThan(
+            ordersExcludingAnyRequester.length,
+          ); // ensure orders will be filtered
+          expect(ordersExcludingAnyRequester.length).toBeGreaterThan(0); // ensure the expected result is not empty
+
           expect(status).toBe(OK_STATUS);
           expect(data.ok).toBe(true);
           expect(data.count).toBe(ordersExcludingAnyRequester.length);
@@ -7207,6 +7233,10 @@ describe('API', () => {
           const ordersExcludingAnyApp = appAllowedOrders.filter(
             (order) => order.order.apprestrict !== utils.NULL_ADDRESS,
           );
+          expect(appAllowedOrders.length).toBeGreaterThan(
+            ordersExcludingAnyApp.length,
+          ); // ensure orders will be filtered
+          expect(ordersExcludingAnyApp.length).toBeGreaterThan(0); // ensure the expected result is not empty
 
           expect(status).toBe(OK_STATUS);
           expect(data.ok).toBe(true);
@@ -7233,6 +7263,11 @@ describe('API', () => {
           const ordersExcludingAnyDataset = datasetAllowedOrders.filter(
             (order) => order.order.datasetrestrict !== utils.NULL_ADDRESS,
           );
+          expect(datasetAllowedOrders.length).toBeGreaterThan(
+            ordersExcludingAnyDataset.length,
+          ); // ensure orders will be filtered
+          expect(ordersExcludingAnyDataset.length).toBeGreaterThan(0); // ensure the expected result is not empty
+
           expect(status).toBe(OK_STATUS);
           expect(data.ok).toBe(true);
           expect(data.count).toBe(ordersExcludingAnyDataset.length);
@@ -7258,6 +7293,11 @@ describe('API', () => {
           const ordersExcludingAnyRequester = requesterAllowedOrders.filter(
             (order) => order.order.requesterrestrict !== utils.NULL_ADDRESS,
           );
+          expect(requesterAllowedOrders.length).toBeGreaterThan(
+            ordersExcludingAnyRequester.length,
+          ); // ensure orders will be filtered
+          expect(ordersExcludingAnyRequester.length).toBeGreaterThan(0); // ensure the expected result is not empty
+
           expect(status).toBe(OK_STATUS);
           expect(data.ok).toBe(true);
           expect(data.count).toBe(ordersExcludingAnyRequester.length);
@@ -8601,7 +8641,11 @@ describe('API', () => {
           const ordersExcludingAnyApp = appSpecificOrders.filter(
             (order) => order.order.apprestrict !== utils.NULL_ADDRESS,
           );
-          expect(ordersExcludingAnyApp.length > 0).toBe(true);
+          expect(appSpecificOrders.length).toBeGreaterThan(
+            ordersExcludingAnyApp.length,
+          ); // ensure orders will be filtered
+          expect(ordersExcludingAnyApp.length).toBeGreaterThan(0); // ensure the expected result is not empty
+
           expect(status).toBe(OK_STATUS);
           expect(data.ok).toBe(true);
           expect(data.count).toBe(ordersExcludingAnyApp.length);
@@ -8624,7 +8668,11 @@ describe('API', () => {
           const ordersExcludingAnyDataset = datasetSpecificOrders.filter(
             (order) => order.order.dataset !== utils.NULL_ADDRESS,
           );
-          expect(datasetSpecificOrders.length > 0).toBe(true);
+          expect(datasetSpecificOrders.length).toBeGreaterThan(
+            ordersExcludingAnyDataset.length,
+          ); // ensure orders will be filtered
+          expect(ordersExcludingAnyDataset.length).toBeGreaterThan(0); // ensure the expected result is not empty
+
           expect(status).toBe(OK_STATUS);
           expect(data.ok).toBe(true);
           expect(data.count).toBe(ordersExcludingAnyDataset.length);
@@ -8650,7 +8698,11 @@ describe('API', () => {
           const ordersExcludingAnyWorkerpool = workerpoolAllowedOrders.filter(
             (order) => order.order.workerpool !== utils.NULL_ADDRESS,
           );
-          expect(workerpoolAllowedOrders.length > 0).toBe(true);
+          expect(workerpoolAllowedOrders.length).toBeGreaterThan(
+            ordersExcludingAnyWorkerpool.length,
+          ); // ensure orders will be filtered
+          expect(ordersExcludingAnyWorkerpool.length).toBeGreaterThan(0); // ensure the expected result is not empty
+
           expect(status).toBe(OK_STATUS);
           expect(data.ok).toBe(true);
           expect(data.count).toBe(ordersExcludingAnyWorkerpool.length);
