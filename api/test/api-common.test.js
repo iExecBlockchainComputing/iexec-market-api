@@ -5266,6 +5266,7 @@ describe('API', () => {
           const { data, status } = await request
             .get(
               buildQuery('/datasetorders', {
+                chainId, // *
                 dataset: datasetAddress, // *
                 isAppStrict: 'abc',
               }),
@@ -5284,6 +5285,7 @@ describe('API', () => {
           const { data, status } = await request
             .get(
               buildQuery('/datasetorders', {
+                chainId, // *
                 dataset: datasetAddress, // *
                 isWorkerpoolStrict: 'abc',
               }),
@@ -5302,6 +5304,7 @@ describe('API', () => {
           const { data, status } = await request
             .get(
               buildQuery('/datasetorders', {
+                chainId, // *
                 dataset: datasetAddress, // *
                 isRequesterStrict: 'abc',
               }),
