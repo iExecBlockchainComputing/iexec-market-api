@@ -21,16 +21,16 @@ steps:
       - npm run ci-test-native
 
 services:
-  chain-token:
+  - name: chain-token
     image: iexechub/poco-chaintest:5.3.0-token-parity
     pull: true
-  chain-native:
+  - name: chain-native
     image: iexechub/poco-chaintest:5.3.0-native-parity
     pull: true
-  mongo:
+  - name: mongo
     image: mongo:latest
     pull: true
-  redis:
+  - name: redis
     image: redis:alpine
     pull: true
 
@@ -58,16 +58,16 @@ steps:
       - npm run ci-test-native
 
 services:
-  chain-token:
+  - name: chain-token
     image: iexechub/poco-chaintest:5.3.0-token-parity
     pull: true
-  chain-native:
+  - name: chain-native
     image: iexechub/poco-chaintest:5.3.0-native-parity
     pull: true
-  mongo:
+  - name: mongo
     image: mongo:latest
     pull: true
-  redis:
+  - name: redis
     image: redis:alpine
     pull: true
 
