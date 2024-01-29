@@ -9,7 +9,12 @@ trigger:
       - pull_request
 
 steps:
-  - name: api-test
+  - name: wait services initialization
+    image: bash
+    commands:
+      - sleep 30
+
+  - name: api test
     image: node:16.19.0-alpine
     commands:
       - apk update && apk upgrade
@@ -46,7 +51,12 @@ trigger:
       - pull_request
 
 steps:
-  - name: watcher-test
+  - name: wait services initialization
+    image: bash
+    commands:
+      - sleep 30
+
+  - name: watcher test
     image: node:16.19.0-alpine
     commands:
       - apk update && apk upgrade
