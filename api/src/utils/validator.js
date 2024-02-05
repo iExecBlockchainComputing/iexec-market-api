@@ -1,4 +1,4 @@
-const { string, number, object } = require('yup');
+const { string, number, object, boolean } = require('yup');
 const { getAddress } = require('ethers').utils;
 const { supportedChainsIds } = require('../config');
 const { ANY } = require('./keywords');
@@ -9,6 +9,8 @@ const chainIdSchema = () =>
 const bytes32Regex = /^(0x)([0-9a-f]{2}){32}$/;
 
 const integerSchema = () => number().integer();
+
+const booleanSchema = () => boolean();
 
 const positiveIntSchema = () =>
   integerSchema()
@@ -187,6 +189,7 @@ module.exports = {
   paramsSchema,
   chainIdSchema,
   positiveIntSchema,
+  booleanSchema,
   positiveStrictIntSchema,
   timestampSchema,
   object,

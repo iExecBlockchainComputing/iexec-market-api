@@ -104,14 +104,15 @@ const requiredWorkerpoolOrAnyClause =
 const requiredRequesterOrAnyClause = getRequiredAddressOrAnyClause('requester');
 const requiredBeneficiaryOrAnyClause =
   getRequiredAddressOrAnyClause('beneficiary');
-
-const getAddressOrAnyRestrictClause = (key) => (value) => {
+const getAddressOrAnyRestrictClause = (key) => (value, isStrict) => {
   const restrictKey = `order.${key}`;
-  return (
-    !isAny(value) && {
-      [restrictKey]: value ? { $in: [NULL_ADDRESS, value] } : NULL_ADDRESS,
-    }
-  );
+  if (isAny(value)) {
+    return null;
+  }
+  if (value) {
+    return { [restrictKey]: isStrict ? value : { $in: [NULL_ADDRESS, value] } };
+  }
+  return { [restrictKey]: NULL_ADDRESS };
 };
 const apprestrictOrAnyClause = getAddressOrAnyRestrictClause('apprestrict');
 const datasetrestrictOrAnyClause =
@@ -621,8 +622,11 @@ const getApporders = async ({
   chainId = throwIfMissing(),
   app,
   dataset,
+  isDatasetStrict = false,
   workerpool,
+  isWorkerpoolStrict = false,
   requester,
+  isRequesterStrict = false,
   appOwner,
   minTag,
   maxTag,
@@ -637,9 +641,9 @@ const getApporders = async ({
       status: STATUS_MAP.OPEN,
       ...(app && requiredAppOrAnyClause(app)),
       ...(appOwner && { signer: appOwner }),
-      ...datasetrestrictOrAnyClause(dataset),
-      ...workerpoolrestrictOrAnyClause(workerpool),
-      ...requesterrestrictOrAnyClause(requester),
+      ...datasetrestrictOrAnyClause(dataset, isDatasetStrict),
+      ...workerpoolrestrictOrAnyClause(workerpool, isWorkerpoolStrict),
+      ...requesterrestrictOrAnyClause(requester, isRequesterStrict),
       ...minVolumeClause(minVolume),
       ...tagClause({ minTag, maxTag }),
     };
@@ -700,8 +704,11 @@ const getDatasetorders = async ({
   chainId = throwIfMissing(),
   dataset,
   app,
+  isAppStrict = false,
   workerpool,
+  isWorkerpoolStrict = false,
   requester,
+  isRequesterStrict = false,
   datasetOwner,
   minTag,
   maxTag,
@@ -716,9 +723,9 @@ const getDatasetorders = async ({
       status: STATUS_MAP.OPEN,
       ...(dataset && requiredDatasetOrAnyClause(dataset)),
       ...(datasetOwner && { signer: datasetOwner }),
-      ...apprestrictOrAnyClause(app),
-      ...workerpoolrestrictOrAnyClause(workerpool),
-      ...requesterrestrictOrAnyClause(requester),
+      ...apprestrictOrAnyClause(app, isAppStrict),
+      ...workerpoolrestrictOrAnyClause(workerpool, isWorkerpoolStrict),
+      ...requesterrestrictOrAnyClause(requester, isRequesterStrict),
       ...minVolumeClause(minVolume),
       ...tagClause({ minTag, maxTag }),
     };
@@ -780,8 +787,11 @@ const getWorkerpoolorders = async ({
   category,
   workerpool,
   app,
+  isAppStrict,
   dataset,
+  isDatasetStrict,
   requester,
+  isRequesterStrict,
   workerpoolOwner,
   minTag,
   maxTag,
@@ -798,9 +808,9 @@ const getWorkerpoolorders = async ({
       ...(category !== undefined && { 'order.category': category }),
       ...(workerpool && requiredWorkerpoolOrAnyClause(workerpool)),
       ...(workerpoolOwner && { signer: workerpoolOwner }),
-      ...apprestrictOrAnyClause(app),
-      ...datasetrestrictOrAnyClause(dataset),
-      ...requesterrestrictOrAnyClause(requester),
+      ...apprestrictOrAnyClause(app, isAppStrict),
+      ...datasetrestrictOrAnyClause(dataset, isDatasetStrict),
+      ...requesterrestrictOrAnyClause(requester, isRequesterStrict),
       ...minTrustClause(minTrust),
       ...minVolumeClause(minVolume),
       ...tagClause({ minTag, maxTag }),
@@ -870,6 +880,7 @@ const getRequestorders = async ({
   maxTrust,
   minVolume,
   workerpool,
+  isWorkerpoolStrict,
   page,
   pageIndex,
   pageSize,
@@ -879,11 +890,14 @@ const getRequestorders = async ({
     const request = {
       status: STATUS_MAP.OPEN,
       ...(category !== undefined && { 'order.category': category }),
-      ...(app && requiredAppOrAnyClause(app)),
-      ...(dataset && requiredDatasetOrAnyClause(dataset)),
+      ...(app && requiredAppOrAnyClause(app, true)),
+      ...(dataset && requiredDatasetOrAnyClause(dataset, true)),
       ...(requester && requiredRequesterOrAnyClause(requester)),
       ...(beneficiary && requiredBeneficiaryOrAnyClause(beneficiary)),
-      ...getAddressOrAnyRestrictClause('workerpool')(workerpool),
+      ...getAddressOrAnyRestrictClause('workerpool')(
+        workerpool,
+        isWorkerpoolStrict,
+      ),
       ...maxTrustClause(maxTrust),
       ...minVolumeClause(minVolume),
       ...tagClause({ minTag, maxTag }),
