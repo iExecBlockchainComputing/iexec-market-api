@@ -762,15 +762,15 @@ paths:
             type: string
             example: 'any'
         - name: workerpool
-            in: query
-            description: workerpoolrestrict address to include in results
-            schema:
-              type: string
+          in: query
+          description: workerpoolrestrict address to include in results
+          schema:
+            type: string
         - name: isWorkerpoolStrict
-            in: query
-            description: exclude orders with permissions allowing "any" workerpool (default false, ignored if `workerpool` is not specified)
-            schema:
-              type: boolean
+          in: query
+          description: exclude orders with permissions allowing "any" workerpool (default false, ignored if `workerpool` is not specified)
+          schema:
+            type: boolean
         - name: beneficiary
           in: query
           description: beneficiary address to filter results on (accepts address or "any")
