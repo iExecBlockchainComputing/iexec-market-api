@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v6.4.1
+
+- fix openapi for `GET /requestorders`
+
 ## v6.4.0
 
 - add new filters to retrieve orders on strict or non-strict assets authorization, excluding or including orders with "any" asset authorized for GET `/apporders`, `/datasetorders`, `/workerpoolorders`, `/requestorders`
