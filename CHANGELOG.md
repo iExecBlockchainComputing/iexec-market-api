@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## Next
+## v6.4.1
 
 - fix openapi for `GET /requestorders`
 
