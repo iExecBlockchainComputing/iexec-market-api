@@ -1,9 +1,10 @@
+const supertest = require('supertest');
 const ethers = require('ethers');
 const { utils, IExec } = require('iexec');
 const socket = require('../src/loaders/socket');
 // jest spies
 const socketEmitSpy = jest.spyOn(socket, 'emit');
-const { start, stop } = require('../src/app');
+const { start, stop, server } = require('../src/app');
 const { replayPastOnly } = require('../src/controllers/replayer');
 const { chain } = require('../src/config');
 const { sleep } = require('../src/utils/utils');
@@ -21,6 +22,7 @@ const {
   getMatchableRequestorder,
   transferResourceERC721,
   timestampRegex,
+  parseResult,
   bytes32Regex,
   APPORDERS_COLLECTION,
   DATASETORDERS_COLLECTION,
@@ -36,6 +38,8 @@ const { init: ethereumInit } = require('../src/loaders/ethereum');
 jest.setTimeout(120000);
 
 const PROCESS_TRIGGERED_EVENT_TIMEOUT = 1000;
+const NOT_FOUND_ERROR_STATUS = 404;
+const OK_STATUS = 200;
 
 let chainId;
 const chainUrl = chain.httpHost;
@@ -46,6 +50,8 @@ const rpc = new ethers.providers.JsonRpcProvider(chainUrl);
 const wallet = new ethers.Wallet(PRIVATE_KEY, rpc);
 
 let iexec;
+let serverHttp;
+let request;
 const signer = utils.getSignerFromPrivateKey(chainUrl, PRIVATE_KEY);
 
 beforeAll(async () => {
@@ -67,6 +73,28 @@ beforeAll(async () => {
     await iexec.wallet.getAddress(),
   );
   await iexec.account.withdraw(stake);
+  serverHttp = server.listen();
+  request = supertest(serverHttp);
+});
+
+afterAll(async () => {
+  serverHttp.close();
+});
+
+describe('API', () => {
+  describe('Common', () => {
+    test('GET /version', async () => {
+      const { data, status } = await request.get('/version').then(parseResult);
+      expect(status).toBe(OK_STATUS);
+      expect(data.ok).toBe(true);
+      expect(data.version).toBeDefined();
+    });
+    test('GET /foo (not found)', async () => {
+      const res = await request.get('/foo');
+      expect(res.status).toBe(NOT_FOUND_ERROR_STATUS);
+      expect(res.text).toBe("Not Found");
+    });
+  });
 });
 
 describe('Watcher', () => {

@@ -38,6 +38,24 @@ class Web3ProviderError extends InternalError {
   }
 }
 
+class OperationalError extends Error {
+  constructor(message) {
+    super(message);
+    this.name = this.constructor.name;
+  }
+}
+
+class ObjectNotFoundError extends OperationalError {
+  constructor(message, originalError) {
+    super(message);
+    this.name = this.constructor.name;
+    this.originalError = originalError;
+    if (originalError && typeof originalError === 'object') {
+      Object.assign(this, getPropsToCopy(originalError));
+    }
+  }
+}
+
 const wrapEthCall = async (promise) => {
   try {
     return await promise;
@@ -75,6 +93,7 @@ const errorHandler = async (error, context) => {
 };
 
 module.exports = {
+  ObjectNotFoundError,
   InternalError,
   Web3ProviderError,
   wrapEthCall,

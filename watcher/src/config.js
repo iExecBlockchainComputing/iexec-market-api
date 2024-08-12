@@ -13,6 +13,7 @@ const { getLogger } = require('./utils/logger');
 const logger = getLogger('config');
 
 const {
+  PORT,
   MONGO_HOST,
   REDIS_HOST,
   FLAVOUR,
@@ -113,11 +114,14 @@ if (!chain.httpHost) {
   throw Error('missing ethereum RPC endpoint ETH_RPC_HOST');
 }
 
+const serverPort = parseInt(PORT, 10) || 3000;
+
 logger.log('chain', chain);
 logger.log('flavour', flavour);
 logger.log('mongo', mongo);
 logger.log('redis', redis);
 logger.log('runtime', runtime);
+logger.log('serverPort', serverPort);
 
 module.exports = {
   abi,
@@ -126,4 +130,5 @@ module.exports = {
   mongo,
   redis,
   runtime,
+  serverPort,
 };

@@ -1,4 +1,3 @@
-const http = require('http');
 const socketIo = require('socket.io');
 const { createClient } = require('redis');
 const { createAdapter } = require('@socket.io/redis-adapter');
@@ -8,8 +7,6 @@ const { throwIfMissing, errorHandler } = require('../utils/error');
 
 const logger = getLogger('socket');
 
-const server = http.createServer();
-
 let ws = null;
 
 const getWs = () => {
@@ -17,7 +14,7 @@ const getWs = () => {
   return ws;
 };
 
-const init = async () => {
+const init = async (server = throwIfMissing()) => {
   try {
     logger.log('init socket');
     const redisConfig = config.redis;
@@ -31,7 +28,7 @@ const init = async () => {
     subClient.on('end', () => logger.log('subClient end'));
     await Promise.all[(pubClient.connect(), subClient.connect())];
     const redisAdapter = createAdapter(pubClient, subClient);
-    ws = socketIo(server);
+    ws = socketIo(server, { path: '/ws', cors: { origin: '*' } });
     ws.adapter(redisAdapter);
     logger.log('socket initialized');
   } catch (error) {

@@ -338,6 +338,8 @@ const setCheckpointToLastBlock = async (dbName) => {
   );
 };
 
+const parseResult = (res) => ({ ...res, data: JSON.parse(res.text) });
+
 module.exports = {
   addApporders,
   addDatasetorders,
@@ -354,6 +356,7 @@ module.exports = {
   getMatchableRequestorder,
   transferResourceERC721,
   timestampRegex,
+  parseResult,
   bytes32Regex,
   addressRegex,
   APPORDERS_COLLECTION,

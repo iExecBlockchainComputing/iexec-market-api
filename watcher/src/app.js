@@ -1,3 +1,7 @@
+const http = require('http');
+const Koa = require('koa');
+const corsMiddleware = require('kcors')();
+const { router } = require('./controllers/router');
 const config = require('./config');
 const ethereum = require('./loaders/ethereum');
 const socket = require('./loaders/socket');
@@ -29,7 +33,15 @@ if (!wsHost) throw Error('missing wsHost');
 if (!httpHost) throw Error('missing httpHost');
 if (!hubAddress) throw Error('missing hubAddress');
 
-socket.init();
+const app = new Koa();
+const server = http.createServer(app.callback());
+
+socket.init(server);
+
+app
+  .use(corsMiddleware)
+  .use(router.routes())
+  .use(router.allowedMethods());
 
 const start = async ({ replayer = true, syncWatcher = true } = {}) => {
   try {
@@ -106,4 +118,5 @@ const stop = async () => {
 module.exports = {
   stop,
   start,
+  server,
 };
