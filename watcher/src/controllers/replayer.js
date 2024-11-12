@@ -1,16 +1,16 @@
-const config = require('../config');
-const { getAgenda } = require('../loaders/agenda');
-const ethereum = require('../loaders/ethereum');
-const { replayPastEvents } = require('./ethEventsWatcher');
-const {
+import * as config from '../config.js';
+import { getAgenda } from '../loaders/agenda.js';
+import * as ethereum from '../loaders/ethereum.js';
+import { replayPastEvents } from './ethEventsWatcher.js';
+import {
   getCheckpointBlock,
   setCheckpointBlock,
   getLastBlock,
-} = require('../services/counter');
-const { getLogger } = require('../utils/logger');
-const { getBlockNumber } = require('../utils/eth-utils');
-const { errorHandler } = require('../utils/error');
-const { traceAll } = require('../utils/trace');
+} from '../services/counter.js';
+import { getLogger } from '../utils/logger.js';
+import { getBlockNumber } from '../utils/eth-utils.js';
+import { errorHandler } from '../utils/error.js';
+import { traceAll } from '../utils/trace.js';
 
 const { chainId } = config.chain;
 const { replayInterval } = config.runtime;
@@ -19,7 +19,7 @@ const logger = getLogger('controllers:replayer');
 
 const EVENT_REPLAY_JOB = 'replay-past-events';
 
-const replayPastOnly = async ({
+const _replayPastOnly = async ({
   nbConfirmation = 10,
   handleIndexedBlock = setCheckpointBlock,
 } = {}) => {
@@ -66,7 +66,7 @@ const startReplayer = async () => {
     { lockLifetime: 10 * 60 * 1000 },
     async (job) => {
       try {
-        await replayPastOnly({
+        await _replayPastOnly({
           handleIndexedBlock: async (blockNumber) => {
             await setCheckpointBlock(blockNumber);
             // reset job lock after every iteration
@@ -90,8 +90,6 @@ const stopReplayer = async () => {
   await agenda.cancel({ name: EVENT_REPLAY_JOB });
 };
 
-module.exports = {
-  replayPastOnly: traceAll(replayPastOnly, { logger }),
-  startReplayer,
-  stopReplayer,
-};
+const replayPastOnly = traceAll(_replayPastOnly, { logger });
+
+export { replayPastOnly, startReplayer, stopReplayer };

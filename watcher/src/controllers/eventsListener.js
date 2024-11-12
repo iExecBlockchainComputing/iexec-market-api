@@ -1,11 +1,11 @@
-const { getLogger } = require('../utils/logger');
-const { emit } = require('../loaders/socket');
-const {
+import { getLogger } from '../utils/logger.js';
+import { emit } from '../loaders/socket.js';
+import {
   cleanApporderDependantOrders,
   cleanDatasetorderDependantOrders,
-} = require('../services/order');
-const { eventEmitter } = require('../loaders/eventEmitter');
-const { errorHandler } = require('../utils/error');
+} from '../services/order.js';
+import { eventEmitter } from '../loaders/eventEmitter.js';
+import { errorHandler } from '../utils/error.js';
 
 const logger = getLogger('controllers:eventsListener');
 

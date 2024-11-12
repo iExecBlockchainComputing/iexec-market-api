@@ -1,7 +1,7 @@
-const config = require('../config');
-const counterModel = require('../models/counterModel');
-const { getLogger } = require('../utils/logger');
-const { traceAll } = require('../utils/trace');
+import * as config from '../config.js';
+import * as counterModel from '../models/counterModel.js';
+import { getLogger } from '../utils/logger.js';
+import { traceAll } from '../utils/trace.js';
 
 const { chainId } = config.chain;
 
@@ -9,7 +9,7 @@ const logger = getLogger('services:counter');
 
 logger.log('instantiating service');
 
-const getNextBlockToProcess = async () => {
+const _getNextBlockToProcess = async () => {
   try {
     const CounterModel = await counterModel.getModel(chainId);
     const lastBlockCounter = await CounterModel.findOne({ name: 'lastBlock' });
@@ -21,7 +21,7 @@ const getNextBlockToProcess = async () => {
   }
 };
 
-const getLastBlock = async () => {
+const _getLastBlock = async () => {
   try {
     const CounterModel = await counterModel.getModel(chainId);
     const lastBlockCounter = await CounterModel.findOne({ name: 'lastBlock' });
@@ -33,7 +33,7 @@ const getLastBlock = async () => {
   }
 };
 
-const setLastBlock = async (blockNumber) => {
+const _setLastBlock = async (blockNumber) => {
   try {
     const CounterModel = await counterModel.getModel(chainId);
     const lastBlockCounter = await CounterModel.findOneAndUpdate(
@@ -48,7 +48,7 @@ const setLastBlock = async (blockNumber) => {
   }
 };
 
-const getCheckpointBlock = async () => {
+const _getCheckpointBlock = async () => {
   try {
     const CounterModel = await counterModel.getModel(chainId);
     const checkpointBlockCounter = await CounterModel.findOne({
@@ -62,7 +62,7 @@ const getCheckpointBlock = async () => {
   }
 };
 
-const setCheckpointBlock = async (blockNumber) => {
+const _setCheckpointBlock = async (blockNumber) => {
   try {
     const CounterModel = await counterModel.getModel(chainId);
     const checkpointBlockCounter = await CounterModel.findOneAndUpdate(
@@ -77,10 +77,16 @@ const setCheckpointBlock = async (blockNumber) => {
   }
 };
 
-module.exports = {
-  getNextBlockToProcess: traceAll(getNextBlockToProcess, { logger }),
-  getLastBlock: traceAll(getLastBlock, { logger }),
-  setLastBlock: traceAll(setLastBlock, { logger }),
-  getCheckpointBlock: traceAll(getCheckpointBlock, { logger }),
-  setCheckpointBlock: traceAll(setCheckpointBlock, { logger }),
+const getNextBlockToProcess = traceAll(_getNextBlockToProcess, { logger });
+const getLastBlock = traceAll(_getLastBlock, { logger });
+const setLastBlock = traceAll(_setLastBlock, { logger });
+const getCheckpointBlock = traceAll(_getCheckpointBlock, { logger });
+const setCheckpointBlock = traceAll(_setCheckpointBlock, { logger });
+
+export {
+  getNextBlockToProcess,
+  getLastBlock,
+  setLastBlock,
+  getCheckpointBlock,
+  setCheckpointBlock,
 };

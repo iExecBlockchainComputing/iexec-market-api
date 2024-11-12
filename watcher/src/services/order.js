@@ -1,7 +1,7 @@
-const BN = require('bn.js');
-const config = require('../config');
-const { eventEmitter } = require('../loaders/eventEmitter');
-const {
+import BN from 'bn.js';
+import * as config from '../config.js';
+import { eventEmitter } from '../loaders/eventEmitter.js';
+import {
   getProvider,
   getHub,
   getERlc,
@@ -11,22 +11,22 @@ const {
   getApp,
   getDataset,
   getWorkerpool,
-} = require('../loaders/ethereum');
-const apporderModel = require('../models/apporderModel');
-const datasetorderModel = require('../models/datasetorderModel');
-const workerpoolorderModel = require('../models/workerpoolorderModel');
-const requestorderModel = require('../models/requestorderModel');
-const { getLogger } = require('../utils/logger');
-const { throwIfMissing } = require('../utils/error');
-const { STATUS_MAP, TAG_MAP, tagToArray } = require('../utils/order-utils');
-const {
+} from '../loaders/ethereum.js';
+import * as apporderModel from '../models/apporderModel.js';
+import * as datasetorderModel from '../models/datasetorderModel.js';
+import * as workerpoolorderModel from '../models/workerpoolorderModel.js';
+import * as requestorderModel from '../models/requestorderModel.js';
+import { getLogger } from '../utils/logger.js';
+import { throwIfMissing } from '../utils/error.js';
+import { STATUS_MAP, TAG_MAP, tagToArray } from '../utils/order-utils.js';
+import {
   callAtBlock,
   cleanRPC,
   getBlockNumber,
   NULL_ADDRESS,
-} = require('../utils/eth-utils');
-const { tokenIdToAddress, KYC_MEMBER_ROLE } = require('../utils/iexec-utils');
-const { traceAll } = require('../utils/trace');
+} from '../utils/eth-utils.js';
+import { tokenIdToAddress, KYC_MEMBER_ROLE } from '../utils/iexec-utils.js';
+import { traceAll } from '../utils/trace.js';
 
 const { chainId } = config.chain;
 
@@ -40,16 +40,15 @@ const cleanApporders = async ({
 }) => {
   const ApporderModel = await apporderModel.getModel(chainId);
   const cleanedOrders = await Promise.all(
-    orders.map(async (e) => {
-      const updated = await ApporderModel.findOneAndUpdate(
+    orders.map((e) =>
+      ApporderModel.findOneAndUpdate(
         { orderHash: e.orderHash, status: STATUS_MAP.OPEN },
         {
           status: STATUS_MAP.DEAD,
         },
         { returnOriginal: false },
-      );
-      return updated;
-    }),
+      ),
+    ),
   );
   cleanedOrders
     .filter((e) => !!e)
@@ -66,16 +65,15 @@ const cleanDatasetorders = async ({
 }) => {
   const DatasetorderModel = await datasetorderModel.getModel(chainId);
   const cleanedOrders = await Promise.all(
-    orders.map(async (e) => {
-      const updated = await DatasetorderModel.findOneAndUpdate(
+    orders.map((e) =>
+      DatasetorderModel.findOneAndUpdate(
         { orderHash: e.orderHash, status: STATUS_MAP.OPEN },
         {
           status: STATUS_MAP.DEAD,
         },
         { returnOriginal: false },
-      );
-      return updated;
-    }),
+      ),
+    ),
   );
   cleanedOrders
     .filter((e) => !!e)
@@ -92,16 +90,15 @@ const cleanWorkerpoolorders = async ({
 }) => {
   const WorkerpoolorderModel = await workerpoolorderModel.getModel(chainId);
   const cleanedOrders = await Promise.all(
-    orders.map(async (e) => {
-      const updated = await WorkerpoolorderModel.findOneAndUpdate(
+    orders.map((e) =>
+      WorkerpoolorderModel.findOneAndUpdate(
         { orderHash: e.orderHash, status: STATUS_MAP.OPEN },
         {
           status: STATUS_MAP.DEAD,
         },
         { returnOriginal: false },
-      );
-      return updated;
-    }),
+      ),
+    ),
   );
   cleanedOrders
     .filter((e) => !!e)
@@ -118,16 +115,15 @@ const cleanRequestorders = async ({
 }) => {
   const RequestorderModel = await requestorderModel.getModel(chainId);
   const cleanedOrders = await Promise.all(
-    orders.map(async (e) => {
-      const updated = await RequestorderModel.findOneAndUpdate(
+    orders.map((e) =>
+      RequestorderModel.findOneAndUpdate(
         { orderHash: e.orderHash, status: STATUS_MAP.OPEN },
         {
           status: STATUS_MAP.DEAD,
         },
         { returnOriginal: false },
-      );
-      return updated;
-    }),
+      ),
+    ),
   );
   cleanedOrders
     .filter((e) => !!e)
@@ -162,10 +158,7 @@ const checkMatchableApporder = async ({ order = throwIfMissing() } = {}) => {
   }
   const bestAppPrice = new BN(bestApporder.order.appprice);
   const appPrice = new BN(order.appmaxprice);
-  if (appPrice.lt(bestAppPrice)) {
-    return false;
-  }
-  return true;
+  return !appPrice.lt(bestAppPrice);
 };
 
 const checkMatchableDatasetorder = async ({
@@ -192,13 +185,10 @@ const checkMatchableDatasetorder = async ({
   }
   const bestDatasetPrice = new BN(bestDatasetorder.order.datasetprice);
   const datasetPrice = new BN(order.datasetmaxprice);
-  if (datasetPrice.lt(bestDatasetPrice)) {
-    return false;
-  }
-  return true;
+  return !datasetPrice.lt(bestDatasetPrice);
 };
 
-const cleanApporderDependantOrders = async ({
+const _cleanApporderDependantOrders = async ({
   apporder = throwIfMissing(),
 } = {}) => {
   try {
@@ -296,7 +286,7 @@ const cleanApporderDependantOrders = async ({
   }
 };
 
-const cleanDatasetorderDependantOrders = async ({
+const _cleanDatasetorderDependantOrders = async ({
   datasetorder = throwIfMissing(),
 } = {}) => {
   try {
@@ -352,7 +342,7 @@ const cleanDatasetorderDependantOrders = async ({
   }
 };
 
-const cleanBalanceDependantOrders = async ({
+const _cleanBalanceDependantOrders = async ({
   address = throwIfMissing(),
   blockNumber,
 } = {}) => {
@@ -424,7 +414,7 @@ const cleanBalanceDependantOrders = async ({
   }
 };
 
-const cleanTransferredAppOrders = async ({
+const _cleanTransferredAppOrders = async ({
   address = throwIfMissing(),
   app = throwIfMissing(),
   blockNumber,
@@ -456,7 +446,7 @@ const cleanTransferredAppOrders = async ({
   }
 };
 
-const cleanTransferredDatasetOrders = async ({
+const _cleanTransferredDatasetOrders = async ({
   address = throwIfMissing(),
   dataset = throwIfMissing(),
   blockNumber,
@@ -487,7 +477,7 @@ const cleanTransferredDatasetOrders = async ({
   }
 };
 
-const cleanTransferredWorkerpoolOrders = async ({
+const _cleanTransferredWorkerpoolOrders = async ({
   address = throwIfMissing(),
   workerpool = throwIfMissing(),
   blockNumber,
@@ -519,7 +509,7 @@ const cleanTransferredWorkerpoolOrders = async ({
   }
 };
 
-const cleanRevokedUserOrders = async ({
+const _cleanRevokedUserOrders = async ({
   address = throwIfMissing(),
   role = throwIfMissing(),
   blockNumber,
@@ -612,8 +602,7 @@ const cleanRevokedUserOrders = async ({
             [address, i],
             blockNumberOverride,
           );
-          const resourceAddress = tokenIdToAddress(resourceId);
-          return resourceAddress;
+          return tokenIdToAddress(resourceId);
         } catch (err) {
           logger.warn(
             `failed to get app ${i} for owner ${address}${
@@ -633,34 +622,31 @@ const cleanRevokedUserOrders = async ({
     userAppDependantRequestorders,
   ] = await Promise.all([
     Promise.all(
-      deadApps.map(async (app) => {
-        const dependantOrders = await DatasetorderModel.find({
+      deadApps.map((app) =>
+        DatasetorderModel.find({
           'order.apprestrict': app,
           status: STATUS_MAP.OPEN,
           remaining: { $gt: 0 },
-        });
-        return dependantOrders;
-      }),
+        }),
+      ),
     ).then((res) => res.reduce((acc, curr) => [...acc, ...curr], [])),
     Promise.all(
-      deadApps.map(async (app) => {
-        const dependantOrders = await WorkerpoolorderModel.find({
+      deadApps.map((app) =>
+        WorkerpoolorderModel.find({
           'order.apprestrict': app,
           status: STATUS_MAP.OPEN,
           remaining: { $gt: 0 },
-        });
-        return dependantOrders;
-      }),
+        }),
+      ),
     ).then((res) => res.reduce((acc, curr) => [...acc, ...curr], [])),
     Promise.all(
-      deadApps.map(async (app) => {
-        const dependantOrders = await RequestorderModel.find({
+      deadApps.map((app) =>
+        RequestorderModel.find({
           'order.app': app,
           status: STATUS_MAP.OPEN,
           remaining: { $gt: 0 },
-        });
-        return dependantOrders;
-      }),
+        }),
+      ),
     ).then((res) => res.reduce((acc, curr) => [...acc, ...curr], [])),
   ]);
 
@@ -697,8 +683,7 @@ const cleanRevokedUserOrders = async ({
             [address, i],
             blockNumberOverride,
           );
-          const resourceAddress = tokenIdToAddress(resourceId);
-          return resourceAddress;
+          return tokenIdToAddress(resourceId);
         } catch (err) {
           logger.warn(
             `failed to get dataset ${i} for owner ${address}${
@@ -718,34 +703,31 @@ const cleanRevokedUserOrders = async ({
     userDatasetDependantRequestorders,
   ] = await Promise.all([
     Promise.all(
-      deadDatasets.map(async (dataset) => {
-        const dependantOrders = await ApporderModel.find({
+      deadDatasets.map((dataset) =>
+        ApporderModel.find({
           'order.datasetrestrict': dataset,
           status: STATUS_MAP.OPEN,
           remaining: { $gt: 0 },
-        });
-        return dependantOrders;
-      }),
+        }),
+      ),
     ).then((res) => res.reduce((acc, curr) => [...acc, ...curr], [])),
     Promise.all(
-      deadDatasets.map(async (dataset) => {
-        const dependantOrders = await WorkerpoolorderModel.find({
+      deadDatasets.map((dataset) =>
+        WorkerpoolorderModel.find({
           'order.datasetrestrict': dataset,
           status: STATUS_MAP.OPEN,
           remaining: { $gt: 0 },
-        });
-        return dependantOrders;
-      }),
+        }),
+      ),
     ).then((res) => res.reduce((acc, curr) => [...acc, ...curr], [])),
     Promise.all(
-      deadDatasets.map(async (dataset) => {
-        const dependantOrders = await RequestorderModel.find({
+      deadDatasets.map((dataset) =>
+        RequestorderModel.find({
           'order.dataset': dataset,
           status: STATUS_MAP.OPEN,
           remaining: { $gt: 0 },
-        });
-        return dependantOrders;
-      }),
+        }),
+      ),
     ).then((res) => res.reduce((acc, curr) => [...acc, ...curr], [])),
   ]);
 
@@ -782,8 +764,7 @@ const cleanRevokedUserOrders = async ({
             [address, i],
             blockNumberOverride,
           );
-          const resourceAddress = tokenIdToAddress(resourceId);
-          return resourceAddress;
+          return tokenIdToAddress(resourceId);
         } catch (err) {
           logger.warn(
             `failed to get workerpool ${i} for owner ${address}${
@@ -803,34 +784,31 @@ const cleanRevokedUserOrders = async ({
     userWorkerpoolDependantRequestorders,
   ] = await Promise.all([
     Promise.all(
-      deadWorkerpools.map(async (workerpool) => {
-        const dependantOrders = await ApporderModel.find({
+      deadWorkerpools.map((workerpool) =>
+        ApporderModel.find({
           'order.workerpoolrestrict': workerpool,
           status: STATUS_MAP.OPEN,
           remaining: { $gt: 0 },
-        });
-        return dependantOrders;
-      }),
+        }),
+      ),
     ).then((res) => res.reduce((acc, curr) => [...acc, ...curr], [])),
     Promise.all(
-      deadWorkerpools.map(async (workerpool) => {
-        const dependantOrders = await DatasetorderModel.find({
+      deadWorkerpools.map((workerpool) =>
+        DatasetorderModel.find({
           'order.workerpoolrestrict': workerpool,
           status: STATUS_MAP.OPEN,
           remaining: { $gt: 0 },
-        });
-        return dependantOrders;
-      }),
+        }),
+      ),
     ).then((res) => res.reduce((acc, curr) => [...acc, ...curr], [])),
     Promise.all(
-      deadWorkerpools.map(async (workerpool) => {
-        const dependantOrders = await RequestorderModel.find({
+      deadWorkerpools.map((workerpool) =>
+        RequestorderModel.find({
           'order.workerpool': workerpool,
           status: STATUS_MAP.OPEN,
           remaining: { $gt: 0 },
-        });
-        return dependantOrders;
-      }),
+        }),
+      ),
     ).then((res) => res.reduce((acc, curr) => [...acc, ...curr], [])),
   ]);
 
@@ -850,7 +828,7 @@ const cleanRevokedUserOrders = async ({
   ]);
 };
 
-const updateApporder = async ({
+const _updateApporder = async ({
   orderHash = throwIfMissing(),
   blockNumber,
 } = {}) => {
@@ -899,7 +877,7 @@ const updateApporder = async ({
   }
 };
 
-const updateDatasetorder = async ({
+const _updateDatasetorder = async ({
   orderHash = throwIfMissing(),
   blockNumber,
 } = {}) => {
@@ -948,7 +926,7 @@ const updateDatasetorder = async ({
   }
 };
 
-const updateWorkerpoolorder = async ({
+const _updateWorkerpoolorder = async ({
   orderHash = throwIfMissing(),
   blockNumber,
 } = {}) => {
@@ -997,7 +975,7 @@ const updateWorkerpoolorder = async ({
   }
 };
 
-const updateRequestorder = async ({
+const _updateRequestorder = async ({
   orderHash = throwIfMissing(),
   blockNumber,
 } = {}) => {
@@ -1046,7 +1024,7 @@ const updateRequestorder = async ({
   }
 };
 
-const cancelApporder = async ({ orderHash = throwIfMissing() } = {}) => {
+const _cancelApporder = async ({ orderHash = throwIfMissing() } = {}) => {
   try {
     const ApporderModel = await apporderModel.getModel(chainId);
     const published = await ApporderModel.findOneAndUpdate(
@@ -1069,7 +1047,7 @@ const cancelApporder = async ({ orderHash = throwIfMissing() } = {}) => {
   }
 };
 
-const cancelDatasetorder = async ({ orderHash = throwIfMissing() } = {}) => {
+const _cancelDatasetorder = async ({ orderHash = throwIfMissing() } = {}) => {
   try {
     const DatasetorderModel = await datasetorderModel.getModel(chainId);
     const published = await DatasetorderModel.findOneAndUpdate(
@@ -1092,7 +1070,9 @@ const cancelDatasetorder = async ({ orderHash = throwIfMissing() } = {}) => {
   }
 };
 
-const cancelWorkerpoolorder = async ({ orderHash = throwIfMissing() } = {}) => {
+const _cancelWorkerpoolorder = async ({
+  orderHash = throwIfMissing(),
+} = {}) => {
   try {
     const WorkerpoolorderModel = await workerpoolorderModel.getModel(chainId);
     const published = await WorkerpoolorderModel.findOneAndUpdate(
@@ -1115,7 +1095,7 @@ const cancelWorkerpoolorder = async ({ orderHash = throwIfMissing() } = {}) => {
   }
 };
 
-const cancelRequestorder = async ({ orderHash = throwIfMissing() } = {}) => {
+const _cancelRequestorder = async ({ orderHash = throwIfMissing() } = {}) => {
   try {
     const RequestorderModel = await requestorderModel.getModel(chainId);
     const published = await RequestorderModel.findOneAndUpdate(
@@ -1138,30 +1118,54 @@ const cancelRequestorder = async ({ orderHash = throwIfMissing() } = {}) => {
   }
 };
 
-module.exports = {
-  cleanApporderDependantOrders: traceAll(cleanApporderDependantOrders, {
+const cleanApporderDependantOrders = traceAll(_cleanApporderDependantOrders, {
+  logger,
+});
+const cleanDatasetorderDependantOrders = traceAll(
+  _cleanDatasetorderDependantOrders,
+  {
     logger,
-  }),
-  cleanDatasetorderDependantOrders: traceAll(cleanDatasetorderDependantOrders, {
+  },
+);
+const cleanBalanceDependantOrders = traceAll(_cleanBalanceDependantOrders, {
+  logger,
+});
+const cleanTransferredAppOrders = traceAll(_cleanTransferredAppOrders, {
+  logger,
+});
+const cleanTransferredDatasetOrders = traceAll(_cleanTransferredDatasetOrders, {
+  logger,
+});
+const cleanTransferredWorkerpoolOrders = traceAll(
+  _cleanTransferredWorkerpoolOrders,
+  {
     logger,
-  }),
-  cleanBalanceDependantOrders: traceAll(cleanBalanceDependantOrders, {
-    logger,
-  }),
-  cleanTransferredAppOrders: traceAll(cleanTransferredAppOrders, { logger }),
-  cleanTransferredDatasetOrders: traceAll(cleanTransferredDatasetOrders, {
-    logger,
-  }),
-  cleanTransferredWorkerpoolOrders: traceAll(cleanTransferredWorkerpoolOrders, {
-    logger,
-  }),
-  cleanRevokedUserOrders: traceAll(cleanRevokedUserOrders, { logger }),
-  updateApporder: traceAll(updateApporder, { logger }),
-  updateDatasetorder: traceAll(updateDatasetorder, { logger }),
-  updateWorkerpoolorder: traceAll(updateWorkerpoolorder, { logger }),
-  updateRequestorder: traceAll(updateRequestorder, { logger }),
-  cancelApporder: traceAll(cancelApporder, { logger }),
-  cancelDatasetorder: traceAll(cancelDatasetorder, { logger }),
-  cancelWorkerpoolorder: traceAll(cancelWorkerpoolorder, { logger }),
-  cancelRequestorder: traceAll(cancelRequestorder, { logger }),
+  },
+);
+const cleanRevokedUserOrders = traceAll(_cleanRevokedUserOrders, { logger });
+const updateApporder = traceAll(_updateApporder, { logger });
+const updateDatasetorder = traceAll(_updateDatasetorder, { logger });
+const updateWorkerpoolorder = traceAll(_updateWorkerpoolorder, { logger });
+const updateRequestorder = traceAll(_updateRequestorder, { logger });
+const cancelApporder = traceAll(_cancelApporder, { logger });
+const cancelDatasetorder = traceAll(_cancelDatasetorder, { logger });
+const cancelWorkerpoolorder = traceAll(_cancelWorkerpoolorder, { logger });
+const cancelRequestorder = traceAll(_cancelRequestorder, { logger });
+
+export {
+  cleanApporderDependantOrders,
+  cleanDatasetorderDependantOrders,
+  cleanBalanceDependantOrders,
+  cleanTransferredAppOrders,
+  cleanTransferredDatasetOrders,
+  cleanTransferredWorkerpoolOrders,
+  cleanRevokedUserOrders,
+  updateApporder,
+  updateDatasetorder,
+  updateWorkerpoolorder,
+  updateRequestorder,
+  cancelApporder,
+  cancelDatasetorder,
+  cancelWorkerpoolorder,
+  cancelRequestorder,
 };

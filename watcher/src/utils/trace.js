@@ -1,4 +1,4 @@
-const { getLogger, TRACE, LOG_LEVEL } = require('./logger');
+import { getLogger, TRACE, LOG_LEVEL } from './logger.js';
 
 const defaultTraceLogger = getLogger('default-trace-logger');
 
@@ -62,9 +62,7 @@ const traceConcurrentExecutions = (
   });
 };
 
-module.exports = {
-  traceExecutionTime,
-  traceConcurrentExecutions,
-  traceAll: (obj, { logger = defaultTraceLogger } = {}) =>
-    traceConcurrentExecutions(traceExecutionTime(obj, { logger }), { logger }),
-};
+const traceAll = (obj, { logger = defaultTraceLogger } = {}) =>
+  traceConcurrentExecutions(traceExecutionTime(obj, { logger }), { logger });
+
+export { traceExecutionTime, traceConcurrentExecutions, traceAll };

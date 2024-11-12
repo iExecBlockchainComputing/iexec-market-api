@@ -1,5 +1,5 @@
-const { getLogger, APP_NAMESPACE } = require('./logger');
-const { sleep } = require('./utils');
+import { getLogger, APP_NAMESPACE } from './logger.js';
+import { sleep } from './utils.js';
 
 const logError = getLogger(APP_NAMESPACE).error;
 
@@ -74,7 +74,7 @@ const errorHandler = async (error, context) => {
   }
 };
 
-module.exports = {
+export {
   InternalError,
   Web3ProviderError,
   wrapEthCall,

@@ -1,9 +1,9 @@
-const Agenda = require('agenda');
-const config = require('../config');
-const { getMongoose } = require('./mongoose');
-const { getLogger } = require('../utils/logger');
+import Agenda from 'agenda';
+import { chain } from '../config.js';
+import { getMongoose } from './mongoose.js';
+import { getLogger } from '../utils/logger.js';
 
-const { chainId } = config.chain;
+const { chainId } = chain;
 
 const logger = getLogger('agenda');
 
@@ -39,6 +39,4 @@ const getAgenda = async () => {
   return agendaPromise;
 };
 
-module.exports = {
-  getAgenda,
-};
+export { getAgenda };

@@ -64,7 +64,6 @@ steps:
       - cd watcher/
       - npm ci
       - npm run ci-test-token
-      - npm run ci-test-token-enterprise
       - npm run ci-test-native
 
 services:

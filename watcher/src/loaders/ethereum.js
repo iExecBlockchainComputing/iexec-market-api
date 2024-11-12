@@ -1,8 +1,8 @@
-const ethers = require('ethers');
-const config = require('../config');
-const { getLogger } = require('../utils/logger');
-const { errorHandler } = require('../utils/error');
-const { isEnterpriseFlavour } = require('../utils/iexec-utils');
+import ethers from 'ethers';
+import * as config from '../config.js';
+import { getLogger } from '../utils/logger.js';
+import { errorHandler } from '../utils/error.js';
+import { isEnterpriseFlavour } from '../utils/iexec-utils.js';
 
 const logger = getLogger('ethereum');
 
@@ -116,7 +116,7 @@ const getWorkerpool = (address) =>
   throwIfNotReady() ||
   new ethers.Contract(address, config.abi.workerpool, wsProvider);
 
-module.exports = {
+export {
   init,
   getProvider,
   getRpcProvider,

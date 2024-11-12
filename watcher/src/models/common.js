@@ -1,5 +1,7 @@
-const { getAddress } = require('ethers').utils;
-const { STATUS_MAP } = require('../utils/order-utils');
+import { utils } from 'ethers';
+import { STATUS_MAP } from '../utils/order-utils.js';
+
+const { getAddress } = utils;
 
 const addressValidator = {
   validator: (address) => {
@@ -93,6 +95,7 @@ const toJsonOption = {
   toJSON: {
     versionKey: false,
     transform(doc, ret) {
+      // eslint-disable-next-line no-param-reassign
       delete ret._id;
     },
   },
@@ -102,23 +105,25 @@ const orderToJsonOption = {
   toJSON: {
     versionKey: false,
     transform(doc, ret) {
+      // eslint-disable-next-line no-param-reassign
       delete ret._id;
+      // eslint-disable-next-line no-param-reassign
       delete ret.tagArray;
     },
   },
 };
 
-module.exports = {
-  schema: {
-    SafeUintSchema,
-    PositiveStrictSafeUintSchema,
-    TimestampSchema,
-    AddressSchema,
-    Bytes32Schema,
-    ChainIdSchema,
-    OrderSignSchema,
-    OrderStatusSchema,
-    TagArraySchema,
-  },
-  option: { toJsonOption, orderToJsonOption },
+const schema = {
+  SafeUintSchema,
+  PositiveStrictSafeUintSchema,
+  TimestampSchema,
+  AddressSchema,
+  Bytes32Schema,
+  ChainIdSchema,
+  OrderSignSchema,
+  OrderStatusSchema,
+  TagArraySchema,
 };
+const option = { toJsonOption, orderToJsonOption };
+
+export { schema, option };

@@ -1,5 +1,5 @@
-const ethers = require('ethers');
-const BN = require('bn.js');
+import ethers from 'ethers';
+import BN from 'bn.js';
 
 const tokenIdToAddress = (tokenId) => {
   const hexTokenId = ethers.BigNumber.from(tokenId.toString()).toHexString();
@@ -32,7 +32,7 @@ const isEnterpriseFlavour = (flavour) => flavour === ENTERPRISE_FLAVOUR;
 const KYC_MEMBER_ROLE =
   '0xce55f595624c86c7e93aa4cf15cb4a958406550ae728a9b7ffda71a7d62eca73';
 
-module.exports = {
+export {
   tokenIdToAddress,
   tagToArray,
   TAG_MAP,

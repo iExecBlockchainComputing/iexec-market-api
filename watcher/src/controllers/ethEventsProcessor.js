@@ -1,7 +1,7 @@
-const { setLastBlock } = require('../services/counter');
-const { addCategory } = require('../services/category');
-const { addDeal } = require('../services/deal');
-const {
+import { setLastBlock } from '../services/counter.js';
+import { addCategory } from '../services/category.js';
+import { addDeal } from '../services/deal.js';
+import {
   cancelApporder,
   cancelDatasetorder,
   cancelWorkerpoolorder,
@@ -15,16 +15,16 @@ const {
   cleanTransferredDatasetOrders,
   cleanTransferredWorkerpoolOrders,
   cleanRevokedUserOrders,
-} = require('../services/order');
-const { tokenIdToAddress } = require('../utils/iexec-utils');
-const { NULL_ADDRESS, cleanRPC } = require('../utils/eth-utils');
-const { errorHandler } = require('../utils/error');
-const { getLogger } = require('../utils/logger');
-const { traceAll } = require('../utils/trace');
+} from '../services/order.js';
+import { tokenIdToAddress } from '../utils/iexec-utils.js';
+import { NULL_ADDRESS, cleanRPC } from '../utils/eth-utils.js';
+import { errorHandler } from '../utils/error.js';
+import { getLogger } from '../utils/logger.js';
+import { traceAll } from '../utils/trace.js';
 
 const logger = getLogger('controllers:ethEventsProcessor');
 
-const processCreateCategory = async (event, { isReplay = false } = {}) => {
+const _processCreateCategory = async (event, { isReplay = false } = {}) => {
   try {
     const { transactionHash, blockNumber } = event;
     logger.debug(
@@ -48,7 +48,7 @@ const processCreateCategory = async (event, { isReplay = false } = {}) => {
   }
 };
 
-const processOrdersMatched = async (event, { isReplay = false } = {}) => {
+const _processOrdersMatched = async (event, { isReplay = false } = {}) => {
   try {
     const { transactionHash, blockNumber } = event;
     logger.debug(
@@ -105,7 +105,7 @@ const processOrdersMatched = async (event, { isReplay = false } = {}) => {
   }
 };
 
-const processClosedAppOrder = async (event, { isReplay = false } = {}) => {
+const _processClosedAppOrder = async (event, { isReplay = false } = {}) => {
   try {
     logger.debug(
       'processClosedAppOrder',
@@ -124,7 +124,7 @@ const processClosedAppOrder = async (event, { isReplay = false } = {}) => {
   }
 };
 
-const processClosedDatasetOrder = async (event, { isReplay = false } = {}) => {
+const _processClosedDatasetOrder = async (event, { isReplay = false } = {}) => {
   try {
     logger.debug(
       'processClosedDatasetOrder',
@@ -143,7 +143,7 @@ const processClosedDatasetOrder = async (event, { isReplay = false } = {}) => {
   }
 };
 
-const processClosedWorkerpoolOrder = async (
+const _processClosedWorkerpoolOrder = async (
   event,
   { isReplay = false } = {},
 ) => {
@@ -165,7 +165,7 @@ const processClosedWorkerpoolOrder = async (
   }
 };
 
-const processClosedRequestOrder = async (event, { isReplay = false } = {}) => {
+const _processClosedRequestOrder = async (event, { isReplay = false } = {}) => {
   try {
     logger.debug(
       'processClosedRequestOrder',
@@ -184,7 +184,7 @@ const processClosedRequestOrder = async (event, { isReplay = false } = {}) => {
   }
 };
 
-const processStakeLoss = async (event, { isReplay = false } = {}) => {
+const _processStakeLoss = async (event, { isReplay = false } = {}) => {
   // account withdraw & lock
   try {
     logger.debug(
@@ -209,7 +209,7 @@ const processStakeLoss = async (event, { isReplay = false } = {}) => {
   }
 };
 
-const processTransferApp = async (event, { isReplay = false } = {}) => {
+const _processTransferApp = async (event, { isReplay = false } = {}) => {
   try {
     logger.debug(
       'processTransferApp',
@@ -234,7 +234,7 @@ const processTransferApp = async (event, { isReplay = false } = {}) => {
   }
 };
 
-const processTransferDataset = async (event, { isReplay = false } = {}) => {
+const _processTransferDataset = async (event, { isReplay = false } = {}) => {
   try {
     logger.debug(
       'processTransferDataset',
@@ -259,7 +259,7 @@ const processTransferDataset = async (event, { isReplay = false } = {}) => {
   }
 };
 
-const processTransferWorkerpool = async (event, { isReplay = false } = {}) => {
+const _processTransferWorkerpool = async (event, { isReplay = false } = {}) => {
   try {
     logger.debug(
       'processTransferWorkerpool',
@@ -284,7 +284,7 @@ const processTransferWorkerpool = async (event, { isReplay = false } = {}) => {
   }
 };
 
-const processRoleRevoked = async (event, { isReplay = false } = {}) => {
+const _processRoleRevoked = async (event, { isReplay = false } = {}) => {
   try {
     logger.debug(
       'processRoleRevoked',
@@ -307,7 +307,7 @@ const processRoleRevoked = async (event, { isReplay = false } = {}) => {
   }
 };
 
-const processNewBlock = async (blockNumber) => {
+const _processNewBlock = async (blockNumber) => {
   try {
     logger.debug('Block', blockNumber);
     await setLastBlock(blockNumber);
@@ -320,19 +320,38 @@ const processNewBlock = async (blockNumber) => {
   }
 };
 
-module.exports = {
-  processStakeLoss: traceAll(processStakeLoss, { logger }),
-  processCreateCategory: traceAll(processCreateCategory, { logger }),
-  processTransferApp: traceAll(processTransferApp, { logger }),
-  processTransferDataset: traceAll(processTransferDataset, { logger }),
-  processTransferWorkerpool: traceAll(processTransferWorkerpool, { logger }),
-  processOrdersMatched: traceAll(processOrdersMatched, { logger }),
-  processClosedAppOrder: traceAll(processClosedAppOrder, { logger }),
-  processClosedDatasetOrder: traceAll(processClosedDatasetOrder, { logger }),
-  processClosedWorkerpoolOrder: traceAll(processClosedWorkerpoolOrder, {
-    logger,
-  }),
-  processClosedRequestOrder: traceAll(processClosedRequestOrder, { logger }),
-  processRoleRevoked: traceAll(processRoleRevoked, { logger }),
-  processNewBlock: traceAll(processNewBlock, { logger }),
+const processStakeLoss = traceAll(_processStakeLoss, { logger });
+const processCreateCategory = traceAll(_processCreateCategory, { logger });
+const processTransferApp = traceAll(_processTransferApp, { logger });
+const processTransferDataset = traceAll(_processTransferDataset, { logger });
+const processTransferWorkerpool = traceAll(_processTransferWorkerpool, {
+  logger,
+});
+const processOrdersMatched = traceAll(_processOrdersMatched, { logger });
+const processClosedAppOrder = traceAll(_processClosedAppOrder, { logger });
+const processClosedDatasetOrder = traceAll(_processClosedDatasetOrder, {
+  logger,
+});
+const processClosedWorkerpoolOrder = traceAll(_processClosedWorkerpoolOrder, {
+  logger,
+});
+const processClosedRequestOrder = traceAll(_processClosedRequestOrder, {
+  logger,
+});
+const processRoleRevoked = traceAll(_processRoleRevoked, { logger });
+const processNewBlock = traceAll(_processNewBlock, { logger });
+
+export {
+  processStakeLoss,
+  processCreateCategory,
+  processTransferApp,
+  processTransferDataset,
+  processTransferWorkerpool,
+  processOrdersMatched,
+  processClosedAppOrder,
+  processClosedDatasetOrder,
+  processClosedWorkerpoolOrder,
+  processClosedRequestOrder,
+  processRoleRevoked,
+  processNewBlock,
 };

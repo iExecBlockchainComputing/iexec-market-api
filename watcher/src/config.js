@@ -1,14 +1,14 @@
-const iexecTokenDesc = require('@iexec/poco/build/contracts-min/IexecInterfaceToken.json');
-const iexecNativeDesc = require('@iexec/poco/build/contracts-min/IexecInterfaceNative.json');
-const appRegistryDesc = require('@iexec/poco/build/contracts-min/AppRegistry.json');
-const workerpoolRegistryDesc = require('@iexec/poco/build/contracts-min/WorkerpoolRegistry.json');
-const datasetRegistryDesc = require('@iexec/poco/build/contracts-min/DatasetRegistry.json');
-const appDesc = require('@iexec/poco/build/contracts-min/App.json');
-const workerpoolDesc = require('@iexec/poco/build/contracts-min/Workerpool.json');
-const datasetDesc = require('@iexec/poco/build/contracts-min/Dataset.json');
-const eRlcDesc = require('@iexec/erlc/build/contracts-min/ERLCTokenSwap.json');
-const { FLAVOURS, STANDARD_FLAVOUR } = require('./utils/iexec-utils');
-const { getLogger } = require('./utils/logger');
+import { abi as iexecTokenAbi } from './generated/@iexec/poco/IexecInterfaceToken.js';
+import { abi as iexecNativeAbi } from './generated/@iexec/poco/IexecInterfaceNative.js';
+import { abi as appRegistryAbi } from './generated/@iexec/poco/AppRegistry.js';
+import { abi as workerpoolRegistryAbi } from './generated/@iexec/poco/WorkerpoolRegistry.js';
+import { abi as datasetRegistryAbi } from './generated/@iexec/poco/DatasetRegistry.js';
+import { abi as appAbi } from './generated/@iexec/poco/App.js';
+import { abi as workerpoolAbi } from './generated/@iexec/poco/Workerpool.js';
+import { abi as datasetAbi } from './generated/@iexec/poco/Dataset.js';
+import { abi as eRlcAbi } from './generated/@iexec/erlc/ERLCTokenSwap.js';
+import { FLAVOURS, STANDARD_FLAVOUR } from './utils/iexec-utils.js';
+import { getLogger } from './utils/logger.js';
 
 const logger = getLogger('config');
 
@@ -73,14 +73,14 @@ const chain = {
 };
 
 const abi = {
-  hub: chain.isNative ? iexecNativeDesc.abi : iexecTokenDesc.abi,
-  appRegistry: appRegistryDesc.abi,
-  datasetRegistry: datasetRegistryDesc.abi,
-  workerpoolRegistry: workerpoolRegistryDesc.abi,
-  app: appDesc.abi,
-  dataset: datasetDesc.abi,
-  workerpool: workerpoolDesc.abi,
-  erlc: eRlcDesc.abi,
+  hub: chain.isNative ? iexecNativeAbi : iexecTokenAbi,
+  appRegistry: appRegistryAbi,
+  datasetRegistry: datasetRegistryAbi,
+  workerpoolRegistry: workerpoolRegistryAbi,
+  app: appAbi,
+  dataset: datasetAbi,
+  workerpool: workerpoolAbi,
+  erlc: eRlcAbi,
 };
 
 const runtime = {
@@ -119,11 +119,4 @@ logger.log('mongo', mongo);
 logger.log('redis', redis);
 logger.log('runtime', runtime);
 
-module.exports = {
-  abi,
-  chain,
-  flavour,
-  mongo,
-  redis,
-  runtime,
-};
+export { abi, chain, flavour, mongo, redis, runtime };

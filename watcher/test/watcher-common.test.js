@@ -1,14 +1,10 @@
-const ethers = require('ethers');
-const { utils, IExec } = require('iexec');
-const socket = require('../src/loaders/socket');
-// jest spies
-const socketEmitSpy = jest.spyOn(socket, 'emit');
-const { start, stop } = require('../src/app');
-const { replayPastOnly } = require('../src/controllers/replayer');
-const { chain } = require('../src/config');
-const { sleep } = require('../src/utils/utils');
-const { STATUS_MAP } = require('../src/utils/order-utils');
-const {
+import { afterEach, expect, test, jest } from '@jest/globals';
+import ethers from 'ethers';
+import { utils, IExec } from 'iexec';
+import { chain } from '../src/config.js';
+import { sleep } from '../src/utils/utils.js';
+import { STATUS_MAP } from '../src/utils/order-utils.js';
+import {
   addApporders,
   addDatasetorders,
   addWorkerpoolorders,
@@ -30,8 +26,19 @@ const {
   CATEGORIES_COLLECTION,
   fastForwardToLastBlock,
   setCheckpointToLastBlock,
-} = require('./test-utils');
-const { init: ethereumInit } = require('../src/loaders/ethereum');
+} from './test-utils.js';
+import { init as ethereumInit } from '../src/loaders/ethereum.js';
+
+// setup jest ES modules mocks and spies
+const socketEmitSpy = jest.fn();
+jest.unstable_mockModule('../src/loaders/socket.js', () => ({
+  init: () => {},
+  emit: socketEmitSpy,
+}));
+
+// import modules depending on mocks
+const { start, stop } = await import('../src/app.js');
+const { replayPastOnly } = await import('../src/controllers/replayer.js');
 
 jest.setTimeout(120000);
 

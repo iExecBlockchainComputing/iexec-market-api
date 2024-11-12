@@ -1,4 +1,4 @@
-const BN = require('bn.js');
+import BN from 'bn.js';
 
 const tagToArray = (tag) => {
   const tagBinString = new BN(tag.substr(2), 'hex').toString(2);
@@ -23,8 +23,4 @@ const TAG_MAP = {
   gpu: 9,
 };
 
-module.exports = {
-  tagToArray,
-  TAG_MAP,
-  STATUS_MAP,
-};
+export { tagToArray, TAG_MAP, STATUS_MAP };

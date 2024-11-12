@@ -1,8 +1,8 @@
-const config = require('./config');
-const ethereum = require('./loaders/ethereum');
-const socket = require('./loaders/socket');
-require('./controllers/eventsListener');
-const {
+import './controllers/eventsListener.js';
+import * as config from './config.js';
+import * as ethereum from './loaders/ethereum.js';
+import * as socket from './loaders/socket.js';
+import {
   registerHubEvents,
   registerAppRegistryEvents,
   registerDatasetRegistryEvents,
@@ -11,15 +11,15 @@ const {
   registerNewBlock,
   unsubscribeAllEvents,
   replayPastEvents,
-} = require('./controllers/ethEventsWatcher');
-const {
+} from './controllers/ethEventsWatcher.js';
+import {
   startSyncWatcher,
   stopSyncWatcher,
-} = require('./controllers/syncWatcher');
-const { startReplayer, stopReplayer } = require('./controllers/replayer');
-const { getNextBlockToProcess, setLastBlock } = require('./services/counter');
-const { getLogger, APP_NAMESPACE } = require('./utils/logger');
-const { errorHandler } = require('./utils/error');
+} from './controllers/syncWatcher.js';
+import { startReplayer, stopReplayer } from './controllers/replayer.js';
+import { getNextBlockToProcess, setLastBlock } from './services/counter.js';
+import { getLogger, APP_NAMESPACE } from './utils/logger.js';
+import { errorHandler } from './utils/error.js';
 
 const logger = getLogger(APP_NAMESPACE);
 
@@ -103,7 +103,4 @@ const stop = async () => {
   }
 };
 
-module.exports = {
-  stop,
-  start,
-};
+export { stop, start };
