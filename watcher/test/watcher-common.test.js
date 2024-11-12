@@ -44,7 +44,6 @@ jest.setTimeout(120000);
 
 const PROCESS_TRIGGERED_EVENT_TIMEOUT = 1000;
 
-let chainId;
 const chainUrl = chain.httpHost;
 const { hubAddress } = chain;
 const PRIVATE_KEY =
@@ -52,22 +51,21 @@ const PRIVATE_KEY =
 const rpc = new ethers.providers.JsonRpcProvider(chainUrl);
 const wallet = new ethers.Wallet(PRIVATE_KEY, rpc);
 
-let iexec;
-const signer = utils.getSignerFromPrivateKey(chainUrl, PRIVATE_KEY);
+const iexec = new IExec(
+  {
+    ethProvider: utils.getSignerFromPrivateKey(chainUrl, PRIVATE_KEY),
+  },
+  {
+    hubAddress,
+    isNative: chain.isNative,
+    resultProxyURL: 'http://result-proxy.iex.ec',
+    smsURL: 'http://sms.iex.ec',
+  },
+);
+const network = await iexec.network.getNetwork()
+const chainId = `${network.chainId}`;
 
 beforeAll(async () => {
-  const network = await rpc.getNetwork();
-  chainId = `${network.chainId}`;
-  iexec = new IExec(
-    {
-      ethProvider: signer,
-    },
-    {
-      hubAddress,
-      isNative: chain.isNative,
-      resultProxyURL: 'http://example.com',
-    },
-  );
   await dropDB(chainId);
   await iexec.account.deposit(100);
   const { stake } = await iexec.account.checkBalance(
@@ -127,7 +125,7 @@ describe('Watcher', () => {
         workerpoolorder,
         requestorder,
       },
-      { checkRequest: false },
+      { preflightCheck: false },
     );
     const [appHash, datasetHash, workerpoolHash, requestHash] =
       await Promise.all([
@@ -232,7 +230,7 @@ describe('Watcher', () => {
         workerpoolorder,
         requestorder,
       },
-      { checkRequest: false },
+      { preflightCheck: false },
     );
     await sleep(PROCESS_TRIGGERED_EVENT_TIMEOUT);
     const [
@@ -368,7 +366,7 @@ describe('Watcher', () => {
         workerpoolorder,
         requestorder,
       },
-      { checkRequest: false },
+      { preflightCheck: false },
     );
     await sleep(PROCESS_TRIGGERED_EVENT_TIMEOUT);
 
@@ -447,7 +445,7 @@ describe('Watcher', () => {
         workerpoolorder,
         requestorder: partiallyMatchableRequestorder,
       },
-      { checkRequest: false },
+      { preflightCheck: false },
     );
     await sleep(PROCESS_TRIGGERED_EVENT_TIMEOUT);
     const [savedPartiallyMatchedRequestorder] = await find(
@@ -486,7 +484,8 @@ describe('Watcher', () => {
       {
         hubAddress,
         isNative: chain.isNative,
-        resultProxyURL: 'http://example.com',
+        resultProxyURL: 'http://result-proxy.iex.ec',
+        smsURL: 'http://sms.iex.ec',
       },
     );
 
@@ -588,7 +587,7 @@ describe('Watcher', () => {
         workerpoolorder,
         requestorder,
       },
-      { checkRequest: false },
+      { preflightCheck: false },
     );
     await sleep(PROCESS_TRIGGERED_EVENT_TIMEOUT);
     const [
@@ -716,7 +715,7 @@ describe('Watcher', () => {
         workerpoolorder,
         requestorder,
       },
-      { checkRequest: false },
+      { preflightCheck: false },
     );
     await sleep(PROCESS_TRIGGERED_EVENT_TIMEOUT);
     const [
@@ -772,7 +771,8 @@ describe('Watcher', () => {
       {
         hubAddress,
         isNative: chain.isNative,
-        resultProxyURL: 'http://example.com',
+        resultProxyURL: 'http://result-proxy.iex.ec',
+        smsURL: 'http://sms.iex.ec',
       },
     );
 
@@ -881,7 +881,7 @@ describe('Watcher', () => {
         workerpoolorder,
         requestorder,
       },
-      { checkRequest: false },
+      { preflightCheck: false },
     );
     await sleep(PROCESS_TRIGGERED_EVENT_TIMEOUT);
     const [
@@ -979,7 +979,8 @@ describe('Watcher', () => {
       {
         hubAddress,
         isNative: chain.isNative,
-        resultProxyURL: 'http://example.com',
+        resultProxyURL: 'http://result-proxy.iex.ec',
+        smsURL: 'http://sms.iex.ec',
       },
     );
 
@@ -1002,20 +1003,20 @@ describe('Watcher', () => {
         category: 0,
         volume: 10,
       })
-      .then((o) => iexec.order.signRequestorder(o, { checkRequest: false }));
+      .then((o) => iexec.order.signRequestorder(o, { preflightCheck: false }));
     const independentRequestorder = await iexec.order.signRequestorder(
       {
         ...requestorder,
         appmaxprice: 5,
       },
-      { checkRequest: false },
+      { preflightCheck: false },
     );
     const requestorderPrivate = await privateIexecUser.order.signRequestorder(
       {
         ...requestorder,
         requester: await privateIexecUser.wallet.getAddress(),
       },
-      { checkRequest: false },
+      { preflightCheck: false },
     );
     const [
       appHash,
@@ -1124,13 +1125,13 @@ describe('Watcher', () => {
         category: 0,
         volume: 10,
       })
-      .then((o) => iexec.order.signRequestorder(o, { checkRequest: false }));
+      .then((o) => iexec.order.signRequestorder(o, { preflightCheck: false }));
     const requestorderTee = await iexec.order.signRequestorder(
       {
         ...independentRequestorder,
         tag: ['tee'],
       },
-      { checkRequest: false },
+      { preflightCheck: false },
     );
     const requestorderTee5nRlc = await iexec.order.signRequestorder(
       {
@@ -1138,7 +1139,7 @@ describe('Watcher', () => {
         tag: ['tee'],
         appmaxprice: 5,
       },
-      { checkRequest: false },
+      { preflightCheck: false },
     );
     const [
       appHash,
@@ -1273,7 +1274,8 @@ describe('Watcher', () => {
       {
         hubAddress,
         isNative: chain.isNative,
-        resultProxyURL: 'http://example.com',
+        resultProxyURL: 'http://result-proxy.iex.ec',
+        smsURL: 'http://sms.iex.ec',
       },
     );
 
@@ -1303,20 +1305,20 @@ describe('Watcher', () => {
         category: 0,
         volume: 10,
       })
-      .then((o) => iexec.order.signRequestorder(o, { checkRequest: false }));
+      .then((o) => iexec.order.signRequestorder(o, { preflightCheck: false }));
     const independentRequestorder = await iexec.order.signRequestorder(
       {
         ...requestorder,
         datasetmaxprice: 5,
       },
-      { checkRequest: false },
+      { preflightCheck: false },
     );
     const requestorderPrivate = await privateIexecUser.order.signRequestorder(
       {
         ...requestorder,
         requester: await privateIexecUser.wallet.getAddress(),
       },
-      { checkRequest: false },
+      { preflightCheck: false },
     );
     const [
       appHash,
@@ -1462,7 +1464,7 @@ describe('Watcher', () => {
         app: utils.NULL_ADDRESS,
         category: 0,
       })
-      .then((o) => iexec.order.signRequestorder(o, { checkRequest: false }));
+      .then((o) => iexec.order.signRequestorder(o, { preflightCheck: false }));
 
     const [requestHash] = await Promise.all([
       iexec.order.hashRequestorder(requestorder),
@@ -1608,7 +1610,7 @@ describe('Watcher', () => {
         category: 0,
         volume: 3,
       })
-      .then((o) => iexec.order.signRequestorder(o, { checkRequest: false }));
+      .then((o) => iexec.order.signRequestorder(o, { preflightCheck: false }));
     const requestorderAppTooExpensive = await iexec.order.signRequestorder(
       {
         ...independentRequestorder,
@@ -1616,7 +1618,7 @@ describe('Watcher', () => {
         datasetmaxprice: 0,
         workerpoolmaxprice: 0,
       },
-      { checkRequest: false },
+      { preflightCheck: false },
     );
     const requestorderDatasetTooExpensive = await iexec.order.signRequestorder(
       {
@@ -1625,7 +1627,7 @@ describe('Watcher', () => {
         datasetmaxprice: 4,
         workerpoolmaxprice: 0,
       },
-      { checkRequest: false },
+      { preflightCheck: false },
     );
     const requestorderWorkerpoolTooExpensive =
       await iexec.order.signRequestorder(
@@ -1635,7 +1637,7 @@ describe('Watcher', () => {
           datasetmaxprice: 0,
           workerpoolmaxprice: 4,
         },
-        { checkRequest: false },
+        { preflightCheck: false },
       );
     const requestorderCumulativeTooExpensive =
       await iexec.order.signRequestorder(
@@ -1645,7 +1647,7 @@ describe('Watcher', () => {
           datasetmaxprice: 2,
           workerpoolmaxprice: 2,
         },
-        { checkRequest: false },
+        { preflightCheck: false },
       );
     const [
       independentRequestHash,
@@ -1922,7 +1924,7 @@ describe('Recover on start', () => {
         workerpoolorder,
         requestorder,
       },
-      { checkRequest: false },
+      { preflightCheck: false },
     );
     const [appHash, datasetHash, workerpoolHash, requestHash] =
       await Promise.all([
@@ -2025,7 +2027,7 @@ describe('Recover on start', () => {
         workerpoolorder,
         requestorder,
       },
-      { checkRequest: false },
+      { preflightCheck: false },
     );
     await start({ syncWatcher: false, replayer: false });
     await sleep(PROCESS_TRIGGERED_EVENT_TIMEOUT);
@@ -2129,7 +2131,7 @@ describe('Recover on start', () => {
         workerpoolorder,
         requestorder,
       },
-      { checkRequest: false },
+      { preflightCheck: false },
     );
     await start({ syncWatcher: false, replayer: false });
     await sleep(PROCESS_TRIGGERED_EVENT_TIMEOUT);
@@ -2168,7 +2170,7 @@ describe('Recover on start', () => {
         workerpoolorder,
         requestorder: partiallyMatchableRequestorder,
       },
-      { checkRequest: false },
+      { preflightCheck: false },
     );
     await start({ syncWatcher: false, replayer: false });
     await sleep(PROCESS_TRIGGERED_EVENT_TIMEOUT);
@@ -2259,7 +2261,7 @@ describe('Recover on start', () => {
         workerpoolorder,
         requestorder,
       },
-      { checkRequest: false },
+      { preflightCheck: false },
     );
     await start({ syncWatcher: false, replayer: false });
     await sleep(PROCESS_TRIGGERED_EVENT_TIMEOUT);
@@ -2365,7 +2367,7 @@ describe('Recover on start', () => {
         workerpoolorder,
         requestorder,
       },
-      { checkRequest: false },
+      { preflightCheck: false },
     );
     await start({ syncWatcher: false, replayer: false });
     await sleep(PROCESS_TRIGGERED_EVENT_TIMEOUT);
@@ -2470,7 +2472,7 @@ describe('Recover on start', () => {
         workerpoolorder,
         requestorder,
       },
-      { checkRequest: false },
+      { preflightCheck: false },
     );
     await start({ syncWatcher: false, replayer: false });
     await sleep(PROCESS_TRIGGERED_EVENT_TIMEOUT);
@@ -2536,13 +2538,13 @@ describe('Recover on start', () => {
         category: 0,
         volume: 10,
       })
-      .then((o) => iexec.order.signRequestorder(o, { checkRequest: false }));
+      .then((o) => iexec.order.signRequestorder(o, { preflightCheck: false }));
     const independentRequestorder = await iexec.order.signRequestorder(
       {
         ...requestorder,
         appmaxprice: 5,
       },
-      { checkRequest: false },
+      { preflightCheck: false },
     );
     const [
       appHash,
@@ -2657,13 +2659,13 @@ describe('Recover on start', () => {
         category: 0,
         volume: 10,
       })
-      .then((o) => iexec.order.signRequestorder(o, { checkRequest: false }));
+      .then((o) => iexec.order.signRequestorder(o, { preflightCheck: false }));
     const requestorderTee = await iexec.order.signRequestorder(
       {
         ...independentRequestorder,
         tag: ['tee'],
       },
-      { checkRequest: false },
+      { preflightCheck: false },
     );
     const requestorderTee5nRlc = await iexec.order.signRequestorder(
       {
@@ -2671,7 +2673,7 @@ describe('Recover on start', () => {
         tag: ['tee'],
         appmaxprice: 5,
       },
-      { checkRequest: false },
+      { preflightCheck: false },
     );
     const [
       appHash,
@@ -2795,13 +2797,13 @@ describe('Recover on start', () => {
         category: 0,
         volume: 10,
       })
-      .then((o) => iexec.order.signRequestorder(o, { checkRequest: false }));
+      .then((o) => iexec.order.signRequestorder(o, { preflightCheck: false }));
     const independentRequestorder = await iexec.order.signRequestorder(
       {
         ...requestorder,
         datasetmaxprice: 5,
       },
-      { checkRequest: false },
+      { preflightCheck: false },
     );
     const [
       appHash,
@@ -2937,7 +2939,7 @@ describe('Recover on start', () => {
         app: utils.NULL_ADDRESS,
         category: 0,
       })
-      .then((o) => iexec.order.signRequestorder(o, { checkRequest: false }));
+      .then((o) => iexec.order.signRequestorder(o, { preflightCheck: false }));
 
     const [requestHash] = await Promise.all([
       iexec.order.hashRequestorder(requestorder),
@@ -3093,7 +3095,7 @@ describe('Recover on start', () => {
         category: 0,
         volume: 3,
       })
-      .then((o) => iexec.order.signRequestorder(o, { checkRequest: false }));
+      .then((o) => iexec.order.signRequestorder(o, { preflightCheck: false }));
     const finallyGoodRequestorder = await iexec.order.signRequestorder(
       {
         ...independentRequestorder,
@@ -3101,7 +3103,7 @@ describe('Recover on start', () => {
         datasetmaxprice: 1,
         workerpoolmaxprice: 1,
       },
-      { checkRequest: false },
+      { preflightCheck: false },
     );
     const requestorderAppTooExpensive = await iexec.order.signRequestorder(
       {
@@ -3110,7 +3112,7 @@ describe('Recover on start', () => {
         datasetmaxprice: 0,
         workerpoolmaxprice: 0,
       },
-      { checkRequest: false },
+      { preflightCheck: false },
     );
     const requestorderDatasetTooExpensive = await iexec.order.signRequestorder(
       {
@@ -3119,7 +3121,7 @@ describe('Recover on start', () => {
         datasetmaxprice: 4,
         workerpoolmaxprice: 0,
       },
-      { checkRequest: false },
+      { preflightCheck: false },
     );
     const requestorderWorkerpoolTooExpensive =
       await iexec.order.signRequestorder(
@@ -3129,7 +3131,7 @@ describe('Recover on start', () => {
           datasetmaxprice: 0,
           workerpoolmaxprice: 4,
         },
-        { checkRequest: false },
+        { preflightCheck: false },
       );
     const requestorderCumulativeTooExpensive =
       await iexec.order.signRequestorder(
@@ -3139,7 +3141,7 @@ describe('Recover on start', () => {
           datasetmaxprice: 2,
           workerpoolmaxprice: 2,
         },
-        { checkRequest: false },
+        { preflightCheck: false },
       );
     const [
       independentRequestHash,
@@ -3497,7 +3499,7 @@ describe('Replay Past', () => {
         workerpoolorder,
         requestorder,
       },
-      { checkRequest: false },
+      { preflightCheck: false },
     );
     await fastForwardToLastBlock(chainId, rpc);
     const [appHash, datasetHash, workerpoolHash, requestHash] =
@@ -3604,7 +3606,7 @@ describe('Replay Past', () => {
         workerpoolorder,
         requestorder,
       },
-      { checkRequest: false },
+      { preflightCheck: false },
     );
     await fastForwardToLastBlock(chainId, rpc);
     await replayPastOnly({ nbConfirmation: 0 });
@@ -3710,7 +3712,7 @@ describe('Replay Past', () => {
         workerpoolorder,
         requestorder,
       },
-      { checkRequest: false },
+      { preflightCheck: false },
     );
     await fastForwardToLastBlock(chainId, rpc);
     await replayPastOnly({ nbConfirmation: 0 });
@@ -3748,7 +3750,7 @@ describe('Replay Past', () => {
         workerpoolorder,
         requestorder: partiallyMatchableRequestorder,
       },
-      { checkRequest: false },
+      { preflightCheck: false },
     );
     await fastForwardToLastBlock(chainId, rpc);
     await replayPastOnly({ nbConfirmation: 0 });
@@ -3839,7 +3841,7 @@ describe('Replay Past', () => {
         workerpoolorder,
         requestorder,
       },
-      { checkRequest: false },
+      { preflightCheck: false },
     );
     await fastForwardToLastBlock(chainId, rpc);
     await replayPastOnly({ nbConfirmation: 0 });
@@ -3946,7 +3948,7 @@ describe('Replay Past', () => {
         workerpoolorder,
         requestorder,
       },
-      { checkRequest: false },
+      { preflightCheck: false },
     );
     await fastForwardToLastBlock(chainId, rpc);
     await replayPastOnly({ nbConfirmation: 0 });
@@ -4052,7 +4054,7 @@ describe('Replay Past', () => {
         workerpoolorder,
         requestorder,
       },
-      { checkRequest: false },
+      { preflightCheck: false },
     );
     await fastForwardToLastBlock(chainId, rpc);
     await replayPastOnly({ nbConfirmation: 0 });
@@ -4117,13 +4119,13 @@ describe('Replay Past', () => {
         category: 0,
         volume: 10,
       })
-      .then((o) => iexec.order.signRequestorder(o, { checkRequest: false }));
+      .then((o) => iexec.order.signRequestorder(o, { preflightCheck: false }));
     const independentRequestorder = await iexec.order.signRequestorder(
       {
         ...requestorder,
         appmaxprice: 5,
       },
-      { checkRequest: false },
+      { preflightCheck: false },
     );
     const [
       appHash,
@@ -4240,13 +4242,13 @@ describe('Replay Past', () => {
         category: 0,
         volume: 10,
       })
-      .then((o) => iexec.order.signRequestorder(o, { checkRequest: false }));
+      .then((o) => iexec.order.signRequestorder(o, { preflightCheck: false }));
     const requestorderTee = await iexec.order.signRequestorder(
       {
         ...independentRequestorder,
         tag: ['tee'],
       },
-      { checkRequest: false },
+      { preflightCheck: false },
     );
     const requestorderTee5nRlc = await iexec.order.signRequestorder(
       {
@@ -4254,7 +4256,7 @@ describe('Replay Past', () => {
         tag: ['tee'],
         appmaxprice: 5,
       },
-      { checkRequest: false },
+      { preflightCheck: false },
     );
     const [
       appHash,
@@ -4377,13 +4379,13 @@ describe('Replay Past', () => {
         category: 0,
         volume: 10,
       })
-      .then((o) => iexec.order.signRequestorder(o, { checkRequest: false }));
+      .then((o) => iexec.order.signRequestorder(o, { preflightCheck: false }));
     const independentRequestorder = await iexec.order.signRequestorder(
       {
         ...requestorder,
         datasetmaxprice: 5,
       },
-      { checkRequest: false },
+      { preflightCheck: false },
     );
     const [
       appHash,
@@ -4520,7 +4522,7 @@ describe('Replay Past', () => {
         app: utils.NULL_ADDRESS,
         category: 0,
       })
-      .then((o) => iexec.order.signRequestorder(o, { checkRequest: false }));
+      .then((o) => iexec.order.signRequestorder(o, { preflightCheck: false }));
 
     const [requestHash] = await Promise.all([
       iexec.order.hashRequestorder(requestorder),
@@ -4681,7 +4683,7 @@ describe('Replay Past', () => {
         category: 0,
         volume: 3,
       })
-      .then((o) => iexec.order.signRequestorder(o, { checkRequest: false }));
+      .then((o) => iexec.order.signRequestorder(o, { preflightCheck: false }));
 
     const finallyGoodRequestorder = await iexec.order.signRequestorder(
       {
@@ -4690,7 +4692,7 @@ describe('Replay Past', () => {
         datasetmaxprice: 1,
         workerpoolmaxprice: 1,
       },
-      { checkRequest: false },
+      { preflightCheck: false },
     );
 
     const requestorderAppTooExpensive = await iexec.order.signRequestorder(
@@ -4700,7 +4702,7 @@ describe('Replay Past', () => {
         datasetmaxprice: 0,
         workerpoolmaxprice: 0,
       },
-      { checkRequest: false },
+      { preflightCheck: false },
     );
 
     const requestorderDatasetTooExpensive = await iexec.order.signRequestorder(
@@ -4710,7 +4712,7 @@ describe('Replay Past', () => {
         datasetmaxprice: 4,
         workerpoolmaxprice: 0,
       },
-      { checkRequest: false },
+      { preflightCheck: false },
     );
 
     const requestorderWorkerpoolTooExpensive =
@@ -4721,7 +4723,7 @@ describe('Replay Past', () => {
           datasetmaxprice: 0,
           workerpoolmaxprice: 4,
         },
-        { checkRequest: false },
+        { preflightCheck: false },
       );
 
     const requestorderCumulativeTooExpensive =
@@ -4732,7 +4734,7 @@ describe('Replay Past', () => {
           datasetmaxprice: 2,
           workerpoolmaxprice: 2,
         },
-        { checkRequest: false },
+        { preflightCheck: false },
       );
     const [
       independentRequestHash,
