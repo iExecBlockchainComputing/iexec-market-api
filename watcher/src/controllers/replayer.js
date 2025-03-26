@@ -52,7 +52,6 @@ const _replayPastOnly = async ({
     } else {
       logger.log('nothing to replay skipping');
     }
-    return;
   } catch (error) {
     logger.warn('replayPastOnly()', error);
     throw error;

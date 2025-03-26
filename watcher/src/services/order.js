@@ -2,12 +2,7 @@ import BN from 'bn.js';
 import * as config from '../config.js';
 import { eventEmitter } from '../loaders/eventEmitter.js';
 import {
-  getProvider,
   getHub,
-  getERlc,
-  getAppRegistry,
-  getDatasetRegistry,
-  getWorkerpoolRegistry,
   getApp,
   getDataset,
   getWorkerpool,
@@ -19,13 +14,7 @@ import * as requestorderModel from '../models/requestorderModel.js';
 import { getLogger } from '../utils/logger.js';
 import { throwIfMissing } from '../utils/error.js';
 import { STATUS_MAP, TAG_MAP, tagToArray } from '../utils/order-utils.js';
-import {
-  callAtBlock,
-  cleanRPC,
-  getBlockNumber,
-  NULL_ADDRESS,
-} from '../utils/eth-utils.js';
-import { tokenIdToAddress, KYC_MEMBER_ROLE } from '../utils/iexec-utils.js';
+import { callAtBlock, cleanRPC, NULL_ADDRESS } from '../utils/eth-utils.js';
 import { traceAll } from '../utils/trace.js';
 
 const { chainId } = config.chain;
@@ -509,325 +498,6 @@ const _cleanTransferredWorkerpoolOrders = async ({
   }
 };
 
-const _cleanRevokedUserOrders = async ({
-  address = throwIfMissing(),
-  role = throwIfMissing(),
-  blockNumber,
-}) => {
-  if (role !== KYC_MEMBER_ROLE) {
-    logger.debug(`user ${address} revoked role is not KYC`);
-    return;
-  }
-  // check user  isKYC
-  const eRlcContract = getERlc();
-  const isKYC = await callAtBlock(
-    eRlcContract.functions.isKYC,
-    [address],
-    blockNumber,
-  );
-  if (isKYC) {
-    logger.debug(`user ${address} is KYC`);
-    return;
-  }
-  logger.debug(`user ${address} KYC revoked`);
-
-  // fix block height to prevent the risk of moving indexes in registries
-  const blockNumberOverride =
-    blockNumber || (await getBlockNumber(getProvider()));
-  const ApporderModel = await apporderModel.getModel(chainId);
-  const DatasetorderModel = await datasetorderModel.getModel(chainId);
-  const WorkerpoolorderModel = await workerpoolorderModel.getModel(chainId);
-  const RequestorderModel = await requestorderModel.getModel(chainId);
-
-  // clean orders signed by user
-  const [
-    userApporders,
-    userDatasetorders,
-    userWorkerpoolorders,
-    userRequestorders,
-  ] = await Promise.all([
-    ApporderModel.find({
-      signer: address,
-      status: STATUS_MAP.OPEN,
-      remaining: { $gt: 0 },
-    }),
-    DatasetorderModel.find({
-      signer: address,
-      status: STATUS_MAP.OPEN,
-      remaining: { $gt: 0 },
-    }),
-    WorkerpoolorderModel.find({
-      signer: address,
-      status: STATUS_MAP.OPEN,
-      remaining: { $gt: 0 },
-    }),
-    RequestorderModel.find({
-      signer: address,
-      status: STATUS_MAP.OPEN,
-      remaining: { $gt: 0 },
-    }),
-  ]);
-
-  await Promise.all([
-    cleanApporders({ orders: userApporders, reason: 'signer KYC revoked' }),
-    cleanDatasetorders({
-      orders: userDatasetorders,
-      reason: 'signer KYC revoked',
-    }),
-    cleanWorkerpoolorders({
-      orders: userWorkerpoolorders,
-      reason: 'signer KYC revoked',
-    }),
-    cleanRequestorders({
-      orders: userRequestorders,
-      reason: 'signer KYC revoked',
-    }),
-  ]);
-
-  // list user apps
-  const appRegistryContract = getAppRegistry();
-  const appsCount = await callAtBlock(
-    appRegistryContract.functions.balanceOf,
-    [address],
-    blockNumberOverride,
-  );
-  const deadApps = await Promise.all(
-    new Array(Number(appsCount))
-      .fill(null)
-      .map(async (e, i) => {
-        // protect from fork, index may be out of bound and cause VM execution error
-        try {
-          const resourceId = await callAtBlock(
-            appRegistryContract.functions.tokenOfOwnerByIndex,
-            [address, i],
-            blockNumberOverride,
-          );
-          return tokenIdToAddress(resourceId);
-        } catch (err) {
-          logger.warn(
-            `failed to get app ${i} for owner ${address}${
-              blockNumberOverride && ` at block ${blockNumberOverride}`
-            } : ${err}`,
-          );
-          return null;
-        }
-      })
-      .filter((e) => e !== null),
-  );
-  logger.debug('deadApps (owner KYC revoked)', deadApps);
-  // list orders depending on user apps
-  const [
-    userAppDependantDatasetorders,
-    userAppDependantWorkerpoolorders,
-    userAppDependantRequestorders,
-  ] = await Promise.all([
-    Promise.all(
-      deadApps.map((app) =>
-        DatasetorderModel.find({
-          'order.apprestrict': app,
-          status: STATUS_MAP.OPEN,
-          remaining: { $gt: 0 },
-        }),
-      ),
-    ).then((res) => res.reduce((acc, curr) => [...acc, ...curr], [])),
-    Promise.all(
-      deadApps.map((app) =>
-        WorkerpoolorderModel.find({
-          'order.apprestrict': app,
-          status: STATUS_MAP.OPEN,
-          remaining: { $gt: 0 },
-        }),
-      ),
-    ).then((res) => res.reduce((acc, curr) => [...acc, ...curr], [])),
-    Promise.all(
-      deadApps.map((app) =>
-        RequestorderModel.find({
-          'order.app': app,
-          status: STATUS_MAP.OPEN,
-          remaining: { $gt: 0 },
-        }),
-      ),
-    ).then((res) => res.reduce((acc, curr) => [...acc, ...curr], [])),
-  ]);
-
-  await Promise.all([
-    cleanDatasetorders({
-      orders: userAppDependantDatasetorders,
-      reason: 'KYC revoked app owner dependant',
-    }),
-    cleanWorkerpoolorders({
-      orders: userAppDependantWorkerpoolorders,
-      reason: 'KYC revoked app owner dependant',
-    }),
-    cleanRequestorders({
-      orders: userAppDependantRequestorders,
-      reason: 'KYC revoked app owner dependant',
-    }),
-  ]);
-
-  // list user datasets
-  const datasetRegistryContract = getDatasetRegistry();
-  const datasetsCount = await callAtBlock(
-    datasetRegistryContract.functions.balanceOf,
-    [address],
-    blockNumberOverride,
-  );
-  const deadDatasets = await Promise.all(
-    new Array(Number(datasetsCount))
-      .fill(null)
-      .map(async (e, i) => {
-        // protect from fork, index may be out of bound and cause VM execution error
-        try {
-          const resourceId = await callAtBlock(
-            datasetRegistryContract.functions.tokenOfOwnerByIndex,
-            [address, i],
-            blockNumberOverride,
-          );
-          return tokenIdToAddress(resourceId);
-        } catch (err) {
-          logger.warn(
-            `failed to get dataset ${i} for owner ${address}${
-              blockNumberOverride && ` at block ${blockNumberOverride}`
-            } : ${err}`,
-          );
-          return null;
-        }
-      })
-      .filter((e) => e !== null),
-  );
-  logger.debug('deadDatasets (owner KYC revoked)', deadDatasets);
-  // list orders depending on user datasets
-  const [
-    userDatasetDependantApporders,
-    userDatasetDependantWorkerpoolorders,
-    userDatasetDependantRequestorders,
-  ] = await Promise.all([
-    Promise.all(
-      deadDatasets.map((dataset) =>
-        ApporderModel.find({
-          'order.datasetrestrict': dataset,
-          status: STATUS_MAP.OPEN,
-          remaining: { $gt: 0 },
-        }),
-      ),
-    ).then((res) => res.reduce((acc, curr) => [...acc, ...curr], [])),
-    Promise.all(
-      deadDatasets.map((dataset) =>
-        WorkerpoolorderModel.find({
-          'order.datasetrestrict': dataset,
-          status: STATUS_MAP.OPEN,
-          remaining: { $gt: 0 },
-        }),
-      ),
-    ).then((res) => res.reduce((acc, curr) => [...acc, ...curr], [])),
-    Promise.all(
-      deadDatasets.map((dataset) =>
-        RequestorderModel.find({
-          'order.dataset': dataset,
-          status: STATUS_MAP.OPEN,
-          remaining: { $gt: 0 },
-        }),
-      ),
-    ).then((res) => res.reduce((acc, curr) => [...acc, ...curr], [])),
-  ]);
-
-  await Promise.all([
-    cleanApporders({
-      orders: userDatasetDependantApporders,
-      reason: 'KYC revoked dataset owner dependant',
-    }),
-    cleanWorkerpoolorders({
-      orders: userDatasetDependantWorkerpoolorders,
-      reason: 'KYC revoked dataset owner dependant',
-    }),
-    cleanRequestorders({
-      orders: userDatasetDependantRequestorders,
-      reason: 'KYC revoked dataset owner dependant',
-    }),
-  ]);
-
-  // list user workerpools
-  const workerpoolRegistryContract = getWorkerpoolRegistry();
-  const workerpoolsCount = await callAtBlock(
-    workerpoolRegistryContract.functions.balanceOf,
-    [address],
-    blockNumberOverride,
-  );
-  const deadWorkerpools = await Promise.all(
-    new Array(Number(workerpoolsCount))
-      .fill(null)
-      .map(async (e, i) => {
-        // protect from fork, index may be out of bound and cause VM execution error
-        try {
-          const resourceId = await callAtBlock(
-            workerpoolRegistryContract.functions.tokenOfOwnerByIndex,
-            [address, i],
-            blockNumberOverride,
-          );
-          return tokenIdToAddress(resourceId);
-        } catch (err) {
-          logger.warn(
-            `failed to get workerpool ${i} for owner ${address}${
-              blockNumberOverride && ` at block ${blockNumberOverride}`
-            } : ${err}`,
-          );
-          return null;
-        }
-      })
-      .filter((e) => e !== null),
-  );
-  logger.debug('deadWorkerpools (owner KYC revoked)', deadWorkerpools);
-  // list orders depending on user workerpools
-  const [
-    userWorkerpoolDependantApporders,
-    userWorkerpoolDependantDatasetorders,
-    userWorkerpoolDependantRequestorders,
-  ] = await Promise.all([
-    Promise.all(
-      deadWorkerpools.map((workerpool) =>
-        ApporderModel.find({
-          'order.workerpoolrestrict': workerpool,
-          status: STATUS_MAP.OPEN,
-          remaining: { $gt: 0 },
-        }),
-      ),
-    ).then((res) => res.reduce((acc, curr) => [...acc, ...curr], [])),
-    Promise.all(
-      deadWorkerpools.map((workerpool) =>
-        DatasetorderModel.find({
-          'order.workerpoolrestrict': workerpool,
-          status: STATUS_MAP.OPEN,
-          remaining: { $gt: 0 },
-        }),
-      ),
-    ).then((res) => res.reduce((acc, curr) => [...acc, ...curr], [])),
-    Promise.all(
-      deadWorkerpools.map((workerpool) =>
-        RequestorderModel.find({
-          'order.workerpool': workerpool,
-          status: STATUS_MAP.OPEN,
-          remaining: { $gt: 0 },
-        }),
-      ),
-    ).then((res) => res.reduce((acc, curr) => [...acc, ...curr], [])),
-  ]);
-
-  await Promise.all([
-    cleanApporders({
-      orders: userWorkerpoolDependantApporders,
-      reason: 'KYC revoked workerpool owner dependant',
-    }),
-    cleanDatasetorders({
-      orders: userWorkerpoolDependantDatasetorders,
-      reason: 'KYC revoked workerpool owner dependant',
-    }),
-    cleanRequestorders({
-      orders: userWorkerpoolDependantRequestorders,
-      reason: 'KYC revoked workerpool owner dependant',
-    }),
-  ]);
-};
-
 const _updateApporder = async ({
   orderHash = throwIfMissing(),
   blockNumber,
@@ -1142,7 +812,6 @@ const cleanTransferredWorkerpoolOrders = traceAll(
     logger,
   },
 );
-const cleanRevokedUserOrders = traceAll(_cleanRevokedUserOrders, { logger });
 const updateApporder = traceAll(_updateApporder, { logger });
 const updateDatasetorder = traceAll(_updateDatasetorder, { logger });
 const updateWorkerpoolorder = traceAll(_updateWorkerpoolorder, { logger });
@@ -1159,7 +828,6 @@ export {
   cleanTransferredAppOrders,
   cleanTransferredDatasetOrders,
   cleanTransferredWorkerpoolOrders,
-  cleanRevokedUserOrders,
   updateApporder,
   updateDatasetorder,
   updateWorkerpoolorder,

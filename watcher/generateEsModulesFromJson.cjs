@@ -18,10 +18,6 @@ const minifiers = {
 
 const sources = [
   [
-    '@iexec/erlc/build/contracts-min/ERLCTokenSwap.json',
-    { dir: '@iexec/erlc', minifier: minifiers.truffleDeployment },
-  ],
-  [
     '@iexec/poco/artifacts/contracts/registries/RegistryEntry.sol/RegistryEntry.json',
     { dir: '@iexec/poco', minifier: minifiers.abi },
   ],

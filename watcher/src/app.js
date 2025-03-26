@@ -7,7 +7,6 @@ import {
   registerAppRegistryEvents,
   registerDatasetRegistryEvents,
   registerWorkerpoolRegistryEvents,
-  registerERlcEvents,
   registerNewBlock,
   unsubscribeAllEvents,
   replayPastEvents,
@@ -63,7 +62,6 @@ const start = async ({ replayer = true, syncWatcher = true } = {}) => {
 
     logger.log('starting new events listeners...');
     registerHubEvents();
-    registerERlcEvents();
     registerAppRegistryEvents();
     registerDatasetRegistryEvents();
     registerWorkerpoolRegistryEvents();

@@ -14,7 +14,6 @@ import {
   cleanTransferredAppOrders,
   cleanTransferredDatasetOrders,
   cleanTransferredWorkerpoolOrders,
-  cleanRevokedUserOrders,
 } from '../services/order.js';
 import { tokenIdToAddress } from '../utils/iexec-utils.js';
 import { NULL_ADDRESS, cleanRPC } from '../utils/eth-utils.js';
@@ -284,29 +283,6 @@ const _processTransferWorkerpool = async (event, { isReplay = false } = {}) => {
   }
 };
 
-const _processRoleRevoked = async (event, { isReplay = false } = {}) => {
-  try {
-    logger.debug(
-      'processRoleRevoked',
-      isReplay ? 'replay' : '',
-      event.transactionHash,
-    );
-    const { account, role } = cleanRPC(event.args);
-    await cleanRevokedUserOrders({
-      address: account,
-      role,
-      blockNumber: isReplay ? undefined : event.blockNumber,
-    });
-  } catch (error) {
-    errorHandler(error, {
-      type: 'process-event',
-      function: 'processRoleRevoked',
-      event,
-      isReplay,
-    });
-  }
-};
-
 const _processNewBlock = async (blockNumber) => {
   try {
     logger.debug('Block', blockNumber);
@@ -338,7 +314,6 @@ const processClosedWorkerpoolOrder = traceAll(_processClosedWorkerpoolOrder, {
 const processClosedRequestOrder = traceAll(_processClosedRequestOrder, {
   logger,
 });
-const processRoleRevoked = traceAll(_processRoleRevoked, { logger });
 const processNewBlock = traceAll(_processNewBlock, { logger });
 
 export {
@@ -352,6 +327,5 @@ export {
   processClosedDatasetOrder,
   processClosedWorkerpoolOrder,
   processClosedRequestOrder,
-  processRoleRevoked,
   processNewBlock,
 };

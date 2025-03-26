@@ -6,8 +6,6 @@ import { abi as datasetRegistryAbi } from './generated/@iexec/poco/DatasetRegist
 import { abi as appAbi } from './generated/@iexec/poco/App.js';
 import { abi as workerpoolAbi } from './generated/@iexec/poco/Workerpool.js';
 import { abi as datasetAbi } from './generated/@iexec/poco/Dataset.js';
-import { abi as eRlcAbi } from './generated/@iexec/erlc/ERLCTokenSwap.js';
-import { FLAVOURS, STANDARD_FLAVOUR } from './utils/iexec-utils.js';
 import { getLogger } from './utils/logger.js';
 
 const logger = getLogger('config');
@@ -15,7 +13,6 @@ const logger = getLogger('config');
 const {
   MONGO_HOST,
   REDIS_HOST,
-  FLAVOUR,
   ETH_WS_HOST,
   ETH_RPC_HOST,
   CHAIN,
@@ -32,11 +29,6 @@ const {
 } = process.env;
 
 if (!CHAIN) throw Error('missing env CHAIN');
-
-const flavour = FLAVOUR !== undefined ? FLAVOUR : STANDARD_FLAVOUR;
-if (!FLAVOURS.includes(flavour)) {
-  throw Error(`invalid FLAVOUR ${flavour} must be one of ${FLAVOURS}`);
-}
 
 const name = CHAIN.toUpperCase();
 
@@ -80,7 +72,6 @@ const abi = {
   app: appAbi,
   dataset: datasetAbi,
   workerpool: workerpoolAbi,
-  erlc: eRlcAbi,
 };
 
 const runtime = {
@@ -114,9 +105,8 @@ if (!chain.httpHost) {
 }
 
 logger.log('chain', chain);
-logger.log('flavour', flavour);
 logger.log('mongo', mongo);
 logger.log('redis', redis);
 logger.log('runtime', runtime);
 
-export { abi, chain, flavour, mongo, redis, runtime };
+export { abi, chain, mongo, redis, runtime };

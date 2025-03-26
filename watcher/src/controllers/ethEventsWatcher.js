@@ -5,7 +5,6 @@ import {
   getAppRegistry,
   getDatasetRegistry,
   getWorkerpoolRegistry,
-  getERlc,
 } from '../loaders/ethereum.js';
 import {
   processClosedAppOrder,
@@ -18,7 +17,6 @@ import {
   processTransferDataset,
   processTransferWorkerpool,
   processStakeLoss,
-  processRoleRevoked,
   processNewBlock,
 } from './ethEventsProcessor.js';
 import {
@@ -27,7 +25,6 @@ import {
   cleanRPC,
   NULL_ADDRESS,
 } from '../utils/eth-utils.js';
-import { isEnterpriseFlavour } from '../utils/iexec-utils.js';
 import * as config from '../config.js';
 import { traceAll } from '../utils/trace.js';
 
@@ -61,16 +58,6 @@ const _registerHubEvents = () => {
   hubContract.on('Transfer', extractEvent(processStakeLoss));
 };
 
-const _registerERlcEvents = async () => {
-  if (isEnterpriseFlavour(config.flavour)) {
-    logger.log('registering eRLC events');
-    const eRlcContract = getERlc();
-    eRlcContract.on('RoleRevoked', extractEvent(processRoleRevoked));
-  } else {
-    logger.log('skipping register eRLC events');
-  }
-};
-
 const _registerAppRegistryEvents = () => {
   logger.log('registering AppRegistry events');
   const appRegistryContract = getAppRegistry();
@@ -97,15 +84,6 @@ const unsubscribeHubEvents = () => {
   getHub().removeAllListeners();
 };
 
-const unsubscribeERlcEvents = async () => {
-  if (isEnterpriseFlavour(config.flavour)) {
-    logger.log('unsubscribe eRLC events');
-    getERlc().removeAllListeners();
-  } else {
-    logger.log('skipping unsubscribe eRLC events');
-  }
-};
-
 const unsubscribeAppRegistryEvents = () => {
   logger.log('unsubscribe AppRegistry events');
   getAppRegistry().removeAllListeners();
@@ -126,7 +104,6 @@ const _unsubscribeAllEvents = () => {
   unsubscribeAppRegistryEvents();
   unsubscribeDatasetRegistryEvents();
   unsubscribeWorkerpoolRegistryEvents();
-  unsubscribeERlcEvents();
   getProvider().removeAllListeners();
 };
 
@@ -168,7 +145,6 @@ const replayPastEventBatch = traceAll(
       closedDatasetOrderEvents,
       closedWorkerpoolOrderEvents,
       closedRequestOrderEvents,
-      roleRevokedEvents,
     ] = await Promise.all([
       getContractPastEvent(appRegistryContract, 'Transfer', {
         fromBlock,
@@ -210,12 +186,6 @@ const replayPastEventBatch = traceAll(
         fromBlock,
         toBlock,
       }),
-      isEnterpriseFlavour(config.flavour)
-        ? getContractPastEvent(getERlc(), 'RoleRevoked', {
-            fromBlock,
-            toBlock,
-          })
-        : [],
     ]);
 
     const eventsArray = transferAppEvents
@@ -285,12 +255,6 @@ const replayPastEventBatch = traceAll(
         closedRequestOrderEvents.map((e) => ({
           event: e,
           process: processClosedRequestOrder,
-        })),
-      )
-      .concat(
-        roleRevokedEvents.map((e) => ({
-          event: e,
-          process: processRoleRevoked,
         })),
       );
 
@@ -403,7 +367,6 @@ const _replayPastEvents = async (
 
 const registerNewBlock = traceAll(_registerNewBlock, { logger });
 const registerHubEvents = traceAll(_registerHubEvents, { logger });
-const registerERlcEvents = traceAll(_registerERlcEvents, { logger });
 const registerAppRegistryEvents = traceAll(_registerAppRegistryEvents, {
   logger,
 });
@@ -422,7 +385,6 @@ const replayPastEvents = traceAll(_replayPastEvents, { logger });
 export {
   registerNewBlock,
   registerHubEvents,
-  registerERlcEvents,
   registerAppRegistryEvents,
   registerDatasetRegistryEvents,
   registerWorkerpoolRegistryEvents,

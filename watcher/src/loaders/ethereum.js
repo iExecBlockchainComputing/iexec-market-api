@@ -2,7 +2,6 @@ import ethers from 'ethers';
 import * as config from '../config.js';
 import { getLogger } from '../utils/logger.js';
 import { errorHandler } from '../utils/error.js';
-import { isEnterpriseFlavour } from '../utils/iexec-utils.js';
 
 const logger = getLogger('ethereum');
 
@@ -21,7 +20,6 @@ let hubContract;
 let appRegistryContract;
 let datasetRegistryContract;
 let workerpoolRegistryContract;
-let eRlcContract;
 
 const init = async () => {
   try {
@@ -78,13 +76,6 @@ const init = async () => {
       config.abi.workerpoolRegistry,
       wsProvider,
     );
-    if (isEnterpriseFlavour(config.flavour)) {
-      eRlcContract = new ethers.Contract(
-        tokenAddress,
-        config.abi.erlc,
-        wsProvider,
-      );
-    }
     initialized = true;
   } catch (e) {
     logger.warn('init()', e);
@@ -106,7 +97,6 @@ const getAppRegistry = () => throwIfNotReady() || appRegistryContract;
 const getDatasetRegistry = () => throwIfNotReady() || datasetRegistryContract;
 const getWorkerpoolRegistry = () =>
   throwIfNotReady() || workerpoolRegistryContract;
-const getERlc = () => throwIfNotReady() || eRlcContract;
 const getApp = (address) =>
   throwIfNotReady() || new ethers.Contract(address, config.abi.app, wsProvider);
 const getDataset = (address) =>
@@ -124,7 +114,6 @@ export {
   getAppRegistry,
   getDatasetRegistry,
   getWorkerpoolRegistry,
-  getERlc,
   getApp,
   getDataset,
   getWorkerpool,
