@@ -11,7 +11,9 @@
     "test-native": "echo 'RUNNING TESTS ON NATIVE CHAIN' && DEBUG=iexec-market-api* CHAINS=NATIVE NATIVE_CHAIN_ID=65535 NATIVE_IEXEC_ADDRESS=0xC129e7917b7c7DeDfAa5Fff1FB18d5D7050fE8ca NATIVE_IS_NATIVE=true NATIVE_ETH_RPC_HOST=http://localhost:18545 MONGO_HOST=localhost REDIS_HOST=localhost jest api-common --coverage --runInBand --forceExit",
     "ci-test-token": "echo 'RUNNING TESTS ON TOKEN CHAIN' && CHAINS=TOKEN TOKEN_CHAIN_ID=65535 TOKEN_IEXEC_ADDRESS=0xC129e7917b7c7DeDfAa5Fff1FB18d5D7050fE8ca TOKEN_ETH_RPC_HOST=http://chain-token:8545 MONGO_HOST=mongo REDIS_HOST=redis jest api-common --coverage --runInBand --forceExit",
     "ci-test-token-enterprise": "echo 'RUNNING TESTS ON TOKEN ENTERPRISE CHAIN' && FLAVOUR=enterprise CHAINS=TOKEN_ENTERPRISE TOKEN_ENTERPRISE_CHAIN_ID=65535 TOKEN_ENTERPRISE_IEXEC_ADDRESS=0xb80C02d24791fA92fA8983f15390274698A75D23 TOKEN_ENTERPRISE_ETH_RPC_HOST=http://chain-token:8545 MONGO_HOST=mongo REDIS_HOST=redis jest api-common api-enterprise --coverage --runInBand --forceExit",
-    "ci-test-native": "echo 'RUNNING TESTS ON NATIVE CHAIN' && CHAINS=NATIVE NATIVE_CHAIN_ID=65535 NATIVE_IEXEC_ADDRESS=0xC129e7917b7c7DeDfAa5Fff1FB18d5D7050fE8ca NATIVE_IS_NATIVE=true NATIVE_ETH_RPC_HOST=http://chain-native:8545 MONGO_HOST=mongo REDIS_HOST=redis jest api-common --coverage --runInBand --forceExit"
+    "ci-test-native": "echo 'RUNNING TESTS ON NATIVE CHAIN' && CHAINS=NATIVE NATIVE_CHAIN_ID=65535 NATIVE_IEXEC_ADDRESS=0xC129e7917b7c7DeDfAa5Fff1FB18d5D7050fE8ca NATIVE_IS_NATIVE=true NATIVE_ETH_RPC_HOST=http://chain-native:8545 MONGO_HOST=mongo REDIS_HOST=redis jest api-common --coverage --runInBand --forceExit",
+    "stop-test-stack": "docker compose -f test/docker-compose.yml down -v",
+    "start-test-stack": "npm run stop-test-stack && docker compose -f test/docker-compose.yml up -d"
   },
   "repository": {
     "type": "git",
