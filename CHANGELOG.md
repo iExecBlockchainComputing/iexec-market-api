@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## NEXT
+
+- dropped support for iExec Enterprise (ERlc)
+- migrate watcher to ESM
+- upgrade watcher runtime to node 22
+- upgrade watcher deps ethers to v6
+
 ## v6.4.1
 
 - fix openapi for `GET /requestorders`
