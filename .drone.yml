@@ -15,7 +15,7 @@ steps:
       - sleep 30
 
   - name: api test
-    image: node:16.19.0-alpine
+    image: node:22.14-alpine3.21
     commands:
       - apk update && apk upgrade
       - node -v
