@@ -1,4 +1,4 @@
-import ethers from 'ethers';
+import { JsonRpcProvider, WebSocketProvider, Contract } from 'ethers';
 import * as config from '../config.js';
 import { getLogger } from '../utils/logger.js';
 import { errorHandler } from '../utils/error.js';
@@ -12,7 +12,7 @@ logger.log('httpHost', httpHost);
 
 let wsProvider;
 
-const rpcProvider = new ethers.providers.JsonRpcProvider(httpHost);
+const rpcProvider = new JsonRpcProvider(httpHost);
 
 let initialized = false;
 
@@ -24,16 +24,16 @@ let workerpoolRegistryContract;
 const init = async () => {
   try {
     logger.log('opening ws');
-    wsProvider = new ethers.providers.WebSocketProvider(wsHost);
-    wsProvider._websocket.on('open', () => logger.log('ws open'));
-    wsProvider._websocket.on('error', (e) => {
+    wsProvider = new WebSocketProvider(wsHost);
+    wsProvider.websocket.on('open', () => logger.log('ws open'));
+    wsProvider.websocket.on('error', (e) => {
       errorHandler(e, {
         type: 'ethereum-ws-error',
         error: e,
         critical: true,
       });
     });
-    wsProvider._websocket.on('close', async (code, reason) => {
+    wsProvider.websocket.on('close', async (code, reason) => {
       initialized = false;
       errorHandler(Error('ws closed'), {
         type: 'ethereum-ws-closed',
@@ -44,34 +44,35 @@ const init = async () => {
     });
 
     logger.debug('hubAddress', hubAddress);
-    hubContract = new ethers.Contract(hubAddress, config.abi.hub, wsProvider);
+    hubContract = new Contract(hubAddress, config.abi.hub, wsProvider);
     const [
       [appRegistryAddress],
       [datasetRegistryAddress],
       [workerpoolRegistryAddress],
       [tokenAddress],
     ] = await Promise.all([
-      hubContract.functions.appregistry(),
-      hubContract.functions.datasetregistry(),
-      hubContract.functions.workerpoolregistry(),
-      hubContract.functions.token(),
+      hubContract.appregistry.staticCallResult(),
+      hubContract.datasetregistry.staticCallResult(),
+      hubContract.workerpoolregistry.staticCallResult(),
+      hubContract.token.staticCallResult(),
     ]);
+
     logger.debug('appRegistryAddress', appRegistryAddress);
     logger.debug('datasetRegistryAddress', datasetRegistryAddress);
     logger.debug('workerpoolRegistryAddress', workerpoolRegistryAddress);
     logger.debug('tokenAddress', tokenAddress);
 
-    appRegistryContract = new ethers.Contract(
+    appRegistryContract = new Contract(
       appRegistryAddress,
       config.abi.appRegistry,
       wsProvider,
     );
-    datasetRegistryContract = new ethers.Contract(
+    datasetRegistryContract = new Contract(
       datasetRegistryAddress,
       config.abi.datasetRegistry,
       wsProvider,
     );
-    workerpoolRegistryContract = new ethers.Contract(
+    workerpoolRegistryContract = new Contract(
       workerpoolRegistryAddress,
       config.abi.workerpoolRegistry,
       wsProvider,
@@ -98,13 +99,11 @@ const getDatasetRegistry = () => throwIfNotReady() || datasetRegistryContract;
 const getWorkerpoolRegistry = () =>
   throwIfNotReady() || workerpoolRegistryContract;
 const getApp = (address) =>
-  throwIfNotReady() || new ethers.Contract(address, config.abi.app, wsProvider);
+  throwIfNotReady() || new Contract(address, config.abi.app, wsProvider);
 const getDataset = (address) =>
-  throwIfNotReady() ||
-  new ethers.Contract(address, config.abi.dataset, wsProvider);
+  throwIfNotReady() || new Contract(address, config.abi.dataset, wsProvider);
 const getWorkerpool = (address) =>
-  throwIfNotReady() ||
-  new ethers.Contract(address, config.abi.workerpool, wsProvider);
+  throwIfNotReady() || new Contract(address, config.abi.workerpool, wsProvider);
 
 export {
   init,

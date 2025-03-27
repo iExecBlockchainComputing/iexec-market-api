@@ -1,7 +1,5 @@
-import { utils } from 'ethers';
-import { STATUS_MAP } from '../utils/order-utils.js';
-
-const { getAddress } = utils;
+import { getAddress } from 'ethers';
+import { STATUS_MAP } from '../utils/iexec-utils.js';
 
 const addressValidator = {
   validator: (address) => {
@@ -82,6 +80,7 @@ const SafeUintSchema = {
   min: 0,
   max: Number.MAX_SAFE_INTEGER,
   required: true,
+  set: (v) => (typeof v === 'bigint' ? Number(v) : v),
 };
 
 const PositiveStrictSafeUintSchema = {

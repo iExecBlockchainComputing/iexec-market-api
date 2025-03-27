@@ -22,7 +22,7 @@ const _addCategory = async ({
     const hubContract = getHub();
     const { timestamp } = await waitForGetBlock(provider, blockNumber);
     const { name, description, workClockTimeRef } = await callAtBlock(
-      hubContract.functions.viewCategory,
+      hubContract.viewCategory.staticCallResult,
       [catid],
       blockNumber,
     );

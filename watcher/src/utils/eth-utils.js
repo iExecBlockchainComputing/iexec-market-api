@@ -1,3 +1,4 @@
+import { Result } from 'ethers';
 import * as config from '../config.js';
 import { getLogger } from './logger.js';
 import { traceAll } from './trace.js';
@@ -20,29 +21,8 @@ const throwIfTimeout = (promise, timeout = 30 * 1000) =>
     }),
   ]);
 
-const cleanRPC = (res) => {
-  if (typeof res === 'boolean') {
-    return res;
-  }
-  if (typeof res === 'string') {
-    return res;
-  }
-  if (typeof res === 'number') {
-    return res.toString();
-  }
-  if (Array.isArray(res) && res.length === Object.keys(res).length) {
-    return res.map((e) => cleanRPC(e));
-  }
-  if (typeof res === 'object' && res._isBigNumber) {
-    return res.toString();
-  }
-  return Object.keys(res).reduce((acc, key) => {
-    if (Number.isNaN(parseInt(key, 10))) {
-      return Object.assign(acc, { [key]: cleanRPC(res[key]) });
-    }
-    return acc;
-  }, {});
-};
+const formatEthersResult = (result) =>
+  result instanceof Result ? result.toObject(true) : result;
 
 const retryableCall = async (
   obj,
@@ -131,7 +111,7 @@ const _callAtBlock = async (method, args = [], blockNumber = undefined) => {
       }
     }
   }
-  return cleanRPC(res[0]);
+  return formatEthersResult(res[0]);
 };
 const callAtBlock = traceAll(_callAtBlock, { logger });
 
@@ -172,7 +152,7 @@ const waitForGetBlock = traceAll(_waitForGetBlock, { logger });
 
 export {
   NULL_ADDRESS,
-  cleanRPC,
+  formatEthersResult,
   callAtBlock,
   waitForGetBlock,
   getBlockNumber,

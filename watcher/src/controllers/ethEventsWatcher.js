@@ -22,8 +22,8 @@ import {
 import {
   getBlockNumber,
   queryFilter,
-  cleanRPC,
   NULL_ADDRESS,
+  formatEthersResult,
 } from '../utils/eth-utils.js';
 import * as config from '../config.js';
 import { traceAll } from '../utils/trace.js';
@@ -33,8 +33,8 @@ const logger = getLogger('controllers:ethEventsWatcher');
 const extractEvent =
   (processCallback) =>
   (...args) => {
-    const event = args[args.length - 1];
-    return processCallback(event);
+    const contractEventPayload = args[args.length - 1];
+    return processCallback(contractEventPayload.log);
   };
 
 const _registerNewBlock = () => {
@@ -212,8 +212,8 @@ const replayPastEventBatch = traceAll(
         transferStakeEvents
           .filter((e) => {
             // filter mint & no value
-            const { from, value } = cleanRPC(e.args);
-            return from !== NULL_ADDRESS && value !== '0';
+            const { from, value } = formatEthersResult(e.args);
+            return from !== NULL_ADDRESS && value !== 0n;
           })
           .reduce((acc, curr) => {
             // filter unique addresses

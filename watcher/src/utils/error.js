@@ -68,7 +68,15 @@ const recoverOnCriticalError = async () => {
 };
 
 const errorHandler = async (error, context) => {
-  logError(error, '\nContext: ', JSON.stringify(context, null, 2));
+  logError(
+    error,
+    '\nContext: ',
+    JSON.stringify(
+      context,
+      // safe stringify bigint
+      (_, v) => (typeof v === 'bigint' ? `BigInt('${v}')` : v),
+    ),
+  );
   if (context.critical) {
     recoverOnCriticalError();
   }

@@ -16,7 +16,7 @@ import {
   cleanTransferredWorkerpoolOrders,
 } from '../services/order.js';
 import { tokenIdToAddress } from '../utils/iexec-utils.js';
-import { NULL_ADDRESS, cleanRPC } from '../utils/eth-utils.js';
+import { NULL_ADDRESS, formatEthersResult } from '../utils/eth-utils.js';
 import { errorHandler } from '../utils/error.js';
 import { getLogger } from '../utils/logger.js';
 import { traceAll } from '../utils/trace.js';
@@ -31,7 +31,7 @@ const _processCreateCategory = async (event, { isReplay = false } = {}) => {
       isReplay ? 'replay' : '',
       transactionHash,
     );
-    const { catid } = cleanRPC(event.args);
+    const { catid } = formatEthersResult(event.args);
     await addCategory({
       catid,
       transactionHash,
@@ -62,7 +62,7 @@ const _processOrdersMatched = async (event, { isReplay = false } = {}) => {
       workerpoolHash,
       requestHash,
       volume,
-    } = cleanRPC(event.args);
+    } = formatEthersResult(event.args);
 
     await Promise.all([
       addDeal({
@@ -111,7 +111,7 @@ const _processClosedAppOrder = async (event, { isReplay = false } = {}) => {
       isReplay ? 'replay' : '',
       event.transactionHash,
     );
-    const { appHash } = cleanRPC(event.args);
+    const { appHash } = formatEthersResult(event.args);
     await cancelApporder({ orderHash: appHash });
   } catch (error) {
     errorHandler(error, {
@@ -130,7 +130,7 @@ const _processClosedDatasetOrder = async (event, { isReplay = false } = {}) => {
       isReplay ? 'replay' : '',
       event.transactionHash,
     );
-    const { datasetHash } = cleanRPC(event.args);
+    const { datasetHash } = formatEthersResult(event.args);
     await cancelDatasetorder({ orderHash: datasetHash });
   } catch (error) {
     errorHandler(error, {
@@ -152,7 +152,7 @@ const _processClosedWorkerpoolOrder = async (
       isReplay ? 'replay' : '',
       event.transactionHash,
     );
-    const { workerpoolHash } = cleanRPC(event.args);
+    const { workerpoolHash } = formatEthersResult(event.args);
     await cancelWorkerpoolorder({ orderHash: workerpoolHash });
   } catch (error) {
     errorHandler(error, {
@@ -171,7 +171,7 @@ const _processClosedRequestOrder = async (event, { isReplay = false } = {}) => {
       isReplay ? 'replay' : '',
       event.transactionHash,
     );
-    const { requestHash } = cleanRPC(event.args);
+    const { requestHash } = formatEthersResult(event.args);
     await cancelRequestorder({ orderHash: requestHash });
   } catch (error) {
     errorHandler(error, {
@@ -191,8 +191,8 @@ const _processStakeLoss = async (event, { isReplay = false } = {}) => {
       isReplay ? 'replay' : '',
       event.transactionHash,
     );
-    const { from, value } = cleanRPC(event.args);
-    if (from !== NULL_ADDRESS && value !== '0') {
+    const { from, value } = formatEthersResult(event.args);
+    if (from !== NULL_ADDRESS && value !== 0n) {
       await cleanBalanceDependantOrders({
         address: from,
         blockNumber: isReplay ? undefined : event.blockNumber,
@@ -215,7 +215,7 @@ const _processTransferApp = async (event, { isReplay = false } = {}) => {
       isReplay ? 'replay' : '',
       event.transactionHash,
     );
-    const { from, tokenId } = cleanRPC(event.args);
+    const { from, tokenId } = formatEthersResult(event.args);
     if (from !== NULL_ADDRESS) {
       await cleanTransferredAppOrders({
         address: from,
@@ -240,7 +240,7 @@ const _processTransferDataset = async (event, { isReplay = false } = {}) => {
       isReplay ? 'replay' : '',
       event.transactionHash,
     );
-    const { from, tokenId } = cleanRPC(event.args);
+    const { from, tokenId } = formatEthersResult(event.args);
     if (from !== NULL_ADDRESS) {
       await cleanTransferredDatasetOrders({
         address: from,
@@ -265,7 +265,7 @@ const _processTransferWorkerpool = async (event, { isReplay = false } = {}) => {
       isReplay ? 'replay' : '',
       event.transactionHash,
     );
-    const { from, tokenId } = cleanRPC(event.args);
+    const { from, tokenId } = formatEthersResult(event.args);
     if (from !== NULL_ADDRESS) {
       await cleanTransferredWorkerpoolOrders({
         address: from,

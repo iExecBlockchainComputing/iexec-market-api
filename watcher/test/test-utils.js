@@ -2,8 +2,8 @@ import { utils } from 'iexec';
 /**
  * @typedef {import('iexec').IExec} IExec;
  */
-import ethers from 'ethers';
-import { STATUS_MAP, tagToArray } from '../src/utils/order-utils.js';
+import { Contract, toBeHex } from 'ethers';
+import { STATUS_MAP, tagToArray } from '../src/utils/iexec-utils.js';
 import { getMongoose } from '../src/loaders/mongoose.js';
 import * as apporderModel from '../src/models/apporderModel.js';
 import * as datasetorderModel from '../src/models/datasetorderModel.js';
@@ -172,7 +172,7 @@ const getMatchableRequestorder = async (
 };
 
 const transferResourceERC721 = async (wallet, tokenAddress, to) => {
-  const resourceContract = new ethers.Contract(
+  const resourceContract = new Contract(
     tokenAddress,
     [
       {
@@ -192,7 +192,7 @@ const transferResourceERC721 = async (wallet, tokenAddress, to) => {
     wallet,
   );
   const registryAddress = await resourceContract.registry();
-  const registryContract = new ethers.Contract(
+  const registryContract = new Contract(
     registryAddress,
     [
       {
@@ -221,7 +221,7 @@ const transferResourceERC721 = async (wallet, tokenAddress, to) => {
     ],
     wallet,
   );
-  const tokenId = ethers.BigNumber.from(tokenAddress).toString();
+  const tokenId = toBeHex(tokenAddress);
   const initTx = await registryContract.transferFrom(
     wallet.address,
     to,

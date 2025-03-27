@@ -1,4 +1,3 @@
-import BN from 'bn.js';
 import * as config from '../config.js';
 import { eventEmitter } from '../loaders/eventEmitter.js';
 import {
@@ -13,8 +12,8 @@ import * as workerpoolorderModel from '../models/workerpoolorderModel.js';
 import * as requestorderModel from '../models/requestorderModel.js';
 import { getLogger } from '../utils/logger.js';
 import { throwIfMissing } from '../utils/error.js';
-import { STATUS_MAP, TAG_MAP, tagToArray } from '../utils/order-utils.js';
-import { callAtBlock, cleanRPC, NULL_ADDRESS } from '../utils/eth-utils.js';
+import { STATUS_MAP, TAG_MAP, tagToArray } from '../utils/iexec-utils.js';
+import { callAtBlock, NULL_ADDRESS } from '../utils/eth-utils.js';
 import { traceAll } from '../utils/trace.js';
 
 const { chainId } = config.chain;
@@ -145,9 +144,9 @@ const checkMatchableApporder = async ({ order = throwIfMissing() } = {}) => {
   if (!bestApporder) {
     return false;
   }
-  const bestAppPrice = new BN(bestApporder.order.appprice);
-  const appPrice = new BN(order.appmaxprice);
-  return !appPrice.lt(bestAppPrice);
+  const bestAppPrice = BigInt(bestApporder.order.appprice);
+  const appPrice = BigInt(order.appmaxprice);
+  return !(appPrice < bestAppPrice);
 };
 
 const checkMatchableDatasetorder = async ({
@@ -172,9 +171,9 @@ const checkMatchableDatasetorder = async ({
   if (!bestDatasetorder) {
     return false;
   }
-  const bestDatasetPrice = new BN(bestDatasetorder.order.datasetprice);
-  const datasetPrice = new BN(order.datasetmaxprice);
-  return !datasetPrice.lt(bestDatasetPrice);
+  const bestDatasetPrice = BigInt(bestDatasetorder.order.datasetprice);
+  const datasetPrice = BigInt(order.datasetmaxprice);
+  return !(datasetPrice < bestDatasetPrice);
 };
 
 const _cleanApporderDependantOrders = async ({
@@ -337,15 +336,13 @@ const _cleanBalanceDependantOrders = async ({
 } = {}) => {
   try {
     const hubContract = getHub();
-    const { stake } = cleanRPC(
-      await callAtBlock(
-        hubContract.functions.viewAccount,
-        [address],
-        blockNumber,
-      ),
+    const { stake: userStake } = await callAtBlock(
+      hubContract.viewAccount.staticCallResult,
+      [address],
+      blockNumber,
     );
+
     // todo run in parallel
-    const userStake = new BN(stake);
     const WorkerpoolorderModel = await workerpoolorderModel.getModel(chainId);
     const getDeadWorkerpoolOrders = async () => {
       const workerpoolorders = await WorkerpoolorderModel.find({
@@ -354,13 +351,11 @@ const _cleanBalanceDependantOrders = async ({
         'order.workerpoolprice': { $gt: 0 },
         remaining: { $gt: 0 },
       });
-      return workerpoolorders.filter((e) =>
-        userStake.lt(
-          new BN(e.order.workerpoolprice)
-            .mul(new BN(30))
-            .div(new BN(100))
-            .mul(new BN(e.remaining)),
-        ),
+      return workerpoolorders.filter(
+        (e) =>
+          userStake <
+          ((BigInt(e.order.workerpoolprice) * 30n) / 100n) *
+            BigInt(e.remaining),
       );
     };
     const RequestorderModel = await requestorderModel.getModel(chainId);
@@ -370,16 +365,13 @@ const _cleanBalanceDependantOrders = async ({
         status: STATUS_MAP.OPEN,
         remaining: { $gt: 0 },
       });
-      return requestorders.filter((e) =>
-        userStake.lt(
-          new BN(e.order.appmaxprice)
-            .add(
-              new BN(e.order.datasetmaxprice).add(
-                new BN(e.order.workerpoolmaxprice),
-              ),
-            )
-            .mul(new BN(e.remaining)),
-        ),
+      return requestorders.filter(
+        (e) =>
+          userStake <
+          (BigInt(e.order.appmaxprice) +
+            BigInt(e.order.datasetmaxprice) +
+            BigInt(e.order.workerpoolmaxprice)) *
+            BigInt(e.remaining),
       );
     };
     const [deadRequestOrders, deadWorkerpoolOrders] = await Promise.all([
@@ -411,7 +403,7 @@ const _cleanTransferredAppOrders = async ({
   try {
     const appContract = getApp(app);
     const owner = await callAtBlock(
-      appContract.functions.owner,
+      appContract.owner.staticCallResult,
       [],
       blockNumber,
     );
@@ -443,7 +435,7 @@ const _cleanTransferredDatasetOrders = async ({
   try {
     const datasetContract = getDataset(dataset);
     const owner = await callAtBlock(
-      datasetContract.functions.owner,
+      datasetContract.owner.staticCallResult,
       [],
       blockNumber,
     );
@@ -474,7 +466,7 @@ const _cleanTransferredWorkerpoolOrders = async ({
   try {
     const workerpoolContract = getWorkerpool(workerpool);
     const owner = await callAtBlock(
-      workerpoolContract.functions.owner,
+      workerpoolContract.owner.staticCallResult,
       [],
       blockNumber,
     );
@@ -508,23 +500,21 @@ const _updateApporder = async ({
 
     if (publishedOrder) {
       const hubContract = getHub();
-      const consumedVolume = new BN(
-        await callAtBlock(
-          hubContract.functions.viewConsumed,
-          [orderHash],
-          blockNumber,
-        ),
+      const consumedVolume = await callAtBlock(
+        hubContract.viewConsumed.staticCallResult,
+        [orderHash],
+        blockNumber,
       );
-      const volume = new BN(publishedOrder.order.volume).sub(consumedVolume);
+      const volume = publishedOrder.order.volume - Number(consumedVolume);
       const remaining =
         publishedOrder.remaining !== undefined
-          ? Math.min(volume.toNumber(), publishedOrder.remaining)
-          : volume.toNumber();
+          ? Math.min(volume, publishedOrder.remaining)
+          : volume;
       if (remaining === publishedOrder.remaining) {
         return;
       }
       const update = { remaining };
-      if (volume.isZero()) {
+      if (volume === 0) {
         update.status = STATUS_MAP.FILLED;
       }
       const saved = await ApporderModel.findOneAndUpdate(
@@ -557,23 +547,21 @@ const _updateDatasetorder = async ({
 
     if (publishedOrder) {
       const hubContract = getHub();
-      const consumedVolume = new BN(
-        await callAtBlock(
-          hubContract.functions.viewConsumed,
-          [orderHash],
-          blockNumber,
-        ),
+      const consumedVolume = await callAtBlock(
+        hubContract.viewConsumed.staticCallResult,
+        [orderHash],
+        blockNumber,
       );
-      const volume = new BN(publishedOrder.order.volume).sub(consumedVolume);
+      const volume = publishedOrder.order.volume - Number(consumedVolume);
       const remaining =
         publishedOrder.remaining !== undefined
-          ? Math.min(volume.toNumber(), publishedOrder.remaining)
-          : volume.toNumber();
+          ? Math.min(volume, publishedOrder.remaining)
+          : volume;
       if (remaining === publishedOrder.remaining) {
         return;
       }
       const update = { remaining };
-      if (volume.isZero()) {
+      if (volume === 0) {
         update.status = STATUS_MAP.FILLED;
       }
       const saved = await DatasetorderModel.findOneAndUpdate(
@@ -606,23 +594,21 @@ const _updateWorkerpoolorder = async ({
 
     if (publishedOrder) {
       const hubContract = getHub();
-      const consumedVolume = new BN(
-        await callAtBlock(
-          hubContract.functions.viewConsumed,
-          [orderHash],
-          blockNumber,
-        ),
+      const consumedVolume = await callAtBlock(
+        hubContract.viewConsumed.staticCallResult,
+        [orderHash],
+        blockNumber,
       );
-      const volume = new BN(publishedOrder.order.volume).sub(consumedVolume);
+      const volume = publishedOrder.order.volume - Number(consumedVolume);
       const remaining =
         publishedOrder.remaining !== undefined
-          ? Math.min(volume.toNumber(), publishedOrder.remaining)
-          : volume.toNumber();
+          ? Math.min(volume, publishedOrder.remaining)
+          : volume;
       if (remaining === publishedOrder.remaining) {
         return;
       }
       const update = { remaining };
-      if (volume.isZero()) {
+      if (volume === 0) {
         update.status = STATUS_MAP.FILLED;
       }
       const saved = await WorkerpoolorderModel.findOneAndUpdate(
@@ -655,23 +641,21 @@ const _updateRequestorder = async ({
 
     if (publishedOrder) {
       const hubContract = getHub();
-      const consumedVolume = new BN(
-        await callAtBlock(
-          hubContract.functions.viewConsumed,
-          [orderHash],
-          blockNumber,
-        ),
+      const consumedVolume = await callAtBlock(
+        hubContract.viewConsumed.staticCallResult,
+        [orderHash],
+        blockNumber,
       );
-      const volume = new BN(publishedOrder.order.volume).sub(consumedVolume);
+      const volume = publishedOrder.order.volume - Number(consumedVolume);
       const remaining =
         publishedOrder.remaining !== undefined
-          ? Math.min(volume.toNumber(), publishedOrder.remaining)
-          : volume.toNumber();
+          ? Math.min(volume, publishedOrder.remaining)
+          : volume;
       if (remaining === publishedOrder.remaining) {
         return;
       }
       const update = { remaining };
-      if (volume.isZero()) {
+      if (volume === 0) {
         update.status = STATUS_MAP.FILLED;
       }
       const saved = await RequestorderModel.findOneAndUpdate(

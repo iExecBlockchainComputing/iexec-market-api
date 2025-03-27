@@ -1,14 +1,12 @@
-import ethers from 'ethers';
-import BN from 'bn.js';
+import { toBeHex, getAddress } from 'ethers';
 
 const tokenIdToAddress = (tokenId) => {
-  const hexTokenId = ethers.BigNumber.from(tokenId.toString()).toHexString();
-  const lowerCaseAddress = ethers.utils.hexZeroPad(hexTokenId, 20);
-  return ethers.utils.getAddress(lowerCaseAddress);
+  const lowerCaseAddress = toBeHex(tokenId, 20);
+  return getAddress(lowerCaseAddress);
 };
 
 const tagToArray = (tag) => {
-  const tagBinString = new BN(tag.substr(2), 'hex').toString(2);
+  const tagBinString = BigInt(tag).toString(2);
   const bitsArray = [];
   for (let i = 1; i <= tagBinString.length; i += 1) {
     if (tagBinString.charAt(tagBinString.length - i) === '1') {
@@ -23,4 +21,11 @@ const TAG_MAP = {
   gpu: 9,
 };
 
-export { tokenIdToAddress, tagToArray, TAG_MAP };
+const STATUS_MAP = {
+  OPEN: 'open',
+  FILLED: 'filled',
+  CANCELED: 'canceled',
+  DEAD: 'dead',
+};
+
+export { tokenIdToAddress, tagToArray, TAG_MAP, STATUS_MAP };

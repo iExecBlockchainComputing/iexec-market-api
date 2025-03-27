@@ -44,7 +44,7 @@ const _addDeal = async ({
       workerStake,
       schedulerRewardRatio,
     } = await callAtBlock(
-      hubContract.functions.viewDeal,
+      hubContract.viewDeal.staticCallResult,
       [dealid],
       blockNumber,
     );
@@ -84,6 +84,7 @@ const _addDeal = async ({
         new: true,
       },
     );
+
     if (!existing) {
       eventEmitter.emit('deal_created', saved.toJSON());
     }

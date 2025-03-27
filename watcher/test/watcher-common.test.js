@@ -1,9 +1,9 @@
 import { afterEach, expect, test, jest } from '@jest/globals';
-import ethers from 'ethers';
+import { JsonRpcProvider, Wallet } from 'ethers';
 import { utils, IExec } from 'iexec';
 import { chain } from '../src/config.js';
 import { sleep } from '../src/utils/utils.js';
-import { STATUS_MAP } from '../src/utils/order-utils.js';
+import { STATUS_MAP } from '../src/utils/iexec-utils.js';
 import {
   addApporders,
   addDatasetorders,
@@ -48,8 +48,8 @@ const chainUrl = chain.httpHost;
 const { hubAddress } = chain;
 const PRIVATE_KEY =
   '0x564a9db84969c8159f7aa3d5393c5ecd014fce6a375842a45b12af6677b12407';
-const rpc = new ethers.providers.JsonRpcProvider(chainUrl);
-const wallet = new ethers.Wallet(PRIVATE_KEY, rpc);
+const rpc = new JsonRpcProvider(chainUrl);
+const wallet = new Wallet(PRIVATE_KEY, rpc);
 
 const iexec = new IExec(
   {
@@ -478,7 +478,7 @@ describe('Watcher', () => {
       {
         ethProvider: utils.getSignerFromPrivateKey(
           chainUrl,
-          ethers.Wallet.createRandom().privateKey,
+          Wallet.createRandom().privateKey,
         ),
       },
       {
@@ -735,7 +735,7 @@ describe('Watcher', () => {
       {
         ethProvider: utils.getSignerFromPrivateKey(
           chainUrl,
-          ethers.Wallet.createRandom().privateKey,
+          Wallet.createRandom().privateKey,
         ),
       },
       {
@@ -943,7 +943,7 @@ describe('Watcher', () => {
       {
         ethProvider: utils.getSignerFromPrivateKey(
           chainUrl,
-          ethers.Wallet.createRandom().privateKey,
+          Wallet.createRandom().privateKey,
         ),
       },
       {
@@ -1207,7 +1207,7 @@ describe('Watcher', () => {
       {
         ethProvider: utils.getSignerFromPrivateKey(
           chainUrl,
-          ethers.Wallet.createRandom().privateKey,
+          Wallet.createRandom().privateKey,
         ),
       },
       {
