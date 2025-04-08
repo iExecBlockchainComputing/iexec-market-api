@@ -168,7 +168,7 @@ const getMatchableRequestorder = async (
       volume: volume || workerpoolorder.volume,
       tag: apporder.tag,
     })
-    .then((o) => iexec.order.signRequestorder(o, { checkRequest: false }));
+    .then((o) => iexec.order.signRequestorder(o, { preflightCheck: false }));
 };
 
 const transferResourceERC721 = async (wallet, tokenAddress, to) => {

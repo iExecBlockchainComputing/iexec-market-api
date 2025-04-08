@@ -1,7 +1,9 @@
-const { Schema } = require('mongoose');
-const { getMongoose } = require('../loaders/mongoose');
-const { logger } = require('../utils/logger');
-const { AddressSchema } = require('./common').schema;
+import { Schema } from 'mongoose';
+import { getMongoose } from '../loaders/mongoose.js';
+import { logger } from '../utils/logger.js';
+import { schema } from './common.js';
+
+const { AddressSchema } = schema;
 
 const log = logger.extend('models:challengeModel');
 
@@ -45,6 +47,4 @@ const getModel = async (db) => {
   }
 };
 
-module.exports = {
-  getModel,
-};
+export { getModel };

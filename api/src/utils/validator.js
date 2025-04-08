@@ -1,7 +1,9 @@
-const { string, number, object, boolean } = require('yup');
-const { getAddress } = require('ethers').utils;
-const { supportedChainsIds } = require('../config');
-const { ANY } = require('./keywords');
+import { string, number, object, boolean } from 'yup';
+import { utils } from 'ethers';
+import { supportedChainsIds } from '../config.js';
+import { ANY } from './keywords.js';
+
+const { getAddress } = utils;
 
 const chainIdSchema = () =>
   string().oneOf(supportedChainsIds, 'chainId ${value} is not supported');
@@ -173,8 +175,10 @@ const signedRequestorderSchema = () =>
     '${path} is not a valid signed requestorder',
   );
 
-module.exports = {
-  stringSchema: string,
+const stringSchema = string;
+
+export {
+  stringSchema,
   addressSchema,
   addressOrAnySchema,
   bytes32Schema,

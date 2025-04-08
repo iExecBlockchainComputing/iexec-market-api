@@ -1,5 +1,5 @@
-const { ValidationError } = require('yup');
-const { logError } = require('./logger');
+import { ValidationError } from 'yup';
+import { logError } from './logger.js';
 
 const getPropsToCopy = (error) => {
   const {
@@ -100,7 +100,7 @@ const errorHandler = (error, context) => {
   }
 };
 
-module.exports = {
+export {
   ValidationError,
   AuthError,
   BusinessError,

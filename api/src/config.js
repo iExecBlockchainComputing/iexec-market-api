@@ -1,18 +1,13 @@
-const iexecTokenDesc = require('@iexec/poco/build/contracts-min/IexecInterfaceToken.json');
-const iexecNativeDesc = require('@iexec/poco/build/contracts-min/IexecInterfaceNative.json');
-const appRegistryDesc = require('@iexec/poco/build/contracts-min/AppRegistry.json');
-const workerpoolRegistryDesc = require('@iexec/poco/build/contracts-min/WorkerpoolRegistry.json');
-const datasetRegistryDesc = require('@iexec/poco/build/contracts-min/DatasetRegistry.json');
-const appDesc = require('@iexec/poco/build/contracts-min/App.json');
-const workerpoolDesc = require('@iexec/poco/build/contracts-min/Workerpool.json');
-const datasetDesc = require('@iexec/poco/build/contracts-min/Dataset.json');
-const eRlcDesc = require('@iexec/erlc/build/contracts-min/ERLCTokenSwap.json');
-const {
-  FLAVOURS,
-  STANDARD_FLAVOUR,
-  isEnterpriseFlavour,
-} = require('./utils/iexec-utils');
-const { logger } = require('./utils/logger');
+import iexecTokenDesc from './generated/@iexec/poco/IexecInterfaceToken.js';
+import iexecNativeDesc from './generated/@iexec/poco/IexecInterfaceNative.js';
+import appRegistryDesc from './generated/@iexec/poco/AppRegistry.js';
+import workerpoolRegistryDesc from './generated/@iexec/poco/WorkerpoolRegistry.js';
+import datasetRegistryDesc from './generated/@iexec/poco/DatasetRegistry.js';
+import appDesc from './generated/@iexec/poco/App.js';
+import workerpoolDesc from './generated/@iexec/poco/Workerpool.js';
+import datasetDesc from './generated/@iexec/poco/Dataset.js';
+
+import { logger } from './utils/logger.js';
 
 const log = logger.extend('config');
 
@@ -21,7 +16,6 @@ const {
   CHAINS,
   MONGO_HOST,
   REDIS_HOST,
-  FLAVOUR,
   MAX_OPEN_ORDERS_PER_WALLET,
   RATE_LIMIT_MAX,
   RATE_LIMIT_PERIOD,
@@ -32,11 +26,6 @@ const {
 
 const chainsNames = CHAINS.split(',').map((e) => e.toUpperCase());
 
-const flavour = FLAVOUR !== undefined ? FLAVOUR : STANDARD_FLAVOUR;
-if (!FLAVOURS.includes(flavour)) {
-  throw Error(`invalid FLAVOUR ${flavour} must be one of ${FLAVOURS}`);
-}
-
 const abis = {
   app: appDesc.abi,
   dataset: datasetDesc.abi,
@@ -44,7 +33,6 @@ const abis = {
   appregistry: appRegistryDesc.abi,
   datasetregistry: datasetRegistryDesc.abi,
   workerpoolregistry: workerpoolRegistryDesc.abi,
-  erlc: eRlcDesc.abi,
 };
 
 const tokenAbis = {
@@ -62,11 +50,7 @@ const DEFAULT_CHAINS_CONFIG = {
     id: '134',
     isNative: true,
     host: BELLECOUR_ETH_RPC_HOST || 'https://bellecour.iex.ec',
-    hubAddress:
-      BELLECOUR_IEXEC_ADDRESS ||
-      (!isEnterpriseFlavour(flavour)
-        ? '0x3eca1B216A7DF1C7689aEb259fFB83ADFB894E7f'
-        : undefined),
+    hubAddress: BELLECOUR_IEXEC_ADDRESS,
   },
 };
 
@@ -98,7 +82,6 @@ chainsNames.forEach((name) => {
     chains[name] = {
       id: getEnv(name, 'CHAIN_ID'),
       isNative: stringToBoolean(getEnv(name, 'IS_NATIVE', { strict: false })),
-      flavour: getEnv(name, 'FLAVOUR', { strict: false }) || 'standard',
       host: getEnv(name, 'ETH_RPC_HOST'),
       hubAddress: getEnv(name, 'IEXEC_ADDRESS'),
     };
@@ -131,8 +114,6 @@ Object.entries(chains).forEach(([name, { host }]) => {
     );
   }
 });
-
-log('flavour', flavour);
 
 log('chains', chains);
 
@@ -181,10 +162,9 @@ const api = {
 };
 log('api', api);
 
-module.exports = {
+export {
   chains,
   supportedChainsIds,
-  flavour,
   mongo,
   redis,
   rateLimit,

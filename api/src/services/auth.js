@@ -1,37 +1,34 @@
-const randomstring = require('randomstring');
-const challengeModel = require('../models/challengeModel');
-const { logger } = require('../utils/logger');
-const { throwIfMissing, AuthError } = require('../utils/error');
-const { hashEIP712, recoverAddressEIP712 } = require('../utils/sig-utils');
-const { NULL_ADDRESS } = require('../utils/eth-utils');
-const { addressSchema } = require('../utils/validator');
+import randomstring from 'randomstring';
+import * as challengeModel from '../models/challengeModel.js';
+import { logger } from '../utils/logger.js';
+import { throwIfMissing, AuthError } from '../utils/error.js';
+import { hashEIP712, recoverAddressEIP712 } from '../utils/sig-utils.js';
+import { NULL_ADDRESS } from '../utils/eth-utils.js';
+import { addressSchema } from '../utils/validator.js';
 
 const log = logger.extend('services:auth');
 
 log('instantiating service');
 
-const getEIP712 = (chainId, challengeValue) => {
-  const typedData = {
-    types: {
-      EIP712Domain: [
-        { name: 'name', type: 'string' },
-        { name: 'version', type: 'string' },
-        { name: 'chainId', type: 'uint256' },
-      ],
-      Challenge: [{ name: 'challenge', type: 'string' }],
-    },
-    domain: {
-      name: 'iExec Gateway',
-      version: '1',
-      chainId,
-    },
-    primaryType: 'Challenge',
-    message: {
-      challenge: challengeValue,
-    },
-  };
-  return typedData;
-};
+const getEIP712 = (chainId, challengeValue) => ({
+  types: {
+    EIP712Domain: [
+      { name: 'name', type: 'string' },
+      { name: 'version', type: 'string' },
+      { name: 'chainId', type: 'uint256' },
+    ],
+    Challenge: [{ name: 'challenge', type: 'string' }],
+  },
+  domain: {
+    name: 'iExec Gateway',
+    version: '1',
+    chainId,
+  },
+  primaryType: 'Challenge',
+  message: {
+    challenge: challengeValue,
+  },
+});
 
 const getChallengeText = (value) =>
   'Sign this message to log into iExec Gateway: '.concat(value);
@@ -45,8 +42,7 @@ const getChallenge = async ({
     const current = await ChallengeModel.findOne({ address });
     if (current) {
       const challengeText = getChallengeText(current.value);
-      const typedData = getEIP712(chainId, challengeText);
-      return typedData;
+      return getEIP712(chainId, challengeText);
     }
     const value = randomstring.generate();
     const challengeText = getChallengeText(value);
@@ -104,7 +100,4 @@ const checkAuthorization = async ({
   }
 };
 
-module.exports = {
-  getChallenge,
-  checkAuthorization,
-};
+export { getChallenge, checkAuthorization };

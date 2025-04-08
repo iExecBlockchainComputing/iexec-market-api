@@ -1,4 +1,6 @@
-const { defaultPageSize } = require('../config').api;
+import { api } from '../config.js';
+
+const { defaultPageSize } = api;
 
 const getDbPage = ({ page, pageIndex, pageSize }) => {
   if (pageIndex !== undefined || pageSize !== undefined) {
@@ -17,7 +19,4 @@ const getClientNextPage = ({ resultLength, limit, skip }) => ({
   nextPage: resultLength === limit ? skip + limit : undefined,
 });
 
-module.exports = {
-  getDbPage,
-  getClientNextPage,
-};
+export { getDbPage, getClientNextPage };

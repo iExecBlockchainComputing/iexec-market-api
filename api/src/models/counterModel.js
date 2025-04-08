@@ -1,6 +1,6 @@
-const { Schema } = require('mongoose');
-const { getMongoose } = require('../loaders/mongoose');
-const { logger } = require('../utils/logger');
+import { Schema } from 'mongoose';
+import { getMongoose } from '../loaders/mongoose.js';
+import { logger } from '../utils/logger.js';
 
 const log = logger.extend('models:counterModel');
 
@@ -47,6 +47,4 @@ const getModel = async (db) => {
   }
 };
 
-module.exports = {
-  getModel,
-};
+export { getModel };

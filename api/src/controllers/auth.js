@@ -1,7 +1,7 @@
-const { checkAuthorization } = require('../services/auth');
-const { logger } = require('../utils/logger');
-const { AuthError } = require('../utils/error');
-const { object, string, chainIdSchema } = require('../utils/validator');
+import { checkAuthorization } from '../services/auth.js';
+import { logger } from '../utils/logger.js';
+import { AuthError } from '../utils/error.js';
+import { object, string, chainIdSchema } from '../utils/validator.js';
 
 const log = logger.extend('controllers:auth');
 
@@ -27,6 +27,4 @@ const authentify = async (ctx, next) => {
   await next();
 };
 
-module.exports = {
-  authentify,
-};
+export { authentify };

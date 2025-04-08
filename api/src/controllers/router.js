@@ -1,14 +1,14 @@
-const Router = require('koa-router');
-const bodyParser = require('koa-bodyparser');
-const yamljs = require('yamljs');
-const { koaSwagger } = require('koa2-swagger-ui');
-const { authentify } = require('./auth');
-const { getVersion } = require('../services/version');
-const { getChallenge } = require('../services/auth');
-const { getCategory, getCategories } = require('../services/category');
-const { getDeal, getDeals, getOhlc } = require('../services/deal');
-const { getMetrics } = require('../services/metrics');
-const {
+import Router from 'koa-router';
+import bodyParser from 'koa-bodyparser';
+import yamljs from 'yamljs';
+import { koaSwagger } from 'koa2-swagger-ui';
+import { authentify } from './auth.js';
+import { getVersion } from '../services/version.js';
+import { getChallenge } from '../services/auth.js';
+import { getCategory, getCategories } from '../services/category.js';
+import { getDeal, getDeals, getOhlc } from '../services/deal.js';
+import { getMetrics } from '../services/metrics.js';
+import {
   getApporder,
   getDatasetorder,
   getWorkerpoolorder,
@@ -25,9 +25,9 @@ const {
   unpublishDatasetorders,
   unpublishWorkerpoolorders,
   unpublishRequestorders,
-} = require('../services/order');
-const { logger } = require('../utils/logger');
-const {
+} from '../services/order.js';
+import { logger } from '../utils/logger.js';
+import {
   object,
   string,
   chainIdSchema,
@@ -41,9 +41,11 @@ const {
   positiveStrictIntSchema,
   addressOrAnySchema,
   booleanSchema,
-} = require('../utils/validator');
-const { UNPUBLISH_TARGET_MAP } = require('../utils/order-utils');
-const { maxPageSize, minPageSize } = require('../config').api;
+} from '../utils/validator.js';
+import { UNPUBLISH_TARGET_MAP } from '../utils/order-utils.js';
+import { api } from '../config.js';
+
+const { maxPageSize, minPageSize } = api;
 
 const log = logger.extend('controllers:router');
 
@@ -811,6 +813,4 @@ router.get('/metrics', async (ctx) => {
   };
 });
 
-module.exports = {
-  router,
-};
+export { router };

@@ -1,7 +1,7 @@
-const dealModel = require('../models/dealModel');
-const { logger } = require('../utils/logger');
-const { throwIfMissing, ObjectNotFoundError } = require('../utils/error');
-const { getDbPage, getClientNextPage } = require('../utils/pagination-utils');
+import * as dealModel from '../models/dealModel.js';
+import { logger } from '../utils/logger.js';
+import { throwIfMissing, ObjectNotFoundError } from '../utils/error.js';
+import { getDbPage, getClientNextPage } from '../utils/pagination-utils.js';
 
 const log = logger.extend('services:deal');
 
@@ -142,8 +142,4 @@ const getDeals = async ({
   }
 };
 
-module.exports = {
-  getDeals,
-  getOhlc,
-  getDeal,
-};
+export { getDeals, getOhlc, getDeal };

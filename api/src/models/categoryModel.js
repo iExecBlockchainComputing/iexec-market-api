@@ -1,9 +1,11 @@
-const { Schema } = require('mongoose');
-const { getMongoose } = require('../loaders/mongoose');
-const { logger } = require('../utils/logger');
+import { Schema } from 'mongoose';
+import { getMongoose } from '../loaders/mongoose.js';
+import { logger } from '../utils/logger.js';
+import { schema, option } from './common.js';
+
 const { Bytes32Schema, SafeUintSchema, TimestampSchema, ChainIdSchema } =
-  require('./common').schema;
-const { toJsonOption } = require('./common').option;
+  schema;
+const { toJsonOption } = option;
 
 // fix mongoose String required (https://github.com/Automattic/mongoose/issues/7150)
 Schema.Types.String.checkRequired((v) => v != null);
@@ -57,6 +59,4 @@ const getModel = async (db) => {
   }
 };
 
-module.exports = {
-  getModel,
-};
+export { getModel };

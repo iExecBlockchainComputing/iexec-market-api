@@ -1,11 +1,11 @@
-const BN = require('bn.js');
-const { eventEmitter } = require('../loaders/eventEmitter');
-const apporderModel = require('../models/apporderModel');
-const datasetorderModel = require('../models/datasetorderModel');
-const workerpoolorderModel = require('../models/workerpoolorderModel');
-const requestorderModel = require('../models/requestorderModel');
-const { logger } = require('../utils/logger');
-const {
+import BN from 'bn.js';
+import { eventEmitter } from '../loaders/eventEmitter.js';
+import * as apporderModel from '../models/apporderModel.js';
+import * as datasetorderModel from '../models/datasetorderModel.js';
+import * as workerpoolorderModel from '../models/workerpoolorderModel.js';
+import * as requestorderModel from '../models/requestorderModel.js';
+import { logger } from '../utils/logger.js';
+import {
   apporderSchema,
   signedApporderSchema,
   datasetorderSchema,
@@ -14,34 +14,33 @@ const {
   signedWorkerpoolorderSchema,
   requestorderSchema,
   signedRequestorderSchema,
-} = require('../utils/validator');
-const {
+} from '../utils/validator.js';
+import {
   AuthError,
   BusinessError,
   ObjectNotFoundError,
   InternalError,
   wrapEthCall,
   throwIfMissing,
-} = require('../utils/error');
-const {
+} from '../utils/error.js';
+import {
   NULL_ADDRESS,
   NULL_BYTES32,
   getContract,
   ethersBnToBn,
-} = require('../utils/eth-utils');
-const { hashEIP712 } = require('../utils/sig-utils');
-const {
+} from '../utils/eth-utils.js';
+import { hashEIP712 } from '../utils/sig-utils.js';
+import {
   OBJ_MAP,
   STATUS_MAP,
   UNPUBLISH_TARGET_MAP,
   TAG_MAP,
   tagToArray,
   excludeTagArray,
-} = require('../utils/order-utils');
-const { isEnterpriseFlavour } = require('../utils/iexec-utils');
-const { flavour, maxOpenOrdersPerWallet } = require('../config');
-const { ANY } = require('../utils/keywords');
-const { getDbPage, getClientNextPage } = require('../utils/pagination-utils');
+} from '../utils/order-utils.js';
+import { maxOpenOrdersPerWallet } from '../config.js';
+import { ANY } from '../utils/keywords.js';
+import { getDbPage, getClientNextPage } from '../utils/pagination-utils.js';
 
 const log = logger.extend('services:order');
 
@@ -147,131 +146,7 @@ const fetchContractOwner = async ({
   const deployedContract = getContract(contractName, chainId, {
     at: deployedAddress,
   });
-  const owner = await wrapEthCall(deployedContract.owner());
-  return owner;
-};
-
-const checkAddressInWhitelist = async ({
-  chainId = throwIfMissing(),
-  iExecContract = throwIfMissing(),
-  address = throwIfMissing(),
-} = {}) => {
-  const tokenAddress = await wrapEthCall(iExecContract.token());
-  const tokenContract = getContract('erlc', chainId, { at: tokenAddress });
-  const isWhitelisted = await wrapEthCall(tokenContract.isKYC(address));
-  return isWhitelisted;
-};
-
-const checkSignerInWhitelist = async ({
-  chainId = throwIfMissing(),
-  iExecContract = throwIfMissing(),
-  signer = throwIfMissing(),
-} = {}) => {
-  const isInWhitelist = await checkAddressInWhitelist({
-    chainId,
-    iExecContract,
-    address: signer,
-  });
-  if (!isInWhitelist) {
-    throw new BusinessError(`Order signer ${signer} is not authorized by eRLC`);
-  }
-};
-
-const checkAppOwnerInWhitelist = async ({
-  chainId = throwIfMissing(),
-  iExecContract = throwIfMissing(),
-  app = throwIfMissing(),
-} = {}) => {
-  if (app !== NULL_ADDRESS) {
-    const appOwner = await fetchContractOwner({
-      chainId,
-      iExecContract,
-      deployedAddress: app,
-      registryName: OBJ_MAP.apporder.registryName,
-      contractName: OBJ_MAP.apporder.contractName,
-    });
-    const isAppOwnerInWhitelist = await checkAddressInWhitelist({
-      chainId,
-      iExecContract,
-      address: appOwner,
-    });
-    if (!isAppOwnerInWhitelist) {
-      throw new BusinessError(
-        `App owner ${appOwner} is not authorized by eRLC`,
-      );
-    }
-  }
-};
-
-const checkDatasetOwnerInWhitelist = async ({
-  chainId = throwIfMissing(),
-  iExecContract = throwIfMissing(),
-  dataset = throwIfMissing(),
-} = {}) => {
-  if (dataset !== NULL_ADDRESS) {
-    const datasetOwner = await fetchContractOwner({
-      chainId,
-      iExecContract,
-      deployedAddress: dataset,
-      registryName: OBJ_MAP.datasetorder.registryName,
-      contractName: OBJ_MAP.datasetorder.contractName,
-    });
-    const isDatasetOwnerInWhitelist = await checkAddressInWhitelist({
-      chainId,
-      iExecContract,
-      address: datasetOwner,
-    });
-    if (!isDatasetOwnerInWhitelist) {
-      throw new BusinessError(
-        `Dataset owner ${datasetOwner} is not authorized by eRLC`,
-      );
-    }
-  }
-};
-
-const checkWorkerpoolOwnerInWhitelist = async ({
-  chainId = throwIfMissing(),
-  iExecContract = throwIfMissing(),
-  workerpool = throwIfMissing(),
-} = {}) => {
-  if (workerpool !== NULL_ADDRESS) {
-    const workerpoolOwner = await fetchContractOwner({
-      chainId,
-      iExecContract,
-      deployedAddress: workerpool,
-      registryName: OBJ_MAP.workerpoolorder.registryName,
-      contractName: OBJ_MAP.workerpoolorder.contractName,
-    });
-    const isWorkerpoolOwnerInWhitelist = await checkAddressInWhitelist({
-      chainId,
-      iExecContract,
-      address: workerpoolOwner,
-    });
-    if (!isWorkerpoolOwnerInWhitelist) {
-      throw new BusinessError(
-        `Workerpool owner ${workerpoolOwner} is not authorized by eRLC`,
-      );
-    }
-  }
-};
-
-const checkRequesterInWhitelist = async ({
-  chainId = throwIfMissing(),
-  iExecContract = throwIfMissing(),
-  requester = throwIfMissing(),
-} = {}) => {
-  if (requester !== NULL_ADDRESS) {
-    const isInWhitelist = await checkAddressInWhitelist({
-      chainId,
-      iExecContract,
-      address: requester,
-    });
-    if (!isInWhitelist) {
-      throw new BusinessError(
-        `Requester ${requester} is not authorized by eRLC`,
-      );
-    }
-  }
+  return wrapEthCall(deployedContract.owner());
 };
 
 const checkMatchableApporder = async ({
@@ -452,16 +327,15 @@ const cleanApporderDependantOrders = async ({
     );
 
     const cleanedOrders = await Promise.all(
-      dependantOrders.map(async (e) => {
-        const updated = await RequestorderModel.findOneAndUpdate(
+      dependantOrders.map((e) =>
+        RequestorderModel.findOneAndUpdate(
           { orderHash: e.orderHash, status: STATUS_MAP.OPEN },
           {
             status: STATUS_MAP.DEAD,
           },
           { returnOriginal: false },
-        );
-        return updated;
-      }),
+        ),
+      ),
     );
     cleanedOrders
       .filter((e) => !!e)
@@ -524,16 +398,15 @@ const cleanDatasetorderDependantOrders = async ({
     );
 
     const cleanedOrders = await Promise.all(
-      dependantOrders.map(async (e) => {
-        const updated = await RequestorderModel.findOneAndUpdate(
+      dependantOrders.map((e) =>
+        RequestorderModel.findOneAndUpdate(
           { orderHash: e.orderHash, status: STATUS_MAP.OPEN },
           {
             status: STATUS_MAP.DEAD,
           },
           { returnOriginal: false },
-        );
-        return updated;
-      }),
+        ),
+      ),
     );
     cleanedOrders
       .filter((e) => !!e)
@@ -551,10 +424,9 @@ const cleanDatasetorderDependantOrders = async ({
 const countApporders = async ({ chainId = throwIfMissing() } = {}) => {
   try {
     const ApporderModel = await apporderModel.getModel(chainId);
-    const count = await ApporderModel.find({
+    return ApporderModel.find({
       status: STATUS_MAP.OPEN,
     }).countDocuments();
-    return count;
   } catch (e) {
     log('countApporders() error', e);
     throw e;
@@ -564,10 +436,9 @@ const countApporders = async ({ chainId = throwIfMissing() } = {}) => {
 const countDatasetorders = async ({ chainId = throwIfMissing() } = {}) => {
   try {
     const DatasetorderModel = await datasetorderModel.getModel(chainId);
-    const count = await DatasetorderModel.find({
+    return DatasetorderModel.find({
       status: STATUS_MAP.OPEN,
     }).countDocuments();
-    return count;
   } catch (e) {
     log('countDatasetorders() error', e);
     throw e;
@@ -577,10 +448,9 @@ const countDatasetorders = async ({ chainId = throwIfMissing() } = {}) => {
 const countWorkerpoolorders = async ({ chainId = throwIfMissing() } = {}) => {
   try {
     const WorkerpoolorderModel = await workerpoolorderModel.getModel(chainId);
-    const count = await WorkerpoolorderModel.find({
+    return WorkerpoolorderModel.find({
       status: STATUS_MAP.OPEN,
     }).countDocuments();
-    return count;
   } catch (e) {
     log('countWorkerpoolorders() error', e);
     throw e;
@@ -590,10 +460,9 @@ const countWorkerpoolorders = async ({ chainId = throwIfMissing() } = {}) => {
 const countRequestorders = async ({ chainId = throwIfMissing() } = {}) => {
   try {
     const RequestorderModel = await requestorderModel.getModel(chainId);
-    const count = await RequestorderModel.find({
+    return RequestorderModel.find({
       status: STATUS_MAP.OPEN,
     }).countDocuments();
-    return count;
   } catch (e) {
     log('countRequestorders() error', e);
     throw e;
@@ -1011,28 +880,6 @@ const publishApporder = async ({
       );
     }
 
-    if (isEnterpriseFlavour(flavour)) {
-      // check whitelist
-      await Promise.all([
-        checkSignerInWhitelist({ chainId, iExecContract, signer }),
-        checkDatasetOwnerInWhitelist({
-          chainId,
-          iExecContract,
-          dataset: formattedSignedOrder.datasetrestrict,
-        }),
-        checkWorkerpoolOwnerInWhitelist({
-          chainId,
-          iExecContract,
-          workerpool: formattedSignedOrder.workerpoolrestrict,
-        }),
-        checkRequesterInWhitelist({
-          chainId,
-          iExecContract,
-          requester: formattedSignedOrder.requesterrestrict,
-        }),
-      ]);
-    }
-
     // check remaining volume
     const consumedVolume = ethersBnToBn(
       await wrapEthCall(iExecContract.viewConsumed(orderHash)),
@@ -1083,9 +930,8 @@ const publishDatasetorder = async ({
     if (chainId !== authorizedChain)
       throw new AuthError(`operation not authorized for chain ${chainId}`);
 
-    const formattedSignedOrder = await signedDatasetorderSchema().validate(
-      order,
-    );
+    const formattedSignedOrder =
+      await signedDatasetorderSchema().validate(order);
     const formattedOrder = await datasetorderSchema().validate(order);
 
     const tagArray = tagToArray(formattedSignedOrder.tag);
@@ -1144,28 +990,6 @@ const publishDatasetorder = async ({
       );
     }
 
-    if (isEnterpriseFlavour(flavour)) {
-      // check whitelist
-      await Promise.all([
-        checkSignerInWhitelist({ chainId, iExecContract, signer }),
-        checkAppOwnerInWhitelist({
-          chainId,
-          iExecContract,
-          app: formattedSignedOrder.apprestrict,
-        }),
-        checkWorkerpoolOwnerInWhitelist({
-          chainId,
-          iExecContract,
-          workerpool: formattedSignedOrder.workerpoolrestrict,
-        }),
-        checkRequesterInWhitelist({
-          chainId,
-          iExecContract,
-          requester: formattedSignedOrder.requesterrestrict,
-        }),
-      ]);
-    }
-
     // check remaining volume
     const consumedVolume = ethersBnToBn(
       await wrapEthCall(iExecContract.viewConsumed(orderHash)),
@@ -1216,9 +1040,8 @@ const publishWorkerpoolorder = async ({
     if (chainId !== authorizedChain)
       throw new AuthError(`operation not authorized for chain ${chainId}`);
 
-    const formattedSignedOrder = await signedWorkerpoolorderSchema().validate(
-      order,
-    );
+    const formattedSignedOrder =
+      await signedWorkerpoolorderSchema().validate(order);
     const formattedOrder = await workerpoolorderSchema().validate(order);
 
     const tagArray = tagToArray(formattedSignedOrder.tag);
@@ -1275,28 +1098,6 @@ const publishWorkerpoolorder = async ({
       throw new BusinessError(
         `maximum of ${maxOpenOrdersPerWallet} published open ${orderName} has been reached for wallet ${signer}`,
       );
-    }
-
-    if (isEnterpriseFlavour(flavour)) {
-      // check whitelist
-      await Promise.all([
-        checkSignerInWhitelist({ chainId, iExecContract, signer }),
-        checkAppOwnerInWhitelist({
-          chainId,
-          iExecContract,
-          app: formattedSignedOrder.apprestrict,
-        }),
-        checkDatasetOwnerInWhitelist({
-          chainId,
-          iExecContract,
-          dataset: formattedSignedOrder.datasetrestrict,
-        }),
-        checkRequesterInWhitelist({
-          chainId,
-          iExecContract,
-          requester: formattedSignedOrder.requesterrestrict,
-        }),
-      ]);
     }
 
     // check remaining volume
@@ -1365,9 +1166,8 @@ const publishRequestorder = async ({
     if (chainId !== authorizedChain)
       throw new AuthError(`operation not authorized for chain ${chainId}`);
 
-    const formattedSignedOrder = await signedRequestorderSchema().validate(
-      order,
-    );
+    const formattedSignedOrder =
+      await signedRequestorderSchema().validate(order);
     const formattedOrder = await requestorderSchema().validate(order);
 
     const tagArray = tagToArray(formattedSignedOrder.tag);
@@ -1418,28 +1218,6 @@ const publishRequestorder = async ({
       throw new BusinessError(
         `maximum of ${maxOpenOrdersPerWallet} published open ${orderName} has been reached for wallet ${signer}`,
       );
-    }
-
-    if (isEnterpriseFlavour(flavour)) {
-      // check whitelist
-      await Promise.all([
-        checkSignerInWhitelist({ chainId, iExecContract, signer }),
-        checkAppOwnerInWhitelist({
-          chainId,
-          iExecContract,
-          app: formattedSignedOrder.app,
-        }),
-        checkDatasetOwnerInWhitelist({
-          chainId,
-          iExecContract,
-          dataset: formattedSignedOrder.dataset,
-        }),
-        checkWorkerpoolOwnerInWhitelist({
-          chainId,
-          iExecContract,
-          workerpool: formattedSignedOrder.workerpool,
-        }),
-      ]);
     }
 
     // check remaining volume
@@ -1705,7 +1483,7 @@ const unpublishRequestorders = async ({
   }
 };
 
-module.exports = {
+export {
   countApporders,
   countDatasetorders,
   countWorkerpoolorders,
