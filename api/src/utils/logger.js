@@ -1,4 +1,4 @@
-const Debug = require('debug');
+import Debug from 'debug';
 
 const DEBUG_NAMESPACE = 'iexec-market-api';
 
@@ -12,7 +12,4 @@ Debug.enable(
   }`,
 );
 
-module.exports = {
-  logger,
-  logError,
-};
+export { logger, logError };

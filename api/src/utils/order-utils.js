@@ -1,5 +1,5 @@
-const BN = require('bn.js');
-const {
+import BN from 'bn.js';
+import {
   OPEN,
   FILLED,
   CANCELED,
@@ -7,7 +7,7 @@ const {
   UNPUBLISH_ORDERHASH,
   UNPUBLISH_LAST,
   UNPUBLISH_ALL,
-} = require('./keywords');
+} from './keywords.js';
 
 const OBJ_MAP = {
   EIP712Domain: {
@@ -131,18 +131,16 @@ const tagToArray = (tag) => {
   return bitsArray;
 };
 
-const excludeTagArray = (tagArray) => {
-  const excluded = new Array(256)
+const excludeTagArray = (tagArray) =>
+  new Array(256)
     .fill(null)
     .map((e, i) => {
       if (!tagArray.includes(i + 1)) return i + 1;
       return null;
     })
     .filter((e) => e !== null);
-  return excluded;
-};
 
-module.exports = {
+export {
   OBJ_MAP,
   STATUS_MAP,
   TAG_MAP,

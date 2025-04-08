@@ -1,14 +1,13 @@
-const { utils } = require('iexec');
-const ethers = require('ethers');
-const queryString = require('query-string');
-const { STATUS_MAP, tagToArray } = require('../src/utils/order-utils');
-const { getMongoose } = require('../src/loaders/mongoose');
-const categoryModel = require('../src/models/categoryModel');
-const dealModel = require('../src/models/dealModel');
-const apporderModel = require('../src/models/apporderModel');
-const datasetorderModel = require('../src/models/datasetorderModel');
-const workerpoolorderModel = require('../src/models/workerpoolorderModel');
-const requestorderModel = require('../src/models/requestorderModel');
+import ethers from 'ethers';
+import queryString from 'query-string';
+import { STATUS_MAP, tagToArray } from '../src/utils/order-utils.js';
+import { getMongoose } from '../src/loaders/mongoose.js';
+import * as categoryModel from '../src/models/categoryModel.js';
+import * as dealModel from '../src/models/dealModel.js';
+import * as apporderModel from '../src/models/apporderModel.js';
+import * as datasetorderModel from '../src/models/datasetorderModel.js';
+import * as workerpoolorderModel from '../src/models/workerpoolorderModel.js';
+import * as requestorderModel from '../src/models/requestorderModel.js';
 
 const sleep = (ms) =>
   new Promise((res) => {
@@ -86,7 +85,7 @@ const deployAndGetApporder = async (
 ) => {
   const address = await iexec.wallet.getAddress();
   const app = await deployAppFor(iexec, address);
-  const apporder = await iexec.order
+  return iexec.order
     .createApporder({
       app,
       appprice,
@@ -96,8 +95,7 @@ const deployAndGetApporder = async (
       workerpoolrestrict,
       requesterrestrict,
     })
-    .then(iexec.order.signApporder);
-  return apporder;
+    .then((o) => iexec.order.signApporder(o, { preflightCheck: false }));
 };
 
 const deployDatasetFor = async (iexec, owner) => {
@@ -124,7 +122,7 @@ const deployAndGetDatasetorder = async (
 ) => {
   const address = await iexec.wallet.getAddress();
   const dataset = await deployDatasetFor(iexec, address);
-  const datasetorder = await iexec.order
+  return iexec.order
     .createDatasetorder({
       dataset,
       datasetprice,
@@ -134,8 +132,7 @@ const deployAndGetDatasetorder = async (
       workerpoolrestrict,
       requesterrestrict,
     })
-    .then(iexec.order.signDatasetorder);
-  return datasetorder;
+    .then((o) => iexec.order.signDatasetorder(o, { preflightCheck: false }));
 };
 
 const deployWorkerpoolFor = async (iexec, owner) => {
@@ -161,7 +158,7 @@ const deployAndGetWorkerpoolorder = async (
 ) => {
   const address = await iexec.wallet.getAddress();
   const workerpool = await deployWorkerpoolFor(iexec, address);
-  const workerpoolorder = await iexec.order
+  return iexec.order
     .createWorkerpoolorder({
       workerpool,
       workerpoolprice,
@@ -174,7 +171,6 @@ const deployAndGetWorkerpoolorder = async (
       requesterrestrict,
     })
     .then(iexec.order.signWorkerpoolorder);
-  return workerpoolorder;
 };
 
 const getMatchableRequestorder = async (
@@ -182,12 +178,14 @@ const getMatchableRequestorder = async (
   { apporder, datasetorder, workerpoolorder, volume } = {},
 ) => {
   const address = await iexec.wallet.getAddress();
-  const requestorder = await iexec.order
+  return iexec.order
     .createRequestorder({
       requester: address,
       app: apporder.app,
       appmaxprice: apporder.appprice,
-      dataset: datasetorder ? datasetorder.dataset : utils.NULL_ADDRESS,
+      dataset: datasetorder
+        ? datasetorder.dataset
+        : ethers.constants.AddressZero,
       datasetmaxprice: datasetorder ? datasetorder.datasetprice : 0,
       workerpool: workerpoolorder.workerpool,
       workerpoolmaxprice: workerpoolorder.workerpoolprice,
@@ -195,8 +193,7 @@ const getMatchableRequestorder = async (
       trust: workerpoolorder.trust,
       volume: volume || workerpoolorder.volume,
     })
-    .then((o) => iexec.order.signRequestorder(o, { checkRequest: false }));
-  return requestorder;
+    .then((o) => iexec.order.signRequestorder(o, { preflightCheck: false }));
 };
 
 const castOrderPrices = (order) => ({
@@ -262,8 +259,7 @@ const addressRegex = /^(0x)([0-9a-fA-F]{2}){20}$/;
 
 const find = async (dbName, collection, findObject) => {
   const { db } = await getMongoose({ db: dbName });
-  const docs = await db.collection(collection).find(findObject).toArray();
-  return docs;
+  return db.collection(collection).find(findObject).toArray();
 };
 
 const dropDB = async (dbName) => {
@@ -336,7 +332,7 @@ const addDeals = async (dbName, deals) => {
       deal.category = e.category || 0;
       deal.params = '';
       deal.volume = e.volume || 1;
-      deal.tag = e.tag || utils.NULL_BYTES32;
+      deal.tag = e.tag || ethers.constants.HashZero;
       deal.trust = e.trust || 0;
       deal.startTime = e.startTime || Math.floor(Date.now() / 1000);
       deal.botFirst = e.botFirst || 0;
@@ -443,13 +439,10 @@ const buildQuery = (endpoint, params) => {
   const stringifiedParams = queryString.stringify(params, {
     arrayFormat: 'comma',
   });
-  const query = stringifiedParams
-    ? `${endpoint}?${stringifiedParams}`
-    : `${endpoint}`;
-  return query;
+  return stringifiedParams ? `${endpoint}?${stringifiedParams}` : `${endpoint}`;
 };
 
-module.exports = {
+export {
   WALLETS,
   sleep,
   parseResult,

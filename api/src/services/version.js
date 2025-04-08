@@ -1,7 +1,5 @@
-const { version } = require('../../package.json');
+import { version } from '../generated/api/package.js';
 
 const getVersion = () => version;
 
-module.exports = {
-  getVersion,
-};
+export { getVersion };

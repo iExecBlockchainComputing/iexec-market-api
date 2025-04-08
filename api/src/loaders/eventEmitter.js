@@ -1,7 +1,5 @@
-const events = require('events');
+import events from 'events';
 
 const eventEmitter = new events.EventEmitter();
 
-module.exports = {
-  eventEmitter,
-};
+export { eventEmitter };

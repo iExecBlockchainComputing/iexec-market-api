@@ -1,6 +1,8 @@
-const { Schema } = require('mongoose');
-const { getMongoose } = require('../loaders/mongoose');
-const { logger } = require('../utils/logger');
+import { Schema } from 'mongoose';
+import { getMongoose } from '../loaders/mongoose.js';
+import { logger } from '../utils/logger.js';
+import { option, schema } from './common.js';
+
 const {
   AddressSchema,
   Bytes32Schema,
@@ -10,8 +12,8 @@ const {
   OrderSignSchema,
   TagArraySchema,
   TimestampSchema,
-} = require('./common').schema;
-const { orderToJsonOption } = require('./common').option;
+} = schema;
+const { orderToJsonOption } = option;
 
 const log = logger.extend('models:apporderModel');
 
@@ -74,6 +76,4 @@ const getModel = async (db) => {
   }
 };
 
-module.exports = {
-  getModel,
-};
+export { getModel };

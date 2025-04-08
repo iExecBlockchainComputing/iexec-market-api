@@ -1,6 +1,6 @@
-const ethers = require('ethers');
-const BN = require('bn.js');
-const { chains } = require('../config');
+import ethers from 'ethers';
+import BN from 'bn.js';
+import { chains } from '../config.js';
 
 const NULL_ADDRESS = '0x0000000000000000000000000000000000000000';
 const NULL_BYTES32 =
@@ -23,15 +23,9 @@ const getContract = (contractName, chainId, { at } = {}) => {
   const abi = chain.abi[contractName];
   if (!address)
     throw Error(`Missing abi for contract ${contractName} on chain ${chainId}`);
-  const contract = new ethers.Contract(address, abi, provider);
-  return contract;
+  return new ethers.Contract(address, abi, provider);
 };
 
 const ethersBnToBn = (ethersBn) => new BN(ethersBn.toString());
 
-module.exports = {
-  NULL_ADDRESS,
-  NULL_BYTES32,
-  getContract,
-  ethersBnToBn,
-};
+export { NULL_ADDRESS, NULL_BYTES32, getContract, ethersBnToBn };

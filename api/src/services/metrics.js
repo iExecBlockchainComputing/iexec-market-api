@@ -1,12 +1,12 @@
-const {
+import {
   countApporders,
   countDatasetorders,
   countWorkerpoolorders,
   countRequestorders,
-} = require('./order');
-const { getLastBlock, getCheckpointBlock } = require('./counter');
-const { logger } = require('../utils/logger');
-const { throwIfMissing } = require('../utils/error');
+} from './order.js';
+import { getLastBlock, getCheckpointBlock } from './counter.js';
+import { logger } from '../utils/logger.js';
+import { throwIfMissing } from '../utils/error.js';
 
 const log = logger.extend('services:metrics');
 
@@ -43,4 +43,4 @@ const getMetrics = async ({ chainId = throwIfMissing() } = {}) => {
   }
 };
 
-module.exports = { getMetrics };
+export { getMetrics };

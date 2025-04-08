@@ -1,6 +1,6 @@
-const counterModel = require('../models/counterModel');
-const { throwIfMissing } = require('../utils/error');
-const { logger } = require('../utils/logger');
+import * as counterModel from '../models/counterModel.js';
+import { throwIfMissing } from '../utils/error.js';
+import { logger } from '../utils/logger.js';
 
 const log = logger.extend('services:counter');
 
@@ -30,7 +30,4 @@ const getCheckpointBlock = async ({ chainId } = throwIfMissing()) => {
   }
 };
 
-module.exports = {
-  getLastBlock,
-  getCheckpointBlock,
-};
+export { getLastBlock, getCheckpointBlock };

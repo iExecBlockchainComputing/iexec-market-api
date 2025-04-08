@@ -1,5 +1,5 @@
-const ratelimit = require('koa-ratelimit');
-const { logger } = require('../utils/logger');
+import ratelimit from 'koa-ratelimit';
+import { logger } from '../utils/logger.js';
 
 const log = logger.extend('controllers:ratelimit');
 
@@ -36,6 +36,4 @@ const getRatelimitMiddleware = ({ maxRequest, period }) => {
   });
 };
 
-module.exports = {
-  getRatelimitMiddleware,
-};
+export { getRatelimitMiddleware };

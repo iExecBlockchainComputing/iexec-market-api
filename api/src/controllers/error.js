@@ -1,12 +1,12 @@
-const { logger } = require('../utils/logger');
-const {
+import { logger } from '../utils/logger.js';
+import {
   ValidationError,
   AuthError,
   InternalError,
   BusinessError,
   ObjectNotFoundError,
   errorHandler,
-} = require('../utils/error');
+} from '../utils/error.js';
 
 const log = logger.extend('controllers:error');
 
@@ -57,6 +57,4 @@ const errorMiddleware = async (ctx, next) => {
   }
 };
 
-module.exports = {
-  errorMiddleware,
-};
+export { errorMiddleware };

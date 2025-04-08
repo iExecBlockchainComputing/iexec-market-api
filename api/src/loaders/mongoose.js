@@ -1,6 +1,6 @@
-const mongoose = require('mongoose');
-const mongoConfig = require('../config').mongo;
-const { logger } = require('../utils/logger');
+import mongoose from 'mongoose';
+import { mongo as mongoConfig } from '../config.js';
+import { logger } from '../utils/logger.js';
 
 const log = logger.extend('mongoose');
 
@@ -34,6 +34,4 @@ const getMongoose = async ({ server = mongoConfig.host, db } = {}) => {
   }
 };
 
-module.exports = {
-  getMongoose,
-};
+export { getMongoose };

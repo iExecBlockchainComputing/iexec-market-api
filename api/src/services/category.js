@@ -1,7 +1,7 @@
-const categoryModel = require('../models/categoryModel');
-const { logger } = require('../utils/logger');
-const { throwIfMissing, ObjectNotFoundError } = require('../utils/error');
-const { getDbPage, getClientNextPage } = require('../utils/pagination-utils');
+import * as categoryModel from '../models/categoryModel.js';
+import { logger } from '../utils/logger.js';
+import { throwIfMissing, ObjectNotFoundError } from '../utils/error.js';
+import { getDbPage, getClientNextPage } from '../utils/pagination-utils.js';
 
 const log = logger.extend('services:category');
 
@@ -82,7 +82,4 @@ const getCategories = async ({
   }
 };
 
-module.exports = {
-  getCategory,
-  getCategories,
-};
+export { getCategory, getCategories };

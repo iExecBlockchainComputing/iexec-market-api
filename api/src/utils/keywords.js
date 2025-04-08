@@ -7,7 +7,7 @@ const UNPUBLISH_ORDERHASH = 'unpublish_orderHash';
 const UNPUBLISH_LAST = 'unpublish_last';
 const UNPUBLISH_ALL = 'unpublish_all';
 
-module.exports = {
+export {
   ANY,
   OPEN,
   FILLED,

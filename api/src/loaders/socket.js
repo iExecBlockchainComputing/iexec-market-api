@@ -1,9 +1,9 @@
-const socketIo = require('socket.io');
-const { createClient } = require('redis');
-const { createAdapter } = require('@socket.io/redis-adapter');
-const config = require('../config');
-const { logger } = require('../utils/logger');
-const { throwIfMissing, errorHandler } = require('../utils/error');
+import { Server as SocketIo } from 'socket.io';
+import { createClient } from 'redis';
+import { createAdapter } from '@socket.io/redis-adapter';
+import { redis as redisConfig } from '../config.js';
+import { logger } from '../utils/logger.js';
+import { throwIfMissing, errorHandler } from '../utils/error.js';
 
 const log = logger.extend('socket');
 
@@ -17,7 +17,6 @@ const getWs = () => {
 const init = async (server = throwIfMissing()) => {
   try {
     log('init socket');
-    const redisConfig = config.redis;
     const pubClient = createClient(redisConfig);
     const subClient = createClient(redisConfig);
     pubClient.on('error', (err) => log('pubClient', 'Error', err));
@@ -28,7 +27,7 @@ const init = async (server = throwIfMissing()) => {
     subClient.on('end', () => log('subClient end'));
     await Promise.all[(pubClient.connect(), subClient.connect())];
     const redisAdapter = createAdapter(pubClient, subClient);
-    ws = socketIo(server, { path: '/ws', cors: { origin: '*' } });
+    ws = new SocketIo(server, { path: '/ws', cors: { origin: '*' } });
     ws.adapter(redisAdapter);
     ws.sockets.on('connection', (socket) => {
       log('connection');
@@ -91,4 +90,4 @@ const emit = async (
   }
 };
 
-module.exports = { init, emit };
+export { init, emit };
