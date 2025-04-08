@@ -1,5 +1,5 @@
-const { getAddress } = require('ethers').utils;
-const { STATUS_MAP } = require('../utils/order-utils');
+import { getAddress } from 'ethers';
+import { STATUS_MAP } from '../utils/iexec-utils.js';
 
 const addressValidator = {
   validator: (address) => {
@@ -80,6 +80,7 @@ const SafeUintSchema = {
   min: 0,
   max: Number.MAX_SAFE_INTEGER,
   required: true,
+  set: (v) => (typeof v === 'bigint' ? Number(v) : v),
 };
 
 const PositiveStrictSafeUintSchema = {
@@ -93,6 +94,7 @@ const toJsonOption = {
   toJSON: {
     versionKey: false,
     transform(doc, ret) {
+      // eslint-disable-next-line no-param-reassign
       delete ret._id;
     },
   },
@@ -102,23 +104,25 @@ const orderToJsonOption = {
   toJSON: {
     versionKey: false,
     transform(doc, ret) {
+      // eslint-disable-next-line no-param-reassign
       delete ret._id;
+      // eslint-disable-next-line no-param-reassign
       delete ret.tagArray;
     },
   },
 };
 
-module.exports = {
-  schema: {
-    SafeUintSchema,
-    PositiveStrictSafeUintSchema,
-    TimestampSchema,
-    AddressSchema,
-    Bytes32Schema,
-    ChainIdSchema,
-    OrderSignSchema,
-    OrderStatusSchema,
-    TagArraySchema,
-  },
-  option: { toJsonOption, orderToJsonOption },
+const schema = {
+  SafeUintSchema,
+  PositiveStrictSafeUintSchema,
+  TimestampSchema,
+  AddressSchema,
+  Bytes32Schema,
+  ChainIdSchema,
+  OrderSignSchema,
+  OrderStatusSchema,
+  TagArraySchema,
 };
+const option = { toJsonOption, orderToJsonOption };
+
+export { schema, option };

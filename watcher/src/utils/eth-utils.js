@@ -1,7 +1,8 @@
-const config = require('../config');
-const { getLogger } = require('./logger');
-const { traceAll } = require('./trace');
-const { sleep } = require('./utils');
+import { Result } from 'ethers';
+import * as config from '../config.js';
+import { getLogger } from './logger.js';
+import { traceAll } from './trace.js';
+import { sleep } from './utils.js';
 
 const logger = getLogger('utils:eth-utils');
 
@@ -20,29 +21,8 @@ const throwIfTimeout = (promise, timeout = 30 * 1000) =>
     }),
   ]);
 
-const cleanRPC = (res) => {
-  if (typeof res === 'boolean') {
-    return res;
-  }
-  if (typeof res === 'string') {
-    return res;
-  }
-  if (typeof res === 'number') {
-    return res.toString();
-  }
-  if (Array.isArray(res) && res.length === Object.keys(res).length) {
-    return res.map((e) => cleanRPC(e));
-  }
-  if (typeof res === 'object' && res._isBigNumber) {
-    return res.toString();
-  }
-  return Object.keys(res).reduce((acc, key) => {
-    if (Number.isNaN(parseInt(key, 10))) {
-      return Object.assign(acc, { [key]: cleanRPC(res[key]) });
-    }
-    return acc;
-  }, {});
-};
+const formatEthersResult = (result) =>
+  result instanceof Result ? result.toObject(true) : result;
 
 const retryableCall = async (
   obj,
@@ -52,8 +32,7 @@ const retryableCall = async (
   count = 1,
 ) => {
   try {
-    const res = await throwIfTimeout(obj[method](...args));
-    return res;
+    return await throwIfTimeout(obj[method](...args));
   } catch (e) {
     if (e.code && e.code === 429) {
       logger.debug(`retryableCall ${method} try ${count}`);
@@ -73,8 +52,7 @@ const retryableFunctionCall = async (
   count = 1,
 ) => {
   try {
-    const res = await throwIfTimeout(method(...args));
-    return res;
+    return await throwIfTimeout(method(...args));
   } catch (e) {
     if (e.code && e.code === 429) {
       logger.debug(`retryableFunctionCall ${method} try ${count}`);
@@ -87,7 +65,7 @@ const retryableFunctionCall = async (
   }
 };
 
-const callAtBlock = async (method, args = [], blockNumber = undefined) => {
+const _callAtBlock = async (method, args = [], blockNumber = undefined) => {
   const makeCall = async () =>
     blockNumber !== undefined
       ? retryableFunctionCall(method, args)
@@ -97,6 +75,7 @@ const callAtBlock = async (method, args = [], blockNumber = undefined) => {
   while (res === null || res === undefined) {
     currentTry += 1;
     try {
+      // eslint-disable-next-line no-await-in-loop
       res = await makeCall();
       if (res === null || res === undefined) {
         logger.debug(
@@ -105,6 +84,7 @@ const callAtBlock = async (method, args = [], blockNumber = undefined) => {
           `returned ${res}, waiting for block`,
         );
         if (currentTry <= CALL_AT_BLOCK_MAX_TRY) {
+          // eslint-disable-next-line no-await-in-loop
           await sleep(config.runtime.retryDelay);
         } else {
           throw Error(`callAtBlock ${blockNumber} Max try reached`);
@@ -121,6 +101,7 @@ const callAtBlock = async (method, args = [], blockNumber = undefined) => {
           '-32000 error, waiting for block',
         );
         if (currentTry <= CALL_AT_BLOCK_MAX_TRY) {
+          // eslint-disable-next-line no-await-in-loop
           await sleep(config.runtime.retryDelay);
         } else {
           throw Error(`callAtBlock ${blockNumber} Max try reached`);
@@ -130,16 +111,19 @@ const callAtBlock = async (method, args = [], blockNumber = undefined) => {
       }
     }
   }
-  return cleanRPC(res[0]);
+  return formatEthersResult(res[0]);
 };
+const callAtBlock = traceAll(_callAtBlock, { logger });
 
-const getBlockNumber = (provider) =>
+const _getBlockNumber = (provider) =>
   retryableCall(provider, 'getBlockNumber', []);
+const getBlockNumber = traceAll(_getBlockNumber, { logger });
 
-const queryFilter = (contract, args) =>
+const _queryFilter = (contract, args) =>
   retryableCall(contract, 'queryFilter', args);
+const queryFilter = traceAll(_queryFilter, { logger });
 
-const waitForGetBlock = async (provider, blockNumber) => {
+const _waitForGetBlock = async (provider, blockNumber) => {
   let block;
   let tryCount = 0;
   while (block === undefined || block === null) {
@@ -150,6 +134,7 @@ const waitForGetBlock = async (provider, blockNumber) => {
       );
     }
     try {
+      // eslint-disable-next-line no-await-in-loop
       block = await retryableCall(provider, 'getBlock', [blockNumber]);
     } catch (error) {
       logger.debug(
@@ -157,17 +142,19 @@ const waitForGetBlock = async (provider, blockNumber) => {
       );
     }
     if (!block) {
+      // eslint-disable-next-line no-await-in-loop
       await sleep(1000);
     }
   }
   return block;
 };
+const waitForGetBlock = traceAll(_waitForGetBlock, { logger });
 
-module.exports = {
+export {
   NULL_ADDRESS,
-  cleanRPC,
-  callAtBlock: traceAll(callAtBlock, { logger }),
-  waitForGetBlock: traceAll(waitForGetBlock, { logger }),
-  getBlockNumber: traceAll(getBlockNumber, { logger }),
-  queryFilter: traceAll(queryFilter, { logger }),
+  formatEthersResult,
+  callAtBlock,
+  waitForGetBlock,
+  getBlockNumber,
+  queryFilter,
 };

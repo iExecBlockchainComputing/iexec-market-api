@@ -1,5 +1,5 @@
-const { getLogger, APP_NAMESPACE } = require('./logger');
-const { sleep } = require('./utils');
+import { getLogger, APP_NAMESPACE } from './logger.js';
+import { sleep } from './utils.js';
 
 const logError = getLogger(APP_NAMESPACE).error;
 
@@ -68,13 +68,21 @@ const recoverOnCriticalError = async () => {
 };
 
 const errorHandler = async (error, context) => {
-  logError(error, '\nContext: ', JSON.stringify(context, null, 2));
+  logError(
+    error,
+    '\nContext: ',
+    JSON.stringify(
+      context,
+      // safe stringify bigint
+      (_, v) => (typeof v === 'bigint' ? `BigInt('${v}')` : v),
+    ),
+  );
   if (context.critical) {
     recoverOnCriticalError();
   }
 };
 
-module.exports = {
+export {
   InternalError,
   Web3ProviderError,
   wrapEthCall,

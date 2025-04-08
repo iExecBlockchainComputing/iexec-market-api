@@ -1,10 +1,10 @@
-const config = require('../config');
-const { getAgenda } = require('../loaders/agenda');
-const { getProvider, getRpcProvider } = require('../loaders/ethereum');
-const { getLogger } = require('../utils/logger');
-const { sleep } = require('../utils/utils');
-const { errorHandler } = require('../utils/error');
-const { getBlockNumber } = require('../utils/eth-utils');
+import * as config from '../config.js';
+import { getAgenda } from '../loaders/agenda.js';
+import { getProvider, getRpcProvider } from '../loaders/ethereum.js';
+import { getLogger } from '../utils/logger.js';
+import { sleep } from '../utils/utils.js';
+import { errorHandler } from '../utils/error.js';
+import { getBlockNumber } from '../utils/eth-utils.js';
 
 const { chainId } = config.chain;
 const { checkSyncInterval } = config.runtime;
@@ -23,7 +23,7 @@ const checkSync = () => async () => {
     try {
       const wsProvider = getProvider();
       const rpcProvider = getRpcProvider();
-
+      // eslint-disable-next-line no-await-in-loop
       const [rpcBlock, wsBlock] = await Promise.all([
         getBlockNumber(wsProvider),
         getBlockNumber(rpcProvider),
@@ -52,6 +52,7 @@ const checkSync = () => async () => {
           critical: true,
         });
       }
+      // eslint-disable-next-line no-await-in-loop
       await sleep(5000);
     }
   }
@@ -71,4 +72,4 @@ const stopSyncWatcher = async () => {
   await agenda.cancel({ name: SYNC_WATCHER_JOB });
 };
 
-module.exports = { startSyncWatcher, stopSyncWatcher };
+export { startSyncWatcher, stopSyncWatcher };

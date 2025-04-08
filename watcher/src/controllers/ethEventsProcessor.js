@@ -1,7 +1,7 @@
-const { setLastBlock } = require('../services/counter');
-const { addCategory } = require('../services/category');
-const { addDeal } = require('../services/deal');
-const {
+import { setLastBlock } from '../services/counter.js';
+import { addCategory } from '../services/category.js';
+import { addDeal } from '../services/deal.js';
+import {
   cancelApporder,
   cancelDatasetorder,
   cancelWorkerpoolorder,
@@ -14,17 +14,16 @@ const {
   cleanTransferredAppOrders,
   cleanTransferredDatasetOrders,
   cleanTransferredWorkerpoolOrders,
-  cleanRevokedUserOrders,
-} = require('../services/order');
-const { tokenIdToAddress } = require('../utils/iexec-utils');
-const { NULL_ADDRESS, cleanRPC } = require('../utils/eth-utils');
-const { errorHandler } = require('../utils/error');
-const { getLogger } = require('../utils/logger');
-const { traceAll } = require('../utils/trace');
+} from '../services/order.js';
+import { tokenIdToAddress } from '../utils/iexec-utils.js';
+import { NULL_ADDRESS, formatEthersResult } from '../utils/eth-utils.js';
+import { errorHandler } from '../utils/error.js';
+import { getLogger } from '../utils/logger.js';
+import { traceAll } from '../utils/trace.js';
 
 const logger = getLogger('controllers:ethEventsProcessor');
 
-const processCreateCategory = async (event, { isReplay = false } = {}) => {
+const _processCreateCategory = async (event, { isReplay = false } = {}) => {
   try {
     const { transactionHash, blockNumber } = event;
     logger.debug(
@@ -32,7 +31,7 @@ const processCreateCategory = async (event, { isReplay = false } = {}) => {
       isReplay ? 'replay' : '',
       transactionHash,
     );
-    const { catid } = cleanRPC(event.args);
+    const { catid } = formatEthersResult(event.args);
     await addCategory({
       catid,
       transactionHash,
@@ -48,7 +47,7 @@ const processCreateCategory = async (event, { isReplay = false } = {}) => {
   }
 };
 
-const processOrdersMatched = async (event, { isReplay = false } = {}) => {
+const _processOrdersMatched = async (event, { isReplay = false } = {}) => {
   try {
     const { transactionHash, blockNumber } = event;
     logger.debug(
@@ -63,7 +62,7 @@ const processOrdersMatched = async (event, { isReplay = false } = {}) => {
       workerpoolHash,
       requestHash,
       volume,
-    } = cleanRPC(event.args);
+    } = formatEthersResult(event.args);
 
     await Promise.all([
       addDeal({
@@ -105,14 +104,14 @@ const processOrdersMatched = async (event, { isReplay = false } = {}) => {
   }
 };
 
-const processClosedAppOrder = async (event, { isReplay = false } = {}) => {
+const _processClosedAppOrder = async (event, { isReplay = false } = {}) => {
   try {
     logger.debug(
       'processClosedAppOrder',
       isReplay ? 'replay' : '',
       event.transactionHash,
     );
-    const { appHash } = cleanRPC(event.args);
+    const { appHash } = formatEthersResult(event.args);
     await cancelApporder({ orderHash: appHash });
   } catch (error) {
     errorHandler(error, {
@@ -124,14 +123,14 @@ const processClosedAppOrder = async (event, { isReplay = false } = {}) => {
   }
 };
 
-const processClosedDatasetOrder = async (event, { isReplay = false } = {}) => {
+const _processClosedDatasetOrder = async (event, { isReplay = false } = {}) => {
   try {
     logger.debug(
       'processClosedDatasetOrder',
       isReplay ? 'replay' : '',
       event.transactionHash,
     );
-    const { datasetHash } = cleanRPC(event.args);
+    const { datasetHash } = formatEthersResult(event.args);
     await cancelDatasetorder({ orderHash: datasetHash });
   } catch (error) {
     errorHandler(error, {
@@ -143,7 +142,7 @@ const processClosedDatasetOrder = async (event, { isReplay = false } = {}) => {
   }
 };
 
-const processClosedWorkerpoolOrder = async (
+const _processClosedWorkerpoolOrder = async (
   event,
   { isReplay = false } = {},
 ) => {
@@ -153,7 +152,7 @@ const processClosedWorkerpoolOrder = async (
       isReplay ? 'replay' : '',
       event.transactionHash,
     );
-    const { workerpoolHash } = cleanRPC(event.args);
+    const { workerpoolHash } = formatEthersResult(event.args);
     await cancelWorkerpoolorder({ orderHash: workerpoolHash });
   } catch (error) {
     errorHandler(error, {
@@ -165,14 +164,14 @@ const processClosedWorkerpoolOrder = async (
   }
 };
 
-const processClosedRequestOrder = async (event, { isReplay = false } = {}) => {
+const _processClosedRequestOrder = async (event, { isReplay = false } = {}) => {
   try {
     logger.debug(
       'processClosedRequestOrder',
       isReplay ? 'replay' : '',
       event.transactionHash,
     );
-    const { requestHash } = cleanRPC(event.args);
+    const { requestHash } = formatEthersResult(event.args);
     await cancelRequestorder({ orderHash: requestHash });
   } catch (error) {
     errorHandler(error, {
@@ -184,7 +183,7 @@ const processClosedRequestOrder = async (event, { isReplay = false } = {}) => {
   }
 };
 
-const processStakeLoss = async (event, { isReplay = false } = {}) => {
+const _processStakeLoss = async (event, { isReplay = false } = {}) => {
   // account withdraw & lock
   try {
     logger.debug(
@@ -192,8 +191,8 @@ const processStakeLoss = async (event, { isReplay = false } = {}) => {
       isReplay ? 'replay' : '',
       event.transactionHash,
     );
-    const { from, value } = cleanRPC(event.args);
-    if (from !== NULL_ADDRESS && value !== '0') {
+    const { from, value } = formatEthersResult(event.args);
+    if (from !== NULL_ADDRESS && value !== 0n) {
       await cleanBalanceDependantOrders({
         address: from,
         blockNumber: isReplay ? undefined : event.blockNumber,
@@ -209,14 +208,14 @@ const processStakeLoss = async (event, { isReplay = false } = {}) => {
   }
 };
 
-const processTransferApp = async (event, { isReplay = false } = {}) => {
+const _processTransferApp = async (event, { isReplay = false } = {}) => {
   try {
     logger.debug(
       'processTransferApp',
       isReplay ? 'replay' : '',
       event.transactionHash,
     );
-    const { from, tokenId } = cleanRPC(event.args);
+    const { from, tokenId } = formatEthersResult(event.args);
     if (from !== NULL_ADDRESS) {
       await cleanTransferredAppOrders({
         address: from,
@@ -234,14 +233,14 @@ const processTransferApp = async (event, { isReplay = false } = {}) => {
   }
 };
 
-const processTransferDataset = async (event, { isReplay = false } = {}) => {
+const _processTransferDataset = async (event, { isReplay = false } = {}) => {
   try {
     logger.debug(
       'processTransferDataset',
       isReplay ? 'replay' : '',
       event.transactionHash,
     );
-    const { from, tokenId } = cleanRPC(event.args);
+    const { from, tokenId } = formatEthersResult(event.args);
     if (from !== NULL_ADDRESS) {
       await cleanTransferredDatasetOrders({
         address: from,
@@ -259,14 +258,14 @@ const processTransferDataset = async (event, { isReplay = false } = {}) => {
   }
 };
 
-const processTransferWorkerpool = async (event, { isReplay = false } = {}) => {
+const _processTransferWorkerpool = async (event, { isReplay = false } = {}) => {
   try {
     logger.debug(
       'processTransferWorkerpool',
       isReplay ? 'replay' : '',
       event.transactionHash,
     );
-    const { from, tokenId } = cleanRPC(event.args);
+    const { from, tokenId } = formatEthersResult(event.args);
     if (from !== NULL_ADDRESS) {
       await cleanTransferredWorkerpoolOrders({
         address: from,
@@ -284,30 +283,7 @@ const processTransferWorkerpool = async (event, { isReplay = false } = {}) => {
   }
 };
 
-const processRoleRevoked = async (event, { isReplay = false } = {}) => {
-  try {
-    logger.debug(
-      'processRoleRevoked',
-      isReplay ? 'replay' : '',
-      event.transactionHash,
-    );
-    const { account, role } = cleanRPC(event.args);
-    await cleanRevokedUserOrders({
-      address: account,
-      role,
-      blockNumber: isReplay ? undefined : event.blockNumber,
-    });
-  } catch (error) {
-    errorHandler(error, {
-      type: 'process-event',
-      function: 'processRoleRevoked',
-      event,
-      isReplay,
-    });
-  }
-};
-
-const processNewBlock = async (blockNumber) => {
+const _processNewBlock = async (blockNumber) => {
   try {
     logger.debug('Block', blockNumber);
     await setLastBlock(blockNumber);
@@ -320,19 +296,36 @@ const processNewBlock = async (blockNumber) => {
   }
 };
 
-module.exports = {
-  processStakeLoss: traceAll(processStakeLoss, { logger }),
-  processCreateCategory: traceAll(processCreateCategory, { logger }),
-  processTransferApp: traceAll(processTransferApp, { logger }),
-  processTransferDataset: traceAll(processTransferDataset, { logger }),
-  processTransferWorkerpool: traceAll(processTransferWorkerpool, { logger }),
-  processOrdersMatched: traceAll(processOrdersMatched, { logger }),
-  processClosedAppOrder: traceAll(processClosedAppOrder, { logger }),
-  processClosedDatasetOrder: traceAll(processClosedDatasetOrder, { logger }),
-  processClosedWorkerpoolOrder: traceAll(processClosedWorkerpoolOrder, {
-    logger,
-  }),
-  processClosedRequestOrder: traceAll(processClosedRequestOrder, { logger }),
-  processRoleRevoked: traceAll(processRoleRevoked, { logger }),
-  processNewBlock: traceAll(processNewBlock, { logger }),
+const processStakeLoss = traceAll(_processStakeLoss, { logger });
+const processCreateCategory = traceAll(_processCreateCategory, { logger });
+const processTransferApp = traceAll(_processTransferApp, { logger });
+const processTransferDataset = traceAll(_processTransferDataset, { logger });
+const processTransferWorkerpool = traceAll(_processTransferWorkerpool, {
+  logger,
+});
+const processOrdersMatched = traceAll(_processOrdersMatched, { logger });
+const processClosedAppOrder = traceAll(_processClosedAppOrder, { logger });
+const processClosedDatasetOrder = traceAll(_processClosedDatasetOrder, {
+  logger,
+});
+const processClosedWorkerpoolOrder = traceAll(_processClosedWorkerpoolOrder, {
+  logger,
+});
+const processClosedRequestOrder = traceAll(_processClosedRequestOrder, {
+  logger,
+});
+const processNewBlock = traceAll(_processNewBlock, { logger });
+
+export {
+  processStakeLoss,
+  processCreateCategory,
+  processTransferApp,
+  processTransferDataset,
+  processTransferWorkerpool,
+  processOrdersMatched,
+  processClosedAppOrder,
+  processClosedDatasetOrder,
+  processClosedWorkerpoolOrder,
+  processClosedRequestOrder,
+  processNewBlock,
 };

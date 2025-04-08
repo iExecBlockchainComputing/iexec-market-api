@@ -3,6 +3,4 @@ const sleep = (ms) =>
     setTimeout(res, ms);
   });
 
-module.exports = {
-  sleep,
-};
+export { sleep };

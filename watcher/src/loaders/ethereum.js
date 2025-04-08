@@ -1,8 +1,7 @@
-const ethers = require('ethers');
-const config = require('../config');
-const { getLogger } = require('../utils/logger');
-const { errorHandler } = require('../utils/error');
-const { isEnterpriseFlavour } = require('../utils/iexec-utils');
+import { JsonRpcProvider, WebSocketProvider, Contract } from 'ethers';
+import * as config from '../config.js';
+import { getLogger } from '../utils/logger.js';
+import { errorHandler } from '../utils/error.js';
 
 const logger = getLogger('ethereum');
 
@@ -13,7 +12,7 @@ logger.log('httpHost', httpHost);
 
 let wsProvider;
 
-const rpcProvider = new ethers.providers.JsonRpcProvider(httpHost);
+const rpcProvider = new JsonRpcProvider(httpHost);
 
 let initialized = false;
 
@@ -21,21 +20,20 @@ let hubContract;
 let appRegistryContract;
 let datasetRegistryContract;
 let workerpoolRegistryContract;
-let eRlcContract;
 
 const init = async () => {
   try {
     logger.log('opening ws');
-    wsProvider = new ethers.providers.WebSocketProvider(wsHost);
-    wsProvider._websocket.on('open', () => logger.log('ws open'));
-    wsProvider._websocket.on('error', (e) => {
+    wsProvider = new WebSocketProvider(wsHost);
+    wsProvider.websocket.on('open', () => logger.log('ws open'));
+    wsProvider.websocket.on('error', (e) => {
       errorHandler(e, {
         type: 'ethereum-ws-error',
         error: e,
         critical: true,
       });
     });
-    wsProvider._websocket.on('close', async (code, reason) => {
+    wsProvider.websocket.on('close', async (code, reason) => {
       initialized = false;
       errorHandler(Error('ws closed'), {
         type: 'ethereum-ws-closed',
@@ -46,45 +44,39 @@ const init = async () => {
     });
 
     logger.debug('hubAddress', hubAddress);
-    hubContract = new ethers.Contract(hubAddress, config.abi.hub, wsProvider);
+    hubContract = new Contract(hubAddress, config.abi.hub, wsProvider);
     const [
       [appRegistryAddress],
       [datasetRegistryAddress],
       [workerpoolRegistryAddress],
       [tokenAddress],
     ] = await Promise.all([
-      hubContract.functions.appregistry(),
-      hubContract.functions.datasetregistry(),
-      hubContract.functions.workerpoolregistry(),
-      hubContract.functions.token(),
+      hubContract.appregistry.staticCallResult(),
+      hubContract.datasetregistry.staticCallResult(),
+      hubContract.workerpoolregistry.staticCallResult(),
+      hubContract.token.staticCallResult(),
     ]);
+
     logger.debug('appRegistryAddress', appRegistryAddress);
     logger.debug('datasetRegistryAddress', datasetRegistryAddress);
     logger.debug('workerpoolRegistryAddress', workerpoolRegistryAddress);
     logger.debug('tokenAddress', tokenAddress);
 
-    appRegistryContract = new ethers.Contract(
+    appRegistryContract = new Contract(
       appRegistryAddress,
       config.abi.appRegistry,
       wsProvider,
     );
-    datasetRegistryContract = new ethers.Contract(
+    datasetRegistryContract = new Contract(
       datasetRegistryAddress,
       config.abi.datasetRegistry,
       wsProvider,
     );
-    workerpoolRegistryContract = new ethers.Contract(
+    workerpoolRegistryContract = new Contract(
       workerpoolRegistryAddress,
       config.abi.workerpoolRegistry,
       wsProvider,
     );
-    if (isEnterpriseFlavour(config.flavour)) {
-      eRlcContract = new ethers.Contract(
-        tokenAddress,
-        config.abi.erlc,
-        wsProvider,
-      );
-    }
     initialized = true;
   } catch (e) {
     logger.warn('init()', e);
@@ -106,17 +98,14 @@ const getAppRegistry = () => throwIfNotReady() || appRegistryContract;
 const getDatasetRegistry = () => throwIfNotReady() || datasetRegistryContract;
 const getWorkerpoolRegistry = () =>
   throwIfNotReady() || workerpoolRegistryContract;
-const getERlc = () => throwIfNotReady() || eRlcContract;
 const getApp = (address) =>
-  throwIfNotReady() || new ethers.Contract(address, config.abi.app, wsProvider);
+  throwIfNotReady() || new Contract(address, config.abi.app, wsProvider);
 const getDataset = (address) =>
-  throwIfNotReady() ||
-  new ethers.Contract(address, config.abi.dataset, wsProvider);
+  throwIfNotReady() || new Contract(address, config.abi.dataset, wsProvider);
 const getWorkerpool = (address) =>
-  throwIfNotReady() ||
-  new ethers.Contract(address, config.abi.workerpool, wsProvider);
+  throwIfNotReady() || new Contract(address, config.abi.workerpool, wsProvider);
 
-module.exports = {
+export {
   init,
   getProvider,
   getRpcProvider,
@@ -124,7 +113,6 @@ module.exports = {
   getAppRegistry,
   getDatasetRegistry,
   getWorkerpoolRegistry,
-  getERlc,
   getApp,
   getDataset,
   getWorkerpool,

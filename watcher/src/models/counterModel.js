@@ -1,7 +1,7 @@
-const { Schema } = require('mongoose');
-const { getMongoose } = require('../loaders/mongoose');
-const { getLogger } = require('../utils/logger');
-const { traceAll } = require('../utils/trace');
+import { Schema } from 'mongoose';
+import { getMongoose } from '../loaders/mongoose.js';
+import { getLogger } from '../utils/logger.js';
+import { traceAll } from '../utils/trace.js';
 
 const logger = getLogger('models:counterModel');
 
@@ -17,11 +17,10 @@ const counterSchema = new Schema({
   value: { type: Number, required: true },
 });
 
-const getModel = async (db) => {
+const _getModel = async (db) => {
   try {
     if (connectedModels[db]) {
-      const model = await connectedModels[db];
-      return model;
+      return await connectedModels[db];
     }
     connectedModels[db] = new Promise((resolve, reject) => {
       logger.debug('getting connection');
@@ -40,14 +39,13 @@ const getModel = async (db) => {
         })
         .catch((e) => reject(e));
     });
-    const model = await connectedModels[db];
-    return model;
+    return await connectedModels[db];
   } catch (e) {
     logger.warn('getModel() error', e);
     throw e;
   }
 };
 
-module.exports = {
-  getModel: traceAll(getModel, { logger }),
-};
+const getModel = traceAll(_getModel, { logger });
+
+export { getModel };

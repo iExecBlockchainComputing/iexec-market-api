@@ -1,32 +1,20 @@
-const BN = require('bn.js');
-const config = require('../config');
-const { eventEmitter } = require('../loaders/eventEmitter');
-const {
-  getProvider,
+import * as config from '../config.js';
+import { eventEmitter } from '../loaders/eventEmitter.js';
+import {
   getHub,
-  getERlc,
-  getAppRegistry,
-  getDatasetRegistry,
-  getWorkerpoolRegistry,
   getApp,
   getDataset,
   getWorkerpool,
-} = require('../loaders/ethereum');
-const apporderModel = require('../models/apporderModel');
-const datasetorderModel = require('../models/datasetorderModel');
-const workerpoolorderModel = require('../models/workerpoolorderModel');
-const requestorderModel = require('../models/requestorderModel');
-const { getLogger } = require('../utils/logger');
-const { throwIfMissing } = require('../utils/error');
-const { STATUS_MAP, TAG_MAP, tagToArray } = require('../utils/order-utils');
-const {
-  callAtBlock,
-  cleanRPC,
-  getBlockNumber,
-  NULL_ADDRESS,
-} = require('../utils/eth-utils');
-const { tokenIdToAddress, KYC_MEMBER_ROLE } = require('../utils/iexec-utils');
-const { traceAll } = require('../utils/trace');
+} from '../loaders/ethereum.js';
+import * as apporderModel from '../models/apporderModel.js';
+import * as datasetorderModel from '../models/datasetorderModel.js';
+import * as workerpoolorderModel from '../models/workerpoolorderModel.js';
+import * as requestorderModel from '../models/requestorderModel.js';
+import { getLogger } from '../utils/logger.js';
+import { throwIfMissing } from '../utils/error.js';
+import { STATUS_MAP, TAG_MAP, tagToArray } from '../utils/iexec-utils.js';
+import { callAtBlock, NULL_ADDRESS } from '../utils/eth-utils.js';
+import { traceAll } from '../utils/trace.js';
 
 const { chainId } = config.chain;
 
@@ -40,16 +28,15 @@ const cleanApporders = async ({
 }) => {
   const ApporderModel = await apporderModel.getModel(chainId);
   const cleanedOrders = await Promise.all(
-    orders.map(async (e) => {
-      const updated = await ApporderModel.findOneAndUpdate(
+    orders.map((e) =>
+      ApporderModel.findOneAndUpdate(
         { orderHash: e.orderHash, status: STATUS_MAP.OPEN },
         {
           status: STATUS_MAP.DEAD,
         },
         { returnOriginal: false },
-      );
-      return updated;
-    }),
+      ),
+    ),
   );
   cleanedOrders
     .filter((e) => !!e)
@@ -66,16 +53,15 @@ const cleanDatasetorders = async ({
 }) => {
   const DatasetorderModel = await datasetorderModel.getModel(chainId);
   const cleanedOrders = await Promise.all(
-    orders.map(async (e) => {
-      const updated = await DatasetorderModel.findOneAndUpdate(
+    orders.map((e) =>
+      DatasetorderModel.findOneAndUpdate(
         { orderHash: e.orderHash, status: STATUS_MAP.OPEN },
         {
           status: STATUS_MAP.DEAD,
         },
         { returnOriginal: false },
-      );
-      return updated;
-    }),
+      ),
+    ),
   );
   cleanedOrders
     .filter((e) => !!e)
@@ -92,16 +78,15 @@ const cleanWorkerpoolorders = async ({
 }) => {
   const WorkerpoolorderModel = await workerpoolorderModel.getModel(chainId);
   const cleanedOrders = await Promise.all(
-    orders.map(async (e) => {
-      const updated = await WorkerpoolorderModel.findOneAndUpdate(
+    orders.map((e) =>
+      WorkerpoolorderModel.findOneAndUpdate(
         { orderHash: e.orderHash, status: STATUS_MAP.OPEN },
         {
           status: STATUS_MAP.DEAD,
         },
         { returnOriginal: false },
-      );
-      return updated;
-    }),
+      ),
+    ),
   );
   cleanedOrders
     .filter((e) => !!e)
@@ -118,16 +103,15 @@ const cleanRequestorders = async ({
 }) => {
   const RequestorderModel = await requestorderModel.getModel(chainId);
   const cleanedOrders = await Promise.all(
-    orders.map(async (e) => {
-      const updated = await RequestorderModel.findOneAndUpdate(
+    orders.map((e) =>
+      RequestorderModel.findOneAndUpdate(
         { orderHash: e.orderHash, status: STATUS_MAP.OPEN },
         {
           status: STATUS_MAP.DEAD,
         },
         { returnOriginal: false },
-      );
-      return updated;
-    }),
+      ),
+    ),
   );
   cleanedOrders
     .filter((e) => !!e)
@@ -160,12 +144,9 @@ const checkMatchableApporder = async ({ order = throwIfMissing() } = {}) => {
   if (!bestApporder) {
     return false;
   }
-  const bestAppPrice = new BN(bestApporder.order.appprice);
-  const appPrice = new BN(order.appmaxprice);
-  if (appPrice.lt(bestAppPrice)) {
-    return false;
-  }
-  return true;
+  const bestAppPrice = BigInt(bestApporder.order.appprice);
+  const appPrice = BigInt(order.appmaxprice);
+  return !(appPrice < bestAppPrice);
 };
 
 const checkMatchableDatasetorder = async ({
@@ -190,15 +171,12 @@ const checkMatchableDatasetorder = async ({
   if (!bestDatasetorder) {
     return false;
   }
-  const bestDatasetPrice = new BN(bestDatasetorder.order.datasetprice);
-  const datasetPrice = new BN(order.datasetmaxprice);
-  if (datasetPrice.lt(bestDatasetPrice)) {
-    return false;
-  }
-  return true;
+  const bestDatasetPrice = BigInt(bestDatasetorder.order.datasetprice);
+  const datasetPrice = BigInt(order.datasetmaxprice);
+  return !(datasetPrice < bestDatasetPrice);
 };
 
-const cleanApporderDependantOrders = async ({
+const _cleanApporderDependantOrders = async ({
   apporder = throwIfMissing(),
 } = {}) => {
   try {
@@ -296,7 +274,7 @@ const cleanApporderDependantOrders = async ({
   }
 };
 
-const cleanDatasetorderDependantOrders = async ({
+const _cleanDatasetorderDependantOrders = async ({
   datasetorder = throwIfMissing(),
 } = {}) => {
   try {
@@ -352,21 +330,19 @@ const cleanDatasetorderDependantOrders = async ({
   }
 };
 
-const cleanBalanceDependantOrders = async ({
+const _cleanBalanceDependantOrders = async ({
   address = throwIfMissing(),
   blockNumber,
 } = {}) => {
   try {
     const hubContract = getHub();
-    const { stake } = cleanRPC(
-      await callAtBlock(
-        hubContract.functions.viewAccount,
-        [address],
-        blockNumber,
-      ),
+    const { stake: userStake } = await callAtBlock(
+      hubContract.viewAccount.staticCallResult,
+      [address],
+      blockNumber,
     );
+
     // todo run in parallel
-    const userStake = new BN(stake);
     const WorkerpoolorderModel = await workerpoolorderModel.getModel(chainId);
     const getDeadWorkerpoolOrders = async () => {
       const workerpoolorders = await WorkerpoolorderModel.find({
@@ -375,13 +351,11 @@ const cleanBalanceDependantOrders = async ({
         'order.workerpoolprice': { $gt: 0 },
         remaining: { $gt: 0 },
       });
-      return workerpoolorders.filter((e) =>
-        userStake.lt(
-          new BN(e.order.workerpoolprice)
-            .mul(new BN(30))
-            .div(new BN(100))
-            .mul(new BN(e.remaining)),
-        ),
+      return workerpoolorders.filter(
+        (e) =>
+          userStake <
+          ((BigInt(e.order.workerpoolprice) * 30n) / 100n) *
+            BigInt(e.remaining),
       );
     };
     const RequestorderModel = await requestorderModel.getModel(chainId);
@@ -391,16 +365,13 @@ const cleanBalanceDependantOrders = async ({
         status: STATUS_MAP.OPEN,
         remaining: { $gt: 0 },
       });
-      return requestorders.filter((e) =>
-        userStake.lt(
-          new BN(e.order.appmaxprice)
-            .add(
-              new BN(e.order.datasetmaxprice).add(
-                new BN(e.order.workerpoolmaxprice),
-              ),
-            )
-            .mul(new BN(e.remaining)),
-        ),
+      return requestorders.filter(
+        (e) =>
+          userStake <
+          (BigInt(e.order.appmaxprice) +
+            BigInt(e.order.datasetmaxprice) +
+            BigInt(e.order.workerpoolmaxprice)) *
+            BigInt(e.remaining),
       );
     };
     const [deadRequestOrders, deadWorkerpoolOrders] = await Promise.all([
@@ -424,7 +395,7 @@ const cleanBalanceDependantOrders = async ({
   }
 };
 
-const cleanTransferredAppOrders = async ({
+const _cleanTransferredAppOrders = async ({
   address = throwIfMissing(),
   app = throwIfMissing(),
   blockNumber,
@@ -432,7 +403,7 @@ const cleanTransferredAppOrders = async ({
   try {
     const appContract = getApp(app);
     const owner = await callAtBlock(
-      appContract.functions.owner,
+      appContract.owner.staticCallResult,
       [],
       blockNumber,
     );
@@ -456,7 +427,7 @@ const cleanTransferredAppOrders = async ({
   }
 };
 
-const cleanTransferredDatasetOrders = async ({
+const _cleanTransferredDatasetOrders = async ({
   address = throwIfMissing(),
   dataset = throwIfMissing(),
   blockNumber,
@@ -464,7 +435,7 @@ const cleanTransferredDatasetOrders = async ({
   try {
     const datasetContract = getDataset(dataset);
     const owner = await callAtBlock(
-      datasetContract.functions.owner,
+      datasetContract.owner.staticCallResult,
       [],
       blockNumber,
     );
@@ -487,7 +458,7 @@ const cleanTransferredDatasetOrders = async ({
   }
 };
 
-const cleanTransferredWorkerpoolOrders = async ({
+const _cleanTransferredWorkerpoolOrders = async ({
   address = throwIfMissing(),
   workerpool = throwIfMissing(),
   blockNumber,
@@ -495,7 +466,7 @@ const cleanTransferredWorkerpoolOrders = async ({
   try {
     const workerpoolContract = getWorkerpool(workerpool);
     const owner = await callAtBlock(
-      workerpoolContract.functions.owner,
+      workerpoolContract.owner.staticCallResult,
       [],
       blockNumber,
     );
@@ -519,338 +490,7 @@ const cleanTransferredWorkerpoolOrders = async ({
   }
 };
 
-const cleanRevokedUserOrders = async ({
-  address = throwIfMissing(),
-  role = throwIfMissing(),
-  blockNumber,
-}) => {
-  if (role !== KYC_MEMBER_ROLE) {
-    logger.debug(`user ${address} revoked role is not KYC`);
-    return;
-  }
-  // check user  isKYC
-  const eRlcContract = getERlc();
-  const isKYC = await callAtBlock(
-    eRlcContract.functions.isKYC,
-    [address],
-    blockNumber,
-  );
-  if (isKYC) {
-    logger.debug(`user ${address} is KYC`);
-    return;
-  }
-  logger.debug(`user ${address} KYC revoked`);
-
-  // fix block height to prevent the risk of moving indexes in registries
-  const blockNumberOverride =
-    blockNumber || (await getBlockNumber(getProvider()));
-  const ApporderModel = await apporderModel.getModel(chainId);
-  const DatasetorderModel = await datasetorderModel.getModel(chainId);
-  const WorkerpoolorderModel = await workerpoolorderModel.getModel(chainId);
-  const RequestorderModel = await requestorderModel.getModel(chainId);
-
-  // clean orders signed by user
-  const [
-    userApporders,
-    userDatasetorders,
-    userWorkerpoolorders,
-    userRequestorders,
-  ] = await Promise.all([
-    ApporderModel.find({
-      signer: address,
-      status: STATUS_MAP.OPEN,
-      remaining: { $gt: 0 },
-    }),
-    DatasetorderModel.find({
-      signer: address,
-      status: STATUS_MAP.OPEN,
-      remaining: { $gt: 0 },
-    }),
-    WorkerpoolorderModel.find({
-      signer: address,
-      status: STATUS_MAP.OPEN,
-      remaining: { $gt: 0 },
-    }),
-    RequestorderModel.find({
-      signer: address,
-      status: STATUS_MAP.OPEN,
-      remaining: { $gt: 0 },
-    }),
-  ]);
-
-  await Promise.all([
-    cleanApporders({ orders: userApporders, reason: 'signer KYC revoked' }),
-    cleanDatasetorders({
-      orders: userDatasetorders,
-      reason: 'signer KYC revoked',
-    }),
-    cleanWorkerpoolorders({
-      orders: userWorkerpoolorders,
-      reason: 'signer KYC revoked',
-    }),
-    cleanRequestorders({
-      orders: userRequestorders,
-      reason: 'signer KYC revoked',
-    }),
-  ]);
-
-  // list user apps
-  const appRegistryContract = getAppRegistry();
-  const appsCount = await callAtBlock(
-    appRegistryContract.functions.balanceOf,
-    [address],
-    blockNumberOverride,
-  );
-  const deadApps = await Promise.all(
-    new Array(Number(appsCount))
-      .fill(null)
-      .map(async (e, i) => {
-        // protect from fork, index may be out of bound and cause VM execution error
-        try {
-          const resourceId = await callAtBlock(
-            appRegistryContract.functions.tokenOfOwnerByIndex,
-            [address, i],
-            blockNumberOverride,
-          );
-          const resourceAddress = tokenIdToAddress(resourceId);
-          return resourceAddress;
-        } catch (err) {
-          logger.warn(
-            `failed to get app ${i} for owner ${address}${
-              blockNumberOverride && ` at block ${blockNumberOverride}`
-            } : ${err}`,
-          );
-          return null;
-        }
-      })
-      .filter((e) => e !== null),
-  );
-  logger.debug('deadApps (owner KYC revoked)', deadApps);
-  // list orders depending on user apps
-  const [
-    userAppDependantDatasetorders,
-    userAppDependantWorkerpoolorders,
-    userAppDependantRequestorders,
-  ] = await Promise.all([
-    Promise.all(
-      deadApps.map(async (app) => {
-        const dependantOrders = await DatasetorderModel.find({
-          'order.apprestrict': app,
-          status: STATUS_MAP.OPEN,
-          remaining: { $gt: 0 },
-        });
-        return dependantOrders;
-      }),
-    ).then((res) => res.reduce((acc, curr) => [...acc, ...curr], [])),
-    Promise.all(
-      deadApps.map(async (app) => {
-        const dependantOrders = await WorkerpoolorderModel.find({
-          'order.apprestrict': app,
-          status: STATUS_MAP.OPEN,
-          remaining: { $gt: 0 },
-        });
-        return dependantOrders;
-      }),
-    ).then((res) => res.reduce((acc, curr) => [...acc, ...curr], [])),
-    Promise.all(
-      deadApps.map(async (app) => {
-        const dependantOrders = await RequestorderModel.find({
-          'order.app': app,
-          status: STATUS_MAP.OPEN,
-          remaining: { $gt: 0 },
-        });
-        return dependantOrders;
-      }),
-    ).then((res) => res.reduce((acc, curr) => [...acc, ...curr], [])),
-  ]);
-
-  await Promise.all([
-    cleanDatasetorders({
-      orders: userAppDependantDatasetorders,
-      reason: 'KYC revoked app owner dependant',
-    }),
-    cleanWorkerpoolorders({
-      orders: userAppDependantWorkerpoolorders,
-      reason: 'KYC revoked app owner dependant',
-    }),
-    cleanRequestorders({
-      orders: userAppDependantRequestorders,
-      reason: 'KYC revoked app owner dependant',
-    }),
-  ]);
-
-  // list user datasets
-  const datasetRegistryContract = getDatasetRegistry();
-  const datasetsCount = await callAtBlock(
-    datasetRegistryContract.functions.balanceOf,
-    [address],
-    blockNumberOverride,
-  );
-  const deadDatasets = await Promise.all(
-    new Array(Number(datasetsCount))
-      .fill(null)
-      .map(async (e, i) => {
-        // protect from fork, index may be out of bound and cause VM execution error
-        try {
-          const resourceId = await callAtBlock(
-            datasetRegistryContract.functions.tokenOfOwnerByIndex,
-            [address, i],
-            blockNumberOverride,
-          );
-          const resourceAddress = tokenIdToAddress(resourceId);
-          return resourceAddress;
-        } catch (err) {
-          logger.warn(
-            `failed to get dataset ${i} for owner ${address}${
-              blockNumberOverride && ` at block ${blockNumberOverride}`
-            } : ${err}`,
-          );
-          return null;
-        }
-      })
-      .filter((e) => e !== null),
-  );
-  logger.debug('deadDatasets (owner KYC revoked)', deadDatasets);
-  // list orders depending on user datasets
-  const [
-    userDatasetDependantApporders,
-    userDatasetDependantWorkerpoolorders,
-    userDatasetDependantRequestorders,
-  ] = await Promise.all([
-    Promise.all(
-      deadDatasets.map(async (dataset) => {
-        const dependantOrders = await ApporderModel.find({
-          'order.datasetrestrict': dataset,
-          status: STATUS_MAP.OPEN,
-          remaining: { $gt: 0 },
-        });
-        return dependantOrders;
-      }),
-    ).then((res) => res.reduce((acc, curr) => [...acc, ...curr], [])),
-    Promise.all(
-      deadDatasets.map(async (dataset) => {
-        const dependantOrders = await WorkerpoolorderModel.find({
-          'order.datasetrestrict': dataset,
-          status: STATUS_MAP.OPEN,
-          remaining: { $gt: 0 },
-        });
-        return dependantOrders;
-      }),
-    ).then((res) => res.reduce((acc, curr) => [...acc, ...curr], [])),
-    Promise.all(
-      deadDatasets.map(async (dataset) => {
-        const dependantOrders = await RequestorderModel.find({
-          'order.dataset': dataset,
-          status: STATUS_MAP.OPEN,
-          remaining: { $gt: 0 },
-        });
-        return dependantOrders;
-      }),
-    ).then((res) => res.reduce((acc, curr) => [...acc, ...curr], [])),
-  ]);
-
-  await Promise.all([
-    cleanApporders({
-      orders: userDatasetDependantApporders,
-      reason: 'KYC revoked dataset owner dependant',
-    }),
-    cleanWorkerpoolorders({
-      orders: userDatasetDependantWorkerpoolorders,
-      reason: 'KYC revoked dataset owner dependant',
-    }),
-    cleanRequestorders({
-      orders: userDatasetDependantRequestorders,
-      reason: 'KYC revoked dataset owner dependant',
-    }),
-  ]);
-
-  // list user workerpools
-  const workerpoolRegistryContract = getWorkerpoolRegistry();
-  const workerpoolsCount = await callAtBlock(
-    workerpoolRegistryContract.functions.balanceOf,
-    [address],
-    blockNumberOverride,
-  );
-  const deadWorkerpools = await Promise.all(
-    new Array(Number(workerpoolsCount))
-      .fill(null)
-      .map(async (e, i) => {
-        // protect from fork, index may be out of bound and cause VM execution error
-        try {
-          const resourceId = await callAtBlock(
-            workerpoolRegistryContract.functions.tokenOfOwnerByIndex,
-            [address, i],
-            blockNumberOverride,
-          );
-          const resourceAddress = tokenIdToAddress(resourceId);
-          return resourceAddress;
-        } catch (err) {
-          logger.warn(
-            `failed to get workerpool ${i} for owner ${address}${
-              blockNumberOverride && ` at block ${blockNumberOverride}`
-            } : ${err}`,
-          );
-          return null;
-        }
-      })
-      .filter((e) => e !== null),
-  );
-  logger.debug('deadWorkerpools (owner KYC revoked)', deadWorkerpools);
-  // list orders depending on user workerpools
-  const [
-    userWorkerpoolDependantApporders,
-    userWorkerpoolDependantDatasetorders,
-    userWorkerpoolDependantRequestorders,
-  ] = await Promise.all([
-    Promise.all(
-      deadWorkerpools.map(async (workerpool) => {
-        const dependantOrders = await ApporderModel.find({
-          'order.workerpoolrestrict': workerpool,
-          status: STATUS_MAP.OPEN,
-          remaining: { $gt: 0 },
-        });
-        return dependantOrders;
-      }),
-    ).then((res) => res.reduce((acc, curr) => [...acc, ...curr], [])),
-    Promise.all(
-      deadWorkerpools.map(async (workerpool) => {
-        const dependantOrders = await DatasetorderModel.find({
-          'order.workerpoolrestrict': workerpool,
-          status: STATUS_MAP.OPEN,
-          remaining: { $gt: 0 },
-        });
-        return dependantOrders;
-      }),
-    ).then((res) => res.reduce((acc, curr) => [...acc, ...curr], [])),
-    Promise.all(
-      deadWorkerpools.map(async (workerpool) => {
-        const dependantOrders = await RequestorderModel.find({
-          'order.workerpool': workerpool,
-          status: STATUS_MAP.OPEN,
-          remaining: { $gt: 0 },
-        });
-        return dependantOrders;
-      }),
-    ).then((res) => res.reduce((acc, curr) => [...acc, ...curr], [])),
-  ]);
-
-  await Promise.all([
-    cleanApporders({
-      orders: userWorkerpoolDependantApporders,
-      reason: 'KYC revoked workerpool owner dependant',
-    }),
-    cleanDatasetorders({
-      orders: userWorkerpoolDependantDatasetorders,
-      reason: 'KYC revoked workerpool owner dependant',
-    }),
-    cleanRequestorders({
-      orders: userWorkerpoolDependantRequestorders,
-      reason: 'KYC revoked workerpool owner dependant',
-    }),
-  ]);
-};
-
-const updateApporder = async ({
+const _updateApporder = async ({
   orderHash = throwIfMissing(),
   blockNumber,
 } = {}) => {
@@ -860,23 +500,21 @@ const updateApporder = async ({
 
     if (publishedOrder) {
       const hubContract = getHub();
-      const consumedVolume = new BN(
-        await callAtBlock(
-          hubContract.functions.viewConsumed,
-          [orderHash],
-          blockNumber,
-        ),
+      const consumedVolume = await callAtBlock(
+        hubContract.viewConsumed.staticCallResult,
+        [orderHash],
+        blockNumber,
       );
-      const volume = new BN(publishedOrder.order.volume).sub(consumedVolume);
+      const volume = publishedOrder.order.volume - Number(consumedVolume);
       const remaining =
         publishedOrder.remaining !== undefined
-          ? Math.min(volume.toNumber(), publishedOrder.remaining)
-          : volume.toNumber();
+          ? Math.min(volume, publishedOrder.remaining)
+          : volume;
       if (remaining === publishedOrder.remaining) {
         return;
       }
       const update = { remaining };
-      if (volume.isZero()) {
+      if (volume === 0) {
         update.status = STATUS_MAP.FILLED;
       }
       const saved = await ApporderModel.findOneAndUpdate(
@@ -899,7 +537,7 @@ const updateApporder = async ({
   }
 };
 
-const updateDatasetorder = async ({
+const _updateDatasetorder = async ({
   orderHash = throwIfMissing(),
   blockNumber,
 } = {}) => {
@@ -909,23 +547,21 @@ const updateDatasetorder = async ({
 
     if (publishedOrder) {
       const hubContract = getHub();
-      const consumedVolume = new BN(
-        await callAtBlock(
-          hubContract.functions.viewConsumed,
-          [orderHash],
-          blockNumber,
-        ),
+      const consumedVolume = await callAtBlock(
+        hubContract.viewConsumed.staticCallResult,
+        [orderHash],
+        blockNumber,
       );
-      const volume = new BN(publishedOrder.order.volume).sub(consumedVolume);
+      const volume = publishedOrder.order.volume - Number(consumedVolume);
       const remaining =
         publishedOrder.remaining !== undefined
-          ? Math.min(volume.toNumber(), publishedOrder.remaining)
-          : volume.toNumber();
+          ? Math.min(volume, publishedOrder.remaining)
+          : volume;
       if (remaining === publishedOrder.remaining) {
         return;
       }
       const update = { remaining };
-      if (volume.isZero()) {
+      if (volume === 0) {
         update.status = STATUS_MAP.FILLED;
       }
       const saved = await DatasetorderModel.findOneAndUpdate(
@@ -948,7 +584,7 @@ const updateDatasetorder = async ({
   }
 };
 
-const updateWorkerpoolorder = async ({
+const _updateWorkerpoolorder = async ({
   orderHash = throwIfMissing(),
   blockNumber,
 } = {}) => {
@@ -958,23 +594,21 @@ const updateWorkerpoolorder = async ({
 
     if (publishedOrder) {
       const hubContract = getHub();
-      const consumedVolume = new BN(
-        await callAtBlock(
-          hubContract.functions.viewConsumed,
-          [orderHash],
-          blockNumber,
-        ),
+      const consumedVolume = await callAtBlock(
+        hubContract.viewConsumed.staticCallResult,
+        [orderHash],
+        blockNumber,
       );
-      const volume = new BN(publishedOrder.order.volume).sub(consumedVolume);
+      const volume = publishedOrder.order.volume - Number(consumedVolume);
       const remaining =
         publishedOrder.remaining !== undefined
-          ? Math.min(volume.toNumber(), publishedOrder.remaining)
-          : volume.toNumber();
+          ? Math.min(volume, publishedOrder.remaining)
+          : volume;
       if (remaining === publishedOrder.remaining) {
         return;
       }
       const update = { remaining };
-      if (volume.isZero()) {
+      if (volume === 0) {
         update.status = STATUS_MAP.FILLED;
       }
       const saved = await WorkerpoolorderModel.findOneAndUpdate(
@@ -997,7 +631,7 @@ const updateWorkerpoolorder = async ({
   }
 };
 
-const updateRequestorder = async ({
+const _updateRequestorder = async ({
   orderHash = throwIfMissing(),
   blockNumber,
 } = {}) => {
@@ -1007,23 +641,21 @@ const updateRequestorder = async ({
 
     if (publishedOrder) {
       const hubContract = getHub();
-      const consumedVolume = new BN(
-        await callAtBlock(
-          hubContract.functions.viewConsumed,
-          [orderHash],
-          blockNumber,
-        ),
+      const consumedVolume = await callAtBlock(
+        hubContract.viewConsumed.staticCallResult,
+        [orderHash],
+        blockNumber,
       );
-      const volume = new BN(publishedOrder.order.volume).sub(consumedVolume);
+      const volume = publishedOrder.order.volume - Number(consumedVolume);
       const remaining =
         publishedOrder.remaining !== undefined
-          ? Math.min(volume.toNumber(), publishedOrder.remaining)
-          : volume.toNumber();
+          ? Math.min(volume, publishedOrder.remaining)
+          : volume;
       if (remaining === publishedOrder.remaining) {
         return;
       }
       const update = { remaining };
-      if (volume.isZero()) {
+      if (volume === 0) {
         update.status = STATUS_MAP.FILLED;
       }
       const saved = await RequestorderModel.findOneAndUpdate(
@@ -1046,7 +678,7 @@ const updateRequestorder = async ({
   }
 };
 
-const cancelApporder = async ({ orderHash = throwIfMissing() } = {}) => {
+const _cancelApporder = async ({ orderHash = throwIfMissing() } = {}) => {
   try {
     const ApporderModel = await apporderModel.getModel(chainId);
     const published = await ApporderModel.findOneAndUpdate(
@@ -1069,7 +701,7 @@ const cancelApporder = async ({ orderHash = throwIfMissing() } = {}) => {
   }
 };
 
-const cancelDatasetorder = async ({ orderHash = throwIfMissing() } = {}) => {
+const _cancelDatasetorder = async ({ orderHash = throwIfMissing() } = {}) => {
   try {
     const DatasetorderModel = await datasetorderModel.getModel(chainId);
     const published = await DatasetorderModel.findOneAndUpdate(
@@ -1092,7 +724,9 @@ const cancelDatasetorder = async ({ orderHash = throwIfMissing() } = {}) => {
   }
 };
 
-const cancelWorkerpoolorder = async ({ orderHash = throwIfMissing() } = {}) => {
+const _cancelWorkerpoolorder = async ({
+  orderHash = throwIfMissing(),
+} = {}) => {
   try {
     const WorkerpoolorderModel = await workerpoolorderModel.getModel(chainId);
     const published = await WorkerpoolorderModel.findOneAndUpdate(
@@ -1115,7 +749,7 @@ const cancelWorkerpoolorder = async ({ orderHash = throwIfMissing() } = {}) => {
   }
 };
 
-const cancelRequestorder = async ({ orderHash = throwIfMissing() } = {}) => {
+const _cancelRequestorder = async ({ orderHash = throwIfMissing() } = {}) => {
   try {
     const RequestorderModel = await requestorderModel.getModel(chainId);
     const published = await RequestorderModel.findOneAndUpdate(
@@ -1138,30 +772,52 @@ const cancelRequestorder = async ({ orderHash = throwIfMissing() } = {}) => {
   }
 };
 
-module.exports = {
-  cleanApporderDependantOrders: traceAll(cleanApporderDependantOrders, {
+const cleanApporderDependantOrders = traceAll(_cleanApporderDependantOrders, {
+  logger,
+});
+const cleanDatasetorderDependantOrders = traceAll(
+  _cleanDatasetorderDependantOrders,
+  {
     logger,
-  }),
-  cleanDatasetorderDependantOrders: traceAll(cleanDatasetorderDependantOrders, {
+  },
+);
+const cleanBalanceDependantOrders = traceAll(_cleanBalanceDependantOrders, {
+  logger,
+});
+const cleanTransferredAppOrders = traceAll(_cleanTransferredAppOrders, {
+  logger,
+});
+const cleanTransferredDatasetOrders = traceAll(_cleanTransferredDatasetOrders, {
+  logger,
+});
+const cleanTransferredWorkerpoolOrders = traceAll(
+  _cleanTransferredWorkerpoolOrders,
+  {
     logger,
-  }),
-  cleanBalanceDependantOrders: traceAll(cleanBalanceDependantOrders, {
-    logger,
-  }),
-  cleanTransferredAppOrders: traceAll(cleanTransferredAppOrders, { logger }),
-  cleanTransferredDatasetOrders: traceAll(cleanTransferredDatasetOrders, {
-    logger,
-  }),
-  cleanTransferredWorkerpoolOrders: traceAll(cleanTransferredWorkerpoolOrders, {
-    logger,
-  }),
-  cleanRevokedUserOrders: traceAll(cleanRevokedUserOrders, { logger }),
-  updateApporder: traceAll(updateApporder, { logger }),
-  updateDatasetorder: traceAll(updateDatasetorder, { logger }),
-  updateWorkerpoolorder: traceAll(updateWorkerpoolorder, { logger }),
-  updateRequestorder: traceAll(updateRequestorder, { logger }),
-  cancelApporder: traceAll(cancelApporder, { logger }),
-  cancelDatasetorder: traceAll(cancelDatasetorder, { logger }),
-  cancelWorkerpoolorder: traceAll(cancelWorkerpoolorder, { logger }),
-  cancelRequestorder: traceAll(cancelRequestorder, { logger }),
+  },
+);
+const updateApporder = traceAll(_updateApporder, { logger });
+const updateDatasetorder = traceAll(_updateDatasetorder, { logger });
+const updateWorkerpoolorder = traceAll(_updateWorkerpoolorder, { logger });
+const updateRequestorder = traceAll(_updateRequestorder, { logger });
+const cancelApporder = traceAll(_cancelApporder, { logger });
+const cancelDatasetorder = traceAll(_cancelDatasetorder, { logger });
+const cancelWorkerpoolorder = traceAll(_cancelWorkerpoolorder, { logger });
+const cancelRequestorder = traceAll(_cancelRequestorder, { logger });
+
+export {
+  cleanApporderDependantOrders,
+  cleanDatasetorderDependantOrders,
+  cleanBalanceDependantOrders,
+  cleanTransferredAppOrders,
+  cleanTransferredDatasetOrders,
+  cleanTransferredWorkerpoolOrders,
+  updateApporder,
+  updateDatasetorder,
+  updateWorkerpoolorder,
+  updateRequestorder,
+  cancelApporder,
+  cancelDatasetorder,
+  cancelWorkerpoolorder,
+  cancelRequestorder,
 };

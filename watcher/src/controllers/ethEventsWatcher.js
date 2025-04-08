@@ -1,13 +1,12 @@
-const { getLogger } = require('../utils/logger');
-const {
+import { getLogger } from '../utils/logger.js';
+import {
   getProvider,
   getHub,
   getAppRegistry,
   getDatasetRegistry,
   getWorkerpoolRegistry,
-  getERlc,
-} = require('../loaders/ethereum');
-const {
+} from '../loaders/ethereum.js';
+import {
   processClosedAppOrder,
   processClosedDatasetOrder,
   processClosedRequestOrder,
@@ -18,35 +17,33 @@ const {
   processTransferDataset,
   processTransferWorkerpool,
   processStakeLoss,
-  processRoleRevoked,
   processNewBlock,
-} = require('./ethEventsProcessor');
-const {
+} from './ethEventsProcessor.js';
+import {
   getBlockNumber,
   queryFilter,
-  cleanRPC,
   NULL_ADDRESS,
-} = require('../utils/eth-utils');
-const { isEnterpriseFlavour } = require('../utils/iexec-utils');
-const config = require('../config');
-const { traceAll } = require('../utils/trace');
+  formatEthersResult,
+} from '../utils/eth-utils.js';
+import * as config from '../config.js';
+import { traceAll } from '../utils/trace.js';
 
 const logger = getLogger('controllers:ethEventsWatcher');
 
 const extractEvent =
   (processCallback) =>
   (...args) => {
-    const event = args[args.length - 1];
-    return processCallback(event);
+    const contractEventPayload = args[args.length - 1];
+    return processCallback(contractEventPayload.log);
   };
 
-const registerNewBlock = () => {
+const _registerNewBlock = () => {
   logger.log('registering block events');
   const provider = getProvider();
   provider.on('block', processNewBlock);
 };
 
-const registerHubEvents = () => {
+const _registerHubEvents = () => {
   logger.log('registering Hub events');
   const hubContract = getHub();
   hubContract.on('CreateCategory', extractEvent(processCreateCategory));
@@ -61,29 +58,19 @@ const registerHubEvents = () => {
   hubContract.on('Transfer', extractEvent(processStakeLoss));
 };
 
-const registerERlcEvents = async () => {
-  if (isEnterpriseFlavour(config.flavour)) {
-    logger.log('registering eRLC events');
-    const eRlcContract = getERlc();
-    eRlcContract.on('RoleRevoked', extractEvent(processRoleRevoked));
-  } else {
-    logger.log('skipping register eRLC events');
-  }
-};
-
-const registerAppRegistryEvents = () => {
+const _registerAppRegistryEvents = () => {
   logger.log('registering AppRegistry events');
   const appRegistryContract = getAppRegistry();
   appRegistryContract.on('Transfer', extractEvent(processTransferApp));
 };
 
-const registerDatasetRegistryEvents = () => {
+const _registerDatasetRegistryEvents = () => {
   logger.log('registering DatasetRegistry events');
   const datasetRegistryContract = getDatasetRegistry();
   datasetRegistryContract.on('Transfer', extractEvent(processTransferDataset));
 };
 
-const registerWorkerpoolRegistryEvents = () => {
+const _registerWorkerpoolRegistryEvents = () => {
   logger.log('registering WorkerpoolRegistry events');
   const workerpoolRegistryContract = getWorkerpoolRegistry();
   workerpoolRegistryContract.on(
@@ -95,15 +82,6 @@ const registerWorkerpoolRegistryEvents = () => {
 const unsubscribeHubEvents = () => {
   logger.log('unsubscribe Hub events');
   getHub().removeAllListeners();
-};
-
-const unsubscribeERlcEvents = async () => {
-  if (isEnterpriseFlavour(config.flavour)) {
-    logger.log('unsubscribe eRLC events');
-    getERlc().removeAllListeners();
-  } else {
-    logger.log('skipping unsubscribe eRLC events');
-  }
 };
 
 const unsubscribeAppRegistryEvents = () => {
@@ -121,27 +99,21 @@ const unsubscribeWorkerpoolRegistryEvents = () => {
   getWorkerpoolRegistry().removeAllListeners();
 };
 
-const unsubscribeAllEvents = () => {
+const _unsubscribeAllEvents = () => {
   unsubscribeHubEvents();
   unsubscribeAppRegistryEvents();
   unsubscribeDatasetRegistryEvents();
   unsubscribeWorkerpoolRegistryEvents();
-  unsubscribeERlcEvents();
   getProvider().removeAllListeners();
 };
 
 const getContractPastEvent = async (
   contract,
   eventName,
-  { fromBlock = config.startBlock, toBlock = 'latest' } = {},
+  { fromBlock = config.runtime.startBlock, toBlock = 'latest' } = {},
 ) => {
   try {
-    const eventsArray = await queryFilter(contract, [
-      eventName,
-      fromBlock,
-      toBlock,
-    ]);
-    return eventsArray;
+    return await queryFilter(contract, [eventName, fromBlock, toBlock]);
   } catch (error) {
     logger.warn(`getContractPastEvent() ${eventName}`, error);
     throw error;
@@ -173,7 +145,6 @@ const replayPastEventBatch = traceAll(
       closedDatasetOrderEvents,
       closedWorkerpoolOrderEvents,
       closedRequestOrderEvents,
-      roleRevokedEvents,
     ] = await Promise.all([
       getContractPastEvent(appRegistryContract, 'Transfer', {
         fromBlock,
@@ -215,12 +186,6 @@ const replayPastEventBatch = traceAll(
         fromBlock,
         toBlock,
       }),
-      isEnterpriseFlavour(config.flavour)
-        ? getContractPastEvent(getERlc(), 'RoleRevoked', {
-            fromBlock,
-            toBlock,
-          })
-        : [],
     ]);
 
     const eventsArray = transferAppEvents
@@ -247,8 +212,8 @@ const replayPastEventBatch = traceAll(
         transferStakeEvents
           .filter((e) => {
             // filter mint & no value
-            const { from, value } = cleanRPC(e.args);
-            return from !== NULL_ADDRESS && value !== '0';
+            const { from, value } = formatEthersResult(e.args);
+            return from !== NULL_ADDRESS && value !== 0n;
           })
           .reduce((acc, curr) => {
             // filter unique addresses
@@ -290,12 +255,6 @@ const replayPastEventBatch = traceAll(
         closedRequestOrderEvents.map((e) => ({
           event: e,
           process: processClosedRequestOrder,
-        })),
-      )
-      .concat(
-        roleRevokedEvents.map((e) => ({
-          event: e,
-          process: processRoleRevoked,
         })),
       );
 
@@ -365,7 +324,7 @@ const recursiveReplayPastEventBatch = traceAll(
   { logger },
 );
 
-const replayPastEvents = async (
+const _replayPastEvents = async (
   startingBlockNumber,
   {
     lastBlockNumber = 'latest',
@@ -406,19 +365,29 @@ const replayPastEvents = async (
   }
 };
 
-module.exports = {
-  registerNewBlock: traceAll(registerNewBlock, { logger }),
-  registerHubEvents: traceAll(registerHubEvents, { logger }),
-  registerERlcEvents: traceAll(registerERlcEvents, { logger }),
-  registerAppRegistryEvents: traceAll(registerAppRegistryEvents, {
+const registerNewBlock = traceAll(_registerNewBlock, { logger });
+const registerHubEvents = traceAll(_registerHubEvents, { logger });
+const registerAppRegistryEvents = traceAll(_registerAppRegistryEvents, {
+  logger,
+});
+const registerDatasetRegistryEvents = traceAll(_registerDatasetRegistryEvents, {
+  logger,
+});
+const registerWorkerpoolRegistryEvents = traceAll(
+  _registerWorkerpoolRegistryEvents,
+  {
     logger,
-  }),
-  registerDatasetRegistryEvents: traceAll(registerDatasetRegistryEvents, {
-    logger,
-  }),
-  registerWorkerpoolRegistryEvents: traceAll(registerWorkerpoolRegistryEvents, {
-    logger,
-  }),
-  unsubscribeAllEvents: traceAll(unsubscribeAllEvents, { logger }),
-  replayPastEvents: traceAll(replayPastEvents, { logger }),
+  },
+);
+const unsubscribeAllEvents = traceAll(_unsubscribeAllEvents, { logger });
+const replayPastEvents = traceAll(_replayPastEvents, { logger });
+
+export {
+  registerNewBlock,
+  registerHubEvents,
+  registerAppRegistryEvents,
+  registerDatasetRegistryEvents,
+  registerWorkerpoolRegistryEvents,
+  unsubscribeAllEvents,
+  replayPastEvents,
 };

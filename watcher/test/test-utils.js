@@ -1,12 +1,15 @@
-const { utils } = require('iexec');
-const ethers = require('ethers');
-const { STATUS_MAP, tagToArray } = require('../src/utils/order-utils');
-const { getMongoose } = require('../src/loaders/mongoose');
-const apporderModel = require('../src/models/apporderModel');
-const datasetorderModel = require('../src/models/datasetorderModel');
-const workerpoolorderModel = require('../src/models/workerpoolorderModel');
-const requestorderModel = require('../src/models/requestorderModel');
-const counterModel = require('../src/models/counterModel');
+import { utils } from 'iexec';
+/**
+ * @typedef {import('iexec').IExec} IExec;
+ */
+import { Contract, toBeHex } from 'ethers';
+import { STATUS_MAP, tagToArray } from '../src/utils/iexec-utils.js';
+import { getMongoose } from '../src/loaders/mongoose.js';
+import * as apporderModel from '../src/models/apporderModel.js';
+import * as datasetorderModel from '../src/models/datasetorderModel.js';
+import * as workerpoolorderModel from '../src/models/workerpoolorderModel.js';
+import * as requestorderModel from '../src/models/requestorderModel.js';
+import * as counterModel from '../src/models/counterModel.js';
 
 const APPORDERS_COLLECTION = 'apporders';
 const DATASETORDERS_COLLECTION = 'datasetorders';
@@ -22,6 +25,9 @@ const getId = () => {
   return sequenceId;
 };
 
+/**
+ * @param {IExec} iexec
+ */
 const deployAndGetApporder = async (
   iexec,
   {
@@ -30,7 +36,7 @@ const deployAndGetApporder = async (
     datasetrestrict,
     workerpoolrestrict,
     requesterrestrict,
-    tag,
+    tag = [],
   } = {},
 ) => {
   const address = await iexec.wallet.getAddress();
@@ -38,13 +44,23 @@ const deployAndGetApporder = async (
     owner: address,
     name: `app${getId()}`,
     type: 'DOCKER',
-    multiaddr: 'registry.hub.docker.com/iexechub/vanityeth:1.1.1',
+    multiaddr:
+      'docker.io/iexechub/python-hello-world:8.0.0-sconify-5.7.5-v14-production',
     checksum:
-      '0x00f51494d7a42a3c1c43464d9f09e06b2a99968e3b978f6cd11ab3410b7bcd14',
-    mrenclave: '',
+      '0xe89eb32fe956d44ed582123b2259dec6ccd60f4b0f680e9b6e262a4734f66486',
+    mrenclave: tag.includes('tee')
+      ? {
+          framework: 'SCONE',
+          version: 'v5',
+          entrypoint: 'python /app/app.py',
+          heapSize: 1073741824,
+          fingerprint:
+            'acf574009a4093846213a000039accaec90c8a242eb26a71063d967a74ac80ac',
+        }
+      : '',
   });
   const app = appDeployRes.address;
-  const apporder = await iexec.order
+  return iexec.order
     .createApporder({
       app,
       appprice,
@@ -55,9 +71,11 @@ const deployAndGetApporder = async (
       requesterrestrict,
     })
     .then(iexec.order.signApporder);
-  return apporder;
 };
 
+/**
+ * @param {IExec} iexec
+ */
 const deployAndGetDatasetorder = async (
   iexec,
   {
@@ -78,7 +96,7 @@ const deployAndGetDatasetorder = async (
       '0x0000000000000000000000000000000000000000000000000000000000000000',
   });
   const dataset = datasetDeployRes.address;
-  const datasetorder = await iexec.order
+  return iexec.order
     .createDatasetorder({
       dataset,
       datasetprice,
@@ -89,9 +107,11 @@ const deployAndGetDatasetorder = async (
       requesterrestrict,
     })
     .then(iexec.order.signDatasetorder);
-  return datasetorder;
 };
 
+/**
+ * @param {IExec} iexec
+ */
 const deployAndGetWorkerpoolorder = async (
   iexec,
   {
@@ -111,7 +131,7 @@ const deployAndGetWorkerpoolorder = async (
     description: `workerpool${getId()}`,
   });
   const workerpool = workerpoolDeployRes.address;
-  const workerpoolorder = await iexec.order
+  return iexec.order
     .createWorkerpoolorder({
       workerpool,
       workerpoolprice,
@@ -124,15 +144,17 @@ const deployAndGetWorkerpoolorder = async (
       requesterrestrict,
     })
     .then(iexec.order.signWorkerpoolorder);
-  return workerpoolorder;
 };
 
+/**
+ * @param {IExec} iexec
+ */
 const getMatchableRequestorder = async (
   iexec,
   { apporder, datasetorder, workerpoolorder, volume } = {},
 ) => {
   const address = await iexec.wallet.getAddress();
-  const requestorder = await iexec.order
+  return iexec.order
     .createRequestorder({
       requester: address,
       app: apporder.app,
@@ -147,11 +169,10 @@ const getMatchableRequestorder = async (
       tag: apporder.tag,
     })
     .then((o) => iexec.order.signRequestorder(o, { checkRequest: false }));
-  return requestorder;
 };
 
 const transferResourceERC721 = async (wallet, tokenAddress, to) => {
-  const resourceContract = new ethers.Contract(
+  const resourceContract = new Contract(
     tokenAddress,
     [
       {
@@ -171,7 +192,7 @@ const transferResourceERC721 = async (wallet, tokenAddress, to) => {
     wallet,
   );
   const registryAddress = await resourceContract.registry();
-  const registryContract = new ethers.Contract(
+  const registryContract = new Contract(
     registryAddress,
     [
       {
@@ -200,7 +221,7 @@ const transferResourceERC721 = async (wallet, tokenAddress, to) => {
     ],
     wallet,
   );
-  const tokenId = ethers.BigNumber.from(tokenAddress).toString();
+  const tokenId = toBeHex(tokenAddress);
   const initTx = await registryContract.transferFrom(
     wallet.address,
     to,
@@ -291,8 +312,7 @@ const addRequestorders = async (dbName, orders) => {
 
 const find = async (dbName, collection, findObject) => {
   const { db } = await getMongoose({ db: dbName });
-  const docs = await db.collection(collection).find(findObject).toArray();
-  return docs;
+  return db.collection(collection).find(findObject).toArray();
 };
 
 const dropDB = async (
@@ -338,7 +358,7 @@ const setCheckpointToLastBlock = async (dbName) => {
   );
 };
 
-module.exports = {
+export {
   addApporders,
   addDatasetorders,
   addWorkerpoolorders,

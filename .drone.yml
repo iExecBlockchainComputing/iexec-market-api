@@ -57,14 +57,13 @@ steps:
       - sleep 30
 
   - name: watcher test
-    image: node:16.19.0-alpine
+    image: node:22.14-alpine3.21
     commands:
       - apk update && apk upgrade
       - node -v
       - cd watcher/
       - npm ci
       - npm run ci-test-token
-      - npm run ci-test-token-enterprise
       - npm run ci-test-native
 
 services:

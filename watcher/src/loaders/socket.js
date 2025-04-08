@@ -1,10 +1,10 @@
-const http = require('http');
-const socketIo = require('socket.io');
-const { createClient } = require('redis');
-const { createAdapter } = require('@socket.io/redis-adapter');
-const config = require('../config');
-const { getLogger } = require('../utils/logger');
-const { throwIfMissing, errorHandler } = require('../utils/error');
+import http from 'http';
+import { Server as SocketIo } from 'socket.io';
+import { createClient } from 'redis';
+import { createAdapter } from '@socket.io/redis-adapter';
+import { redis as redisConfig } from '../config.js';
+import { getLogger } from '../utils/logger.js';
+import { throwIfMissing, errorHandler } from '../utils/error.js';
 
 const logger = getLogger('socket');
 
@@ -20,7 +20,6 @@ const getWs = () => {
 const init = async () => {
   try {
     logger.log('init socket');
-    const redisConfig = config.redis;
     const pubClient = createClient(redisConfig);
     const subClient = pubClient.duplicate();
     pubClient.on('error', (err) => logger.warn('pubClient', 'Error', err));
@@ -31,7 +30,7 @@ const init = async () => {
     subClient.on('end', () => logger.log('subClient end'));
     await Promise.all[(pubClient.connect(), subClient.connect())];
     const redisAdapter = createAdapter(pubClient, subClient);
-    ws = socketIo(server);
+    ws = new SocketIo(server);
     ws.adapter(redisAdapter);
     logger.log('socket initialized');
   } catch (error) {
@@ -59,4 +58,4 @@ const emit = async (
   }
 };
 
-module.exports = { init, emit };
+export { init, emit };

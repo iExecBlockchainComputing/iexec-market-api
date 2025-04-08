@@ -1,4 +1,4 @@
-const Debug = require('debug');
+import Debug from 'debug';
 
 const DEBUG_NAMESPACE = 'iexec-watcher';
 
@@ -19,23 +19,25 @@ const DEFAULT = INFO;
 
 const LOG_LEVELS = [OFF, ERROR, WARN, INFO, DEBUG, TRACE, ALL];
 
-let LOG_LEVEL = process.env.LOG_LEVEL && process.env.LOG_LEVEL.toLowerCase();
+let logLevel = process.env.LOG_LEVEL && process.env.LOG_LEVEL.toLowerCase();
 const enabledNamespaces = [APP_NAMESPACE].concat(
   process.env.LOG_NAMESPACES && process.env.LOG_NAMESPACES.split(','),
 );
 
-if (!LOG_LEVELS.includes(LOG_LEVEL)) {
+if (!LOG_LEVELS.includes(logLevel)) {
+  const quoteStr = (str) => `"${str}"`;
+  // eslint-disable-next-line no-console
   console.warn(
-    `LOG_LEVEL must be one of ${LOG_LEVELS.map((lvl) => `"${lvl}"`).join(
+    `LOG_LEVEL must be one of ${LOG_LEVELS.map(quoteStr).join(
       ' > ',
-    )} (using default: "${DEFAULT}")`,
+    )} (using default: ${quoteStr(DEFAULT)})`,
   );
-  LOG_LEVEL = DEFAULT;
+  logLevel = DEFAULT;
 }
 
 const enabledLogLevels = LOG_LEVELS.slice(
   1,
-  LOG_LEVELS.findIndex((val) => val === LOG_LEVEL) + 1,
+  LOG_LEVELS.findIndex((val) => val === logLevel) + 1,
 );
 
 const computedNamespaces = enabledLogLevels
@@ -75,9 +77,6 @@ const getLogger = (loggerNamespace) => {
   };
 };
 
-module.exports = {
-  getLogger,
-  APP_NAMESPACE,
-  LOG_LEVEL,
-  TRACE,
-};
+const LOG_LEVEL = logLevel;
+
+export { getLogger, APP_NAMESPACE, LOG_LEVEL, TRACE };
