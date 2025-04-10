@@ -71,7 +71,9 @@ beforeAll(async () => {
   const { stake } = await iexec.account.checkBalance(
     await iexec.wallet.getAddress(),
   );
-  await iexec.account.withdraw(stake);
+  if (stake.gtn(0)) {
+    await iexec.account.withdraw(stake);
+  }
 });
 
 describe('Watcher', () => {
@@ -2904,7 +2906,9 @@ describe('Recover on start', () => {
       ]),
     ]);
     const { stake } = await iexec.account.checkBalance(address);
-    await iexec.account.withdraw(stake);
+    if (stake.gtn(0)) {
+      await iexec.account.withdraw(stake);
+    }
     await iexec.account.deposit(30);
     const [
       [savedIndependentWorkerpoolorder],
@@ -3071,7 +3075,9 @@ describe('Recover on start', () => {
       ]),
     ]);
     const { stake } = await iexec.account.checkBalance(address);
-    await iexec.account.withdraw(stake);
+    if (stake.gtn(0)) {
+      await iexec.account.withdraw(stake);
+    }
     await iexec.account.deposit(10);
     const [
       [savedIndependentRequestorder],
@@ -4430,7 +4436,9 @@ describe('Replay Past', () => {
       ]),
     ]);
     const { stake } = await iexec.account.checkBalance(address);
-    await iexec.account.withdraw(stake);
+    if (stake.gtn(0)) {
+      await iexec.account.withdraw(stake);
+    }
     await iexec.account.deposit(30);
     const [
       [savedIndependentWorkerpoolorder],
@@ -4603,7 +4611,9 @@ describe('Replay Past', () => {
       ]),
     ]);
     const { stake } = await iexec.account.checkBalance(address);
-    await iexec.account.withdraw(stake);
+    if (stake.gtn(0)) {
+      await iexec.account.withdraw(stake);
+    }
     await iexec.account.deposit(10);
     const [
       [savedIndependentRequestorder],
