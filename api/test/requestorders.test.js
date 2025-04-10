@@ -572,7 +572,9 @@ describe('/requestorders', () => {
     test('POST /requestorders (check enough stake)', async () => {
       const address = await iexec.wallet.getAddress();
       const { stake } = await iexec.account.checkBalance(address);
-      await iexec.account.withdraw(stake);
+      if (stake.gtn(0)) {
+        await iexec.account.withdraw(stake);
+      }
       await iexec.account.deposit(10);
       const order10nRlc = await iexec.order.signRequestorder(
         {
