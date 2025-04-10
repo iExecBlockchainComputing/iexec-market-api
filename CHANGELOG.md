@@ -2,10 +2,13 @@
 
 ## NEXT
 
-- dropped support for iExec Enterprise (ERlc)
-- migrate watcher to ESM
-- upgrade watcher runtime to node 22
-- upgrade watcher deps ethers to v6
+- \[BREAKING\] dropped support for iExec Enterprise (eRLC)
+- migrate to ESM
+- upgrade runtime to node 22
+- upgrade iexec to v8
+- upgrade ethers to v6
+- upgrade yup to v1
+- update dependencies
 
 ## v6.4.1
 
