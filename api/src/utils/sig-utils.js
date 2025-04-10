@@ -1,9 +1,5 @@
-import { utils } from 'ethers';
+import { TypedDataEncoder, recoverAddress } from 'ethers';
 import { logger } from './logger.js';
-
-// use experimental ether utils._TypedDataEncoder (to remove when TypedDataEncoder is included)
-// https://docs.ethers.io/v5/api/utils/hashing/#TypedDataEncoder
-const { recoverAddress, _TypedDataEncoder: TypedDataEncoder } = utils;
 
 const log = logger.extend('utils:sig-utils');
 

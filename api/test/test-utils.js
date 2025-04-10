@@ -1,4 +1,11 @@
-import ethers from 'ethers';
+import {
+  Contract,
+  toBeHex,
+  Wallet,
+  ZeroAddress,
+  ZeroHash,
+  zeroPadValue,
+} from 'ethers';
 import queryString from 'query-string';
 import { STATUS_MAP, tagToArray } from '../src/utils/order-utils.js';
 import { getMongoose } from '../src/loaders/mongoose.js';
@@ -48,16 +55,13 @@ const getId = () => {
 };
 
 const getRandomWallet = () => {
-  const { privateKey, publicKey, address } = ethers.Wallet.createRandom();
+  const { privateKey, publicKey, address } = Wallet.createRandom();
   return { privateKey, publicKey, address };
 };
 
-const getRandomAddress = () =>
-  ethers.utils.getAddress(
-    ethers.utils.hexZeroPad(ethers.BigNumber.from(getId()), 20),
-  );
+const getRandomAddress = () => getRandomWallet().address;
 
-const getBytes32 = (hexString) => ethers.utils.hexZeroPad(hexString, 32);
+const getBytes32 = (bytesLike) => zeroPadValue(bytesLike, 32);
 
 const deployAppFor = async (iexec, owner) => {
   const { address } = await iexec.app.deployApp({
@@ -183,9 +187,7 @@ const getMatchableRequestorder = async (
       requester: address,
       app: apporder.app,
       appmaxprice: apporder.appprice,
-      dataset: datasetorder
-        ? datasetorder.dataset
-        : ethers.constants.AddressZero,
+      dataset: datasetorder ? datasetorder.dataset : ZeroAddress,
       datasetmaxprice: datasetorder ? datasetorder.datasetprice : 0,
       workerpool: workerpoolorder.workerpool,
       workerpoolmaxprice: workerpoolorder.workerpoolprice,
@@ -219,7 +221,7 @@ const castOrderPrices = (order) => ({
 });
 
 const initializeTask = async (wallet, hub, dealid, idx) => {
-  const hubContract = new ethers.Contract(
+  const hubContract = new Contract(
     hub,
     [
       {
@@ -301,7 +303,7 @@ const addDeals = async (dbName, deals) => {
     deals.map(async (e, i) => {
       const deal = new DealModel();
       deal.chainId = dbName;
-      deal.dealid = getBytes32(ethers.BigNumber.from(i));
+      deal.dealid = getBytes32(toBeHex(i));
       deal.app = {
         pointer: e.app || getRandomAddress(),
         owner: e.appOwner || getRandomAddress(),
@@ -321,18 +323,15 @@ const addDeals = async (dbName, deals) => {
       deal.requester = e.requester || getRandomAddress();
       deal.beneficiary = e.beneficiary || getRandomAddress();
       deal.callback = e.callback || getRandomAddress();
-      deal.appHash =
-        e.apporderHash || getBytes32(ethers.BigNumber.from(i + 1000));
-      deal.datasetHash =
-        e.datasetorderHash || getBytes32(ethers.BigNumber.from(i + 2000));
+      deal.appHash = e.apporderHash || getBytes32(toBeHex(i + 1000));
+      deal.datasetHash = e.datasetorderHash || getBytes32(toBeHex(i + 2000));
       deal.workerpoolHash =
-        e.workerpoolorderHash || getBytes32(ethers.BigNumber.from(i + 3000));
-      deal.requestHash =
-        e.requestorderHash || getBytes32(ethers.BigNumber.from(i + 4000));
+        e.workerpoolorderHash || getBytes32(toBeHex(i + 3000));
+      deal.requestHash = e.requestorderHash || getBytes32(toBeHex(i + 4000));
       deal.category = e.category || 0;
       deal.params = '';
       deal.volume = e.volume || 1;
-      deal.tag = e.tag || ethers.constants.HashZero;
+      deal.tag = e.tag || ZeroHash;
       deal.trust = e.trust || 0;
       deal.startTime = e.startTime || Math.floor(Date.now() / 1000);
       deal.botFirst = e.botFirst || 0;
@@ -342,7 +341,7 @@ const addDeals = async (dbName, deals) => {
       deal.blockNumber = e.blockNumber || 0;
       deal.blockTimestamp = e.blockTimestamp || new Date().toISOString();
       deal.transactionHash =
-        e.transactionHash || getBytes32(ethers.BigNumber.from(i + 10000));
+        e.transactionHash || getBytes32(toBeHex(i + 10000));
       await deal.save();
     }),
   );

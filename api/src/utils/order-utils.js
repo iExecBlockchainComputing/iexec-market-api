@@ -1,4 +1,3 @@
-import BN from 'bn.js';
 import {
   OPEN,
   FILLED,
@@ -121,7 +120,7 @@ const TAG_MAP = {
 };
 
 const tagToArray = (tag) => {
-  const tagBinString = new BN(tag.substr(2), 'hex').toString(2);
+  const tagBinString = BigInt(tag).toString(2);
   const bitsArray = [];
   for (let i = 1; i <= tagBinString.length; i += 1) {
     if (tagBinString.charAt(tagBinString.length - i) === '1') {

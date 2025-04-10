@@ -28,11 +28,9 @@
   "dependencies": {
     "@iexec/poco": "^5.5.0",
     "@socket.io/redis-adapter": "^8.0.0",
-    "bignumber.js": "^9.1.1",
-    "bn.js": "^5.2.1",
     "debug": "^4.3.4",
     "dotenv": "^16.0.3",
-    "ethers": "^5.7.2",
+    "ethers": "^6.13.5",
     "kcors": "2.2.2",
     "koa": "^2.14.1",
     "koa-bodyparser": "^4.3.0",
