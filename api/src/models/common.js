@@ -1,7 +1,5 @@
-import { utils } from 'ethers';
+import { getAddress } from 'ethers';
 import { STATUS_MAP } from '../utils/order-utils.js';
-
-const { getAddress } = utils;
 
 const addressValidator = {
   validator: (address) => {

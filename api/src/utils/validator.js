@@ -1,9 +1,7 @@
 import { string, number, object, boolean } from 'yup';
-import { utils } from 'ethers';
+import { getAddress } from 'ethers';
 import { supportedChainsIds } from '../config.js';
 import { ANY } from './keywords.js';
-
-const { getAddress } = utils;
 
 const chainIdSchema = () =>
   string().oneOf(supportedChainsIds, 'chainId ${value} is not supported');

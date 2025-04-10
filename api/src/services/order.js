@@ -1,4 +1,3 @@
-import BN from 'bn.js';
 import { eventEmitter } from '../loaders/eventEmitter.js';
 import * as apporderModel from '../models/apporderModel.js';
 import * as datasetorderModel from '../models/datasetorderModel.js';
@@ -23,12 +22,7 @@ import {
   wrapEthCall,
   throwIfMissing,
 } from '../utils/error.js';
-import {
-  NULL_ADDRESS,
-  NULL_BYTES32,
-  getContract,
-  ethersBnToBn,
-} from '../utils/eth-utils.js';
+import { NULL_ADDRESS, NULL_BYTES32, getContract } from '../utils/eth-utils.js';
 import { hashEIP712 } from '../utils/sig-utils.js';
 import {
   OBJ_MAP,
@@ -182,9 +176,9 @@ const checkMatchableApporder = async ({
     }
     return false;
   }
-  const bestAppPrice = new BN(bestApporder.order.appprice);
-  const appPrice = new BN(order.appmaxprice);
-  if (appPrice.lt(bestAppPrice)) {
+  const bestAppPrice = BigInt(bestApporder.order.appprice);
+  const appPrice = BigInt(order.appmaxprice);
+  if (appPrice < bestAppPrice) {
     if (strict) {
       throw new BusinessError(
         `appmaxprice for app ${order.app} is too low, actual best price is ${bestAppPrice} nRLC`,
@@ -224,9 +218,9 @@ const checkMatchableDatasetorder = async ({
     }
     return false;
   }
-  const bestDatasetPrice = new BN(bestDatasetorder.order.datasetprice);
-  const datasetPrice = new BN(order.datasetmaxprice);
-  if (datasetPrice.lt(bestDatasetPrice)) {
+  const bestDatasetPrice = BigInt(bestDatasetorder.order.datasetprice);
+  const datasetPrice = BigInt(order.datasetmaxprice);
+  if (datasetPrice < bestDatasetPrice) {
     if (strict) {
       throw new BusinessError(
         `datasetmaxprice for dataset ${order.dataset} is too low, actual best price is ${bestDatasetPrice} nRLC`,
@@ -881,11 +875,12 @@ const publishApporder = async ({
     }
 
     // check remaining volume
-    const consumedVolume = ethersBnToBn(
-      await wrapEthCall(iExecContract.viewConsumed(orderHash)),
+    const consumedVolume = await wrapEthCall(
+      iExecContract.viewConsumed(orderHash),
     );
-    const remainingVolume = new BN(formattedOrder.volume).sub(consumedVolume);
-    if (remainingVolume.isZero())
+
+    const remainingVolume = BigInt(formattedOrder.volume) - consumedVolume;
+    if (remainingVolume === 0n)
       throw new BusinessError('order already consumed');
 
     // publishing
@@ -991,11 +986,12 @@ const publishDatasetorder = async ({
     }
 
     // check remaining volume
-    const consumedVolume = ethersBnToBn(
-      await wrapEthCall(iExecContract.viewConsumed(orderHash)),
+    const consumedVolume = await wrapEthCall(
+      iExecContract.viewConsumed(orderHash),
     );
-    const remainingVolume = new BN(formattedOrder.volume).sub(consumedVolume);
-    if (remainingVolume.isZero())
+
+    const remainingVolume = BigInt(formattedOrder.volume) - consumedVolume;
+    if (remainingVolume === 0n)
       throw new BusinessError('order already consumed');
 
     // publishing
@@ -1101,24 +1097,23 @@ const publishWorkerpoolorder = async ({
     }
 
     // check remaining volume
-    const consumedVolume = ethersBnToBn(
-      await wrapEthCall(iExecContract.viewConsumed(orderHash)),
+    const consumedVolume = await wrapEthCall(
+      iExecContract.viewConsumed(orderHash),
     );
-    const remainingVolume = new BN(formattedOrder.volume).sub(consumedVolume);
-    if (remainingVolume.isZero())
+
+    const remainingVolume = BigInt(formattedOrder.volume) - consumedVolume;
+    if (remainingVolume === 0n)
       throw new BusinessError('order already consumed');
 
     // check workerpool owner stake (workerpoolorder specific)
-    const workerpoolPrice = new BN(formattedOrder.workerpoolprice);
+    const workerpoolPrice = BigInt(formattedOrder.workerpoolprice);
     const workerpoolAccount = await wrapEthCall(
       iExecContract.viewAccount(signer),
     );
-    const workerpoolStake = ethersBnToBn(workerpoolAccount.stake);
-    const currentOrderRequiredStake = workerpoolPrice
-      .mul(new BN(30))
-      .div(new BN(100))
-      .mul(remainingVolume);
-    if (workerpoolStake.lt(currentOrderRequiredStake)) {
+    const workerpoolStake = workerpoolAccount.stake;
+    const currentOrderRequiredStake =
+      ((workerpoolPrice * 30n) / 100n) * remainingVolume;
+    if (workerpoolStake < currentOrderRequiredStake) {
       throw new BusinessError(
         "workerpool owner's stake is too low to cover required workerpool lock",
       );
@@ -1221,24 +1216,25 @@ const publishRequestorder = async ({
     }
 
     // check remaining volume
-    const consumedVolume = ethersBnToBn(
-      await wrapEthCall(iExecContract.viewConsumed(orderHash)),
+    const consumedVolume = await wrapEthCall(
+      iExecContract.viewConsumed(orderHash),
     );
-    const remainingVolume = new BN(formattedOrder.volume).sub(consumedVolume);
-    if (remainingVolume.isZero())
+
+    const remainingVolume = BigInt(formattedOrder.volume) - consumedVolume;
+    if (remainingVolume === 0n)
       throw new BusinessError('order already consumed');
 
     // check requester stake (requestorder specific)
-    const appPrice = new BN(formattedOrder.appmaxprice);
-    const datasetPrice = new BN(formattedOrder.datasetmaxprice);
-    const workerpoolPrice = new BN(formattedOrder.workerpoolmaxprice);
-    const costPerWork = appPrice.add(datasetPrice).add(workerpoolPrice);
-    const totalCost = costPerWork.mul(remainingVolume);
+    const appPrice = BigInt(formattedOrder.appmaxprice);
+    const datasetPrice = BigInt(formattedOrder.datasetmaxprice);
+    const workerpoolPrice = BigInt(formattedOrder.workerpoolmaxprice);
+    const costPerWork = appPrice + datasetPrice + workerpoolPrice;
+    const totalCost = costPerWork * remainingVolume;
     const requesterAccount = await wrapEthCall(
       iExecContract.viewAccount(signer),
     );
-    const requesterStake = ethersBnToBn(requesterAccount.stake);
-    if (requesterStake.lt(totalCost)) {
+    const requesterStake = requesterAccount.stake;
+    if (requesterStake < totalCost) {
       throw new BusinessError(
         `requester stake is too low to cover requestorder payment, minimum stake required is ${totalCost} nRLC`,
       );
