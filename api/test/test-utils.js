@@ -1,11 +1,4 @@
-import {
-  Contract,
-  toBeHex,
-  Wallet,
-  ZeroAddress,
-  ZeroHash,
-  zeroPadValue,
-} from 'ethers';
+import { toBeHex, Wallet, ZeroAddress, ZeroHash, zeroPadValue } from 'ethers';
 import queryString from 'query-string';
 import { STATUS_MAP, tagToArray } from '../src/utils/order-utils.js';
 import { getMongoose } from '../src/loaders/mongoose.js';
@@ -220,40 +213,6 @@ const castOrderPrices = (order) => ({
   }),
 });
 
-const initializeTask = async (wallet, hub, dealid, idx) => {
-  const hubContract = new Contract(
-    hub,
-    [
-      {
-        constant: false,
-        inputs: [
-          {
-            name: '_dealid',
-            type: 'bytes32',
-          },
-          {
-            name: 'idx',
-            type: 'uint256',
-          },
-        ],
-        name: 'initialize',
-        outputs: [
-          {
-            name: '',
-            type: 'bytes32',
-          },
-        ],
-        payable: false,
-        stateMutability: 'nonpayable',
-        type: 'function',
-      },
-    ],
-    wallet,
-  );
-  const initTx = await hubContract.initialize(dealid, idx);
-  await initTx.wait();
-};
-
 const timestampRegex =
   /(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2}).(\d{3})Z/;
 const bytes32Regex = /^(0x)([0-9a-f]{2}){32}$/;
@@ -466,7 +425,6 @@ export {
   deployAndGetWorkerpoolorder,
   getMatchableRequestorder,
   castOrderPrices,
-  initializeTask,
   timestampRegex,
   bytes32Regex,
   addressRegex,
