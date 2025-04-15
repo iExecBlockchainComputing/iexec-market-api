@@ -288,10 +288,10 @@ router.get('/apporders', bodyParser(), async (ctx) => {
     pageSize,
   } = await object({
     chainId: chainIdSchema().required(),
-    app: string().when('appOwner', {
+    app: addressOrAnySchema().when('appOwner', {
       is: (value) => !!value,
-      then: addressOrAnySchema().notRequired(),
-      otherwise: addressOrAnySchema().required('app or appOwner is required'),
+      then: (schema) => schema.notRequired(),
+      otherwise: (schema) => schema.required('app or appOwner is required'),
     }),
     appOwner: addressSchema(),
     dataset: addressOrAnySchema(),
@@ -378,12 +378,11 @@ router.get('/datasetorders', bodyParser(), async (ctx) => {
     pageSize,
   } = await object({
     chainId: chainIdSchema().required(),
-    dataset: string().when('datasetOwner', {
+    dataset: addressOrAnySchema().when('datasetOwner', {
       is: (value) => !!value,
-      then: addressOrAnySchema().notRequired(),
-      otherwise: addressOrAnySchema().required(
-        'dataset or datasetOwner is required',
-      ),
+      then: (schema) => schema.notRequired(),
+      otherwise: (schema) =>
+        schema.required('dataset or datasetOwner is required'),
     }),
     datasetOwner: addressSchema(),
     app: addressOrAnySchema(),
@@ -675,16 +674,17 @@ router.put('/apporders', bodyParser(), authentify, async (ctx) => {
     target: string()
       .default(UNPUBLISH_TARGET_MAP.ORDERHASH)
       .oneOf(Object.values(UNPUBLISH_TARGET_MAP)),
-    orderHash: string().when('target', {
+    orderHash: bytes32Schema().when('target', {
       is: (value) =>
         [UNPUBLISH_TARGET_MAP.LAST, UNPUBLISH_TARGET_MAP.ALL].includes(value),
-      then: string().notRequired(),
-      otherwise: bytes32Schema().required(),
+      then: (schema) => schema.notRequired(),
+      otherwise: (schema) => schema.required(),
     }),
-    app: string().when('target', {
+    app: addressSchema().when('target', {
       is: (value) =>
         [UNPUBLISH_TARGET_MAP.LAST, UNPUBLISH_TARGET_MAP.ALL].includes(value),
-      then: addressSchema().required(),
+      then: (schema) => schema.required(),
+      otherwise: (schema) => schema.notRequired(),
     }),
   }).validate(ctx.request.body);
   const unpublished = await unpublishApporders({
@@ -705,16 +705,17 @@ router.put('/datasetorders', bodyParser(), authentify, async (ctx) => {
     target: string()
       .default(UNPUBLISH_TARGET_MAP.ORDERHASH)
       .oneOf(Object.values(UNPUBLISH_TARGET_MAP)),
-    orderHash: string().when('target', {
+    orderHash: bytes32Schema().when('target', {
       is: (value) =>
         [UNPUBLISH_TARGET_MAP.LAST, UNPUBLISH_TARGET_MAP.ALL].includes(value),
-      then: string().notRequired(),
-      otherwise: bytes32Schema().required(),
+      then: (schema) => schema.notRequired(),
+      otherwise: (schema) => schema.required(),
     }),
-    dataset: string().when('target', {
+    dataset: addressSchema().when('target', {
       is: (value) =>
         [UNPUBLISH_TARGET_MAP.LAST, UNPUBLISH_TARGET_MAP.ALL].includes(value),
-      then: addressSchema().required(),
+      then: (schema) => schema.required(),
+      otherwise: (schema) => schema.notRequired(),
     }),
   }).validate(ctx.request.body);
   const unpublished = await unpublishDatasetorders({
@@ -735,16 +736,17 @@ router.put('/workerpoolorders', bodyParser(), authentify, async (ctx) => {
     target: string()
       .default(UNPUBLISH_TARGET_MAP.ORDERHASH)
       .oneOf(Object.values(UNPUBLISH_TARGET_MAP)),
-    orderHash: string().when('target', {
+    orderHash: bytes32Schema().when('target', {
       is: (value) =>
         [UNPUBLISH_TARGET_MAP.LAST, UNPUBLISH_TARGET_MAP.ALL].includes(value),
-      then: string().notRequired(),
-      otherwise: bytes32Schema().required(),
+      then: (schema) => schema.notRequired(),
+      otherwise: (schema) => schema.required(),
     }),
-    workerpool: string().when('target', {
+    workerpool: addressSchema().when('target', {
       is: (value) =>
         [UNPUBLISH_TARGET_MAP.LAST, UNPUBLISH_TARGET_MAP.ALL].includes(value),
-      then: addressSchema().required(),
+      then: (schema) => schema.required(),
+      otherwise: (schema) => schema.notRequired(),
     }),
   }).validate(ctx.request.body);
   const unpublished = await unpublishWorkerpoolorders({
@@ -766,16 +768,17 @@ router.put('/requestorders', bodyParser(), authentify, async (ctx) => {
     target: string()
       .default(UNPUBLISH_TARGET_MAP.ORDERHASH)
       .oneOf(Object.values(UNPUBLISH_TARGET_MAP)),
-    orderHash: string().when('target', {
+    orderHash: bytes32Schema().when('target', {
       is: (value) =>
         [UNPUBLISH_TARGET_MAP.LAST, UNPUBLISH_TARGET_MAP.ALL].includes(value),
-      then: string().notRequired(),
-      otherwise: bytes32Schema().required(),
+      then: (schema) => schema.notRequired(),
+      otherwise: (schema) => schema.required(),
     }),
-    requester: string().when('target', {
+    requester: addressSchema().when('target', {
       is: (value) =>
         [UNPUBLISH_TARGET_MAP.LAST, UNPUBLISH_TARGET_MAP.ALL].includes(value),
-      then: addressSchema().required(),
+      then: (schema) => schema.required(),
+      otherwise: (schema) => schema.notRequired(),
     }),
   }).validate(ctx.request.body);
   const unpublished = await unpublishRequestorders({
