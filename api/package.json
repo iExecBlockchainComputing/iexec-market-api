@@ -42,7 +42,7 @@
     "redis": "^4.7.0",
     "socket.io": "^4.8.1",
     "yamljs": "^0.3.0",
-    "yup": "^0.32.11"
+    "yup": "^1.6.1"
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.25.9",
