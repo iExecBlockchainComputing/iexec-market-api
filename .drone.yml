@@ -9,6 +9,24 @@ trigger:
       - pull_request
 
 steps:
+  - name: install
+    image: node:22.14-alpine3.21
+    commands:
+      - cd api/
+      - npm ci
+
+  - name: format
+    image: node:22.14-alpine3.21
+    commands:
+      - cd api/
+      - npm run check-format
+
+  - name: lint
+    image: node:22.14-alpine3.21
+    commands:
+      - cd api/
+      - npm run lint
+
   - name: wait services initialization
     image: bash
     commands:
@@ -17,10 +35,7 @@ steps:
   - name: api test
     image: node:22.14-alpine3.21
     commands:
-      - apk update && apk upgrade
-      - node -v
       - cd api/
-      - npm ci
       - npm run ci-test-token
       - npm run ci-test-native
 
@@ -50,6 +65,24 @@ trigger:
       - pull_request
 
 steps:
+  - name: install
+    image: node:22.14-alpine3.21
+    commands:
+      - cd watcher/
+      - npm ci
+
+  - name: format
+    image: node:22.14-alpine3.21
+    commands:
+      - cd watcher/
+      - npm run check-format
+
+  - name: lint
+    image: node:22.14-alpine3.21
+    commands:
+      - cd watcher/
+      - npm run lint
+
   - name: wait services initialization
     image: bash
     commands:
@@ -58,10 +91,7 @@ steps:
   - name: watcher test
     image: node:22.14-alpine3.21
     commands:
-      - apk update && apk upgrade
-      - node -v
       - cd watcher/
-      - npm ci
       - npm run ci-test-token
       - npm run ci-test-native
 
