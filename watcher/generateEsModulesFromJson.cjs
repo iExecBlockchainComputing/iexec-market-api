@@ -56,8 +56,7 @@ const sources = [
 ];
 
 const createEsModule = (jsonObj) => {
-  let module =
-    '// this file is auto generated do not edit it\n/* eslint-disable */\n';
+  let module = '// this file is auto generated do not edit it\n\n';
   Object.entries(jsonObj).forEach(([key, value]) => {
     module += `export const ${key} = ${JSON.stringify(value)};\n`;
   });
@@ -68,7 +67,6 @@ const createEsModule = (jsonObj) => {
 console.log('converting json files to es modules');
 
 sources.map(async ([src, options]) => {
-  // eslint-disable-next-line import/no-dynamic-require, global-require
   const jsonObj = require(src);
   const minifiedJsonObj = options.minifier
     ? options.minifier(jsonObj)

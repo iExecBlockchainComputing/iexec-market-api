@@ -146,7 +146,7 @@ const checkMatchableApporder = async ({ order = throwIfMissing() } = {}) => {
   }
   const bestAppPrice = BigInt(bestApporder.order.appprice);
   const appPrice = BigInt(order.appmaxprice);
-  return !(appPrice < bestAppPrice);
+  return appPrice >= bestAppPrice;
 };
 
 const checkMatchableDatasetorder = async ({
@@ -173,7 +173,7 @@ const checkMatchableDatasetorder = async ({
   }
   const bestDatasetPrice = BigInt(bestDatasetorder.order.datasetprice);
   const datasetPrice = BigInt(order.datasetmaxprice);
-  return !(datasetPrice < bestDatasetPrice);
+  return datasetPrice >= bestDatasetPrice;
 };
 
 const _cleanApporderDependantOrders = async ({

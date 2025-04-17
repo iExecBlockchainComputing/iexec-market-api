@@ -121,7 +121,6 @@ const getContractPastEvent = async (
 };
 
 const replayPastEventBatch = traceAll(
-  // eslint-disable-next-line prefer-arrow-callback
   async function _replayPastEventBatch({
     fromBlock,
     toBlock,

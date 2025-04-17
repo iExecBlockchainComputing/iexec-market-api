@@ -24,6 +24,12 @@ export default [
       'new-cap': 'off',
       'no-console': 'error',
       'no-underscore-dangle': 'off',
+      'no-unused-vars': [
+        'error',
+        {
+          ignoreRestSiblings: true,
+        },
+      ],
       'no-template-curly-in-string': 'off',
       'max-classes-per-file': 'off',
       'max-len': 'off',
