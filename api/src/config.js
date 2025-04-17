@@ -1,11 +1,11 @@
-import iexecTokenDesc from './generated/@iexec/poco/IexecInterfaceToken.js';
-import iexecNativeDesc from './generated/@iexec/poco/IexecInterfaceNative.js';
-import appRegistryDesc from './generated/@iexec/poco/AppRegistry.js';
-import workerpoolRegistryDesc from './generated/@iexec/poco/WorkerpoolRegistry.js';
-import datasetRegistryDesc from './generated/@iexec/poco/DatasetRegistry.js';
-import appDesc from './generated/@iexec/poco/App.js';
-import workerpoolDesc from './generated/@iexec/poco/Workerpool.js';
-import datasetDesc from './generated/@iexec/poco/Dataset.js';
+import { abi as iexecTokenAbi } from './generated/@iexec/poco/IexecInterfaceToken.js';
+import { abi as iexecNativeAbi } from './generated/@iexec/poco/IexecInterfaceNative.js';
+import { abi as appRegistryAbi } from './generated/@iexec/poco/AppRegistry.js';
+import { abi as workerpoolRegistryAbi } from './generated/@iexec/poco/WorkerpoolRegistry.js';
+import { abi as datasetRegistryAbi } from './generated/@iexec/poco/DatasetRegistry.js';
+import { abi as appAbi } from './generated/@iexec/poco/App.js';
+import { abi as workerpoolAbi } from './generated/@iexec/poco/Workerpool.js';
+import { abi as datasetAbi } from './generated/@iexec/poco/Dataset.js';
 
 import { logger } from './utils/logger.js';
 
@@ -27,21 +27,21 @@ const {
 const chainsNames = CHAINS.split(',').map((e) => e.toUpperCase());
 
 const abis = {
-  app: appDesc.abi,
-  dataset: datasetDesc.abi,
-  workerpool: workerpoolDesc.abi,
-  appregistry: appRegistryDesc.abi,
-  datasetregistry: datasetRegistryDesc.abi,
-  workerpoolregistry: workerpoolRegistryDesc.abi,
+  app: appAbi,
+  dataset: datasetAbi,
+  workerpool: workerpoolAbi,
+  appregistry: appRegistryAbi,
+  datasetregistry: datasetRegistryAbi,
+  workerpoolregistry: workerpoolRegistryAbi,
 };
 
 const tokenAbis = {
-  hub: iexecTokenDesc.abi,
+  hub: iexecTokenAbi,
   ...abis,
 };
 
 const nativeAbis = {
-  hub: iexecNativeDesc.abi,
+  hub: iexecNativeAbi,
   ...abis,
 };
 

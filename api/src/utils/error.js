@@ -1,3 +1,4 @@
+/* eslint-disable sonarjs/no-identical-functions */
 import { ValidationError } from 'yup';
 import { logError } from './logger.js';
 

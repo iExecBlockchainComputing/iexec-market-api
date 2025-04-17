@@ -24,14 +24,14 @@ const positiveStrictIntSchema = () =>
 
 const timestampSchema = () =>
   string().match(
-    /^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])T(2[0-3]|[01][0-9]):[0-5][0-9]:[0-5][0-9].[0-9][0-9][0-9]Z$/,
+    /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2]\d|3[0-1])T(2[0-3]|[01]\d):[0-5]\d:[0-5]\d.\d\d\dZ$/,
     '${path} must be a timestamp (2019-09-11T10:03:38.068Z is a valid timestamp)',
   );
 
 const transformAddress = (value) => {
   try {
     return getAddress(value.toLowerCase());
-  } catch (e) {
+  } catch {
     return value;
   }
 };
@@ -40,7 +40,7 @@ const isAddress = (value) => {
   try {
     getAddress(value);
     return true;
-  } catch (e) {
+  } catch {
     return false;
   }
 };
