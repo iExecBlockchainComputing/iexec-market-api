@@ -30,8 +30,8 @@ const getRatelimitMiddleware = ({ maxRequest, period }) => {
       )
         return true;
       // allow localhost
-      if (ctx.ip === '::ffff:127.0.0.1') return true;
-      return false;
+      // eslint-disable-next-line sonarjs/no-hardcoded-ip
+      return ctx.ip === '::ffff:127.0.0.1';
     },
   });
 };

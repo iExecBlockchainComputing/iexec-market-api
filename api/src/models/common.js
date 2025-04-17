@@ -6,7 +6,7 @@ const addressValidator = {
     try {
       getAddress(address);
       return true;
-    } catch (e) {
+    } catch {
       return false;
     }
   },
@@ -20,7 +20,7 @@ const bytes32validator = {
 
 const timestampValidator = {
   validator: (str) =>
-    /^[0-9]{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])T(2[0-3]|[01][0-9]):[0-5][0-9]:[0-5][0-9].[0-9][0-9][0-9]Z$/.test(
+    /^\d{4}-(0[1-9]|1[0-2])-(0[1-9]|[1-2]\d|3[0-1])T(2[0-3]|[01]\d):[0-5]\d:[0-5]\d.\d\d\dZ$/.test(
       str,
     ),
   message: '{PATH} is not a valid timestamp',
