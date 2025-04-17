@@ -11,7 +11,8 @@ const NULL_ADDRESS = '0x0000000000000000000000000000000000000000';
 const CALL_AT_BLOCK_MAX_TRY = 10;
 const RATE_LIMIT_MAX_TRY = 20;
 
-const getRandomInt = (max) => Math.floor(Math.random() * max);
+// eslint-disable-next-line sonarjs/pseudo-random
+const getPseudoRandomInt = (max) => Math.floor(Math.random() * max);
 
 const throwIfTimeout = (promise, timeout = 30 * 1000) =>
   Promise.race([
@@ -37,7 +38,7 @@ const retryableCall = async (
     if (e.code && e.code === 429) {
       logger.debug(`retryableCall ${method} try ${count}`);
       if (count <= maxTry) {
-        await sleep(1000 * count + getRandomInt(250));
+        await sleep(1000 * count + getPseudoRandomInt(250));
         return retryableCall(obj, method, args, { maxTry }, count + 1);
       }
     }
@@ -57,7 +58,7 @@ const retryableFunctionCall = async (
     if (e.code && e.code === 429) {
       logger.debug(`retryableFunctionCall ${method} try ${count}`);
       if (count <= maxTry) {
-        await sleep(1000 * count + getRandomInt(250));
+        await sleep(1000 * count + getPseudoRandomInt(250));
         return retryableFunctionCall(method, args, { maxTry }, count + 1);
       }
     }
@@ -75,7 +76,6 @@ const _callAtBlock = async (method, args = [], blockNumber = undefined) => {
   while (res === null || res === undefined) {
     currentTry += 1;
     try {
-      // eslint-disable-next-line no-await-in-loop
       res = await makeCall();
       if (res === null || res === undefined) {
         logger.debug(
@@ -84,7 +84,6 @@ const _callAtBlock = async (method, args = [], blockNumber = undefined) => {
           `returned ${res}, waiting for block`,
         );
         if (currentTry <= CALL_AT_BLOCK_MAX_TRY) {
-          // eslint-disable-next-line no-await-in-loop
           await sleep(config.runtime.retryDelay);
         } else {
           throw Error(`callAtBlock ${blockNumber} Max try reached`);
@@ -101,7 +100,6 @@ const _callAtBlock = async (method, args = [], blockNumber = undefined) => {
           '-32000 error, waiting for block',
         );
         if (currentTry <= CALL_AT_BLOCK_MAX_TRY) {
-          // eslint-disable-next-line no-await-in-loop
           await sleep(config.runtime.retryDelay);
         } else {
           throw Error(`callAtBlock ${blockNumber} Max try reached`);
@@ -134,7 +132,6 @@ const _waitForGetBlock = async (provider, blockNumber) => {
       );
     }
     try {
-      // eslint-disable-next-line no-await-in-loop
       block = await retryableCall(provider, 'getBlock', [blockNumber]);
     } catch (error) {
       logger.debug(
@@ -142,7 +139,6 @@ const _waitForGetBlock = async (provider, blockNumber) => {
       );
     }
     if (!block) {
-      // eslint-disable-next-line no-await-in-loop
       await sleep(1000);
     }
   }

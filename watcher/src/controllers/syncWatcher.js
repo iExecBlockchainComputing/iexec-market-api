@@ -23,7 +23,6 @@ const checkSync = () => async () => {
     try {
       const wsProvider = getProvider();
       const rpcProvider = getRpcProvider();
-      // eslint-disable-next-line no-await-in-loop
       const [rpcBlock, wsBlock] = await Promise.all([
         getBlockNumber(wsProvider),
         getBlockNumber(rpcProvider),
@@ -52,7 +51,6 @@ const checkSync = () => async () => {
           critical: true,
         });
       }
-      // eslint-disable-next-line no-await-in-loop
       await sleep(5000);
     }
   }
