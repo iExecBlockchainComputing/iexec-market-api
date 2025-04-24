@@ -5,8 +5,9 @@ WORKDIR /app
 
 RUN apk update && apk upgrade
 
-COPY watcher/package.json package.json
-COPY watcher/package-lock.json package-lock.json
+COPY watcher/package.json .
+COPY watcher/package-lock.json .
+COPY watcher/generateEsModulesFromJson.cjs .
 RUN npm ci --omit=dev
 
 COPY watcher/src ./src
