@@ -11,7 +11,7 @@ docker run --rm -p 27017:27017 mongo:latest
 docker run --rm -p 6379:6379 redis:alpine redis-server --appendonly yes
 ```
 
-configure blockchain access in `.env` file
+configure blockchain access in `.env` file (see [.env.template](.env.template))
 
 ```text
 ## configure the ethereum RPC endpoint
