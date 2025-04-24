@@ -6,3 +6,6 @@ node_modules
 
 # Generated files
 src/generated
+
+# Environment file
+.env
