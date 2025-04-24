@@ -3,7 +3,6 @@ version: "3.4"
 networks:
   database:
   webproxy:
-    external: true
 
 services:
   mongo:
@@ -33,33 +32,15 @@ services:
     environment:
       # - DEBUG=iexec-market-api:*
       - DEBUG_COLORS=true
-      - CHAINS=MAINNET,BELLECOUR
+      - CHAINS=BELLECOUR
       - MONGO_HOST=mongo
       - REDIS_HOST=redis
-      - INFURA_PROJECT_ID=${INFURA_PROJECT_ID}
       - CREATE_INDEX=${CREATE_INDEX}
     depends_on:
       - mongo
       - redis
     networks:
       - webproxy
-      - database
-
-  mainnet-watcher:
-    restart: unless-stopped
-    image: iexechub/iexec-market-watcher
-    environment:
-      - DEBUG=iexec-watcher:app
-      - DEBUG_COLORS=true
-      - CHAIN=MAINNET
-      - MONGO_HOST=mongo
-      - REDIS_HOST=redis
-      - INFURA_PROJECT_ID=${INFURA_PROJECT_ID}
-      - CREATE_INDEX=${CREATE_INDEX}
-    depends_on:
-      - mongo
-      - redis
-    networks:
       - database
 
   bellecour-watcher:
