@@ -87,16 +87,19 @@ const checkAuthorization = async ({
     const signerAddress = recoverAddressEIP712(typedData, signature);
     if (signerAddress === NULL_ADDRESS) throw Error('Null signerAddress');
     log('signerAddress', signerAddress);
-    if (signerAddress.toLowerCase() !== address.toLowerCase())
+
+    if (signerAddress.toLowerCase() !== address.toLowerCase()) {
       throw new AuthError('Failed to verify signer, addresses mismatch.');
-    await current.remove();
-    return {
-      address,
-      chainId,
-    };
+    }
+
+    await ChallengeModel.deleteOne({ _id: current._id });
+
+    return { address, chainId };
   } catch (e) {
     log('checkAuthorization() error', e);
-    throw e;
+    throw e instanceof AuthError
+      ? e
+      : new AuthError('Authorization check failed');
   }
 };
 

@@ -1347,7 +1347,7 @@ const unpublishOrders = async ({
     default:
       throw new InternalError('unsupported target');
   }
-  await Promise.all(ordersToUnpublish.map((e) => e.delete()));
+  await Promise.all(ordersToUnpublish.map((e) => e.deleteOne()));
   return ordersToUnpublish.map((e) => e.toJSON());
 };
 
