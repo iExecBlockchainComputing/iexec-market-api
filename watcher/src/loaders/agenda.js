@@ -10,10 +10,10 @@ let agendaPromise;
 
 /**
  * Initializes and returns a singleton Agenda instance.
- * 
+ *
  * This uses a MongoDB URI extracted from a Mongoose v8 connection,
  * ensuring full compatibility with Agenda's expected configuration shape.
- * 
+ *
  * Notes on Mongoose v8 compatibility:
  * - Mongoose v8 removed global buffering; `bufferCommands: false` is used in the loader.
  * - `mongoose.createConnection()` returns a `Connection` instance.
@@ -36,7 +36,7 @@ const getAgenda = async () => {
           db: {
             address: uri,
             disableAutoIndex: true,
-          }
+          },
         });
 
         logger.log('Starting Agenda worker...');
