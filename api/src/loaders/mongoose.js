@@ -10,7 +10,7 @@ mongoose.set('strictQuery', false);
 const log = logger.extend('mongoose');
 
 // Cache for connections
-const mongooseConnections = {};
+const mongooseConnectionPromises = {};
 
 /**
  * Returns a Mongoose connection for a given server and db name.
@@ -20,38 +20,29 @@ const getMongoose = async ({ server = mongoConfig.host, db } = {}) => {
   if (!db) throw new Error('Missing db name');
 
   // Return existing connection if present
-  if (mongooseConnections[server]?.[db]) {
+  if (mongooseConnectionPromises[server]?.[db]) {
     log(`Using cached connection: ${server}${db}`);
-    return mongooseConnections[server][db];
+    return await mongooseConnectionPromises[server][db];
   }
 
   log(`Creating new connection: ${server}${db}`);
   const uri = `${server}${db}`;
-  const connection = mongoose.createConnection(uri, {
-    // Removed deprecated options
-    // useNewUrlParser and useUnifiedTopology are defaults in Mongoose 8+
+  const connectionPromise = mongoose
+    .createConnection(uri, {
+      // Removed deprecated options
+      // useNewUrlParser and useUnifiedTopology are defaults in Mongoose 8+
 
-    autoIndex: mongoConfig.createIndex ?? false, // Create indexes if needed
-    autoCreate: true, // Ensure collections are auto-created
-    bufferCommands: false, // ❗ Important for strict connection behavior in Mongoose 8+
-  });
+      autoIndex: mongoConfig.createIndex ?? false, // Create indexes if needed
+      autoCreate: true, // Ensure collections are auto-created
+      bufferCommands: false, // ❗ Important for strict connection behavior in Mongoose 8+
+    })
+    .asPromise();
 
-  // Cache the connection
-  mongooseConnections[server] = mongooseConnections[server] || {};
-  mongooseConnections[server][db] = connection;
+  // Cache the connection promise
+  mongooseConnectionPromises[server] = mongooseConnectionPromises[server] || {};
+  mongooseConnectionPromises[server][db] = connectionPromise;
 
-  // Return promise that resolves once connected
-  return new Promise((resolve, reject) => {
-    connection.once('open', () => {
-      log(`Connected to ${server}${db}`);
-      resolve(connection);
-    });
-
-    connection.on('error', (err) => {
-      log(`Connection error on ${server}${db}:`, err);
-      reject(err);
-    });
-  });
+  return await connectionPromise;
 };
 
 export { getMongoose };
