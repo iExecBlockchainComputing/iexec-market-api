@@ -6,7 +6,8 @@ import { traceAll } from '../utils/trace.js';
 const mongoConfig = config.mongo;
 const logger = getLogger('mongoose');
 
-const mongooseConnections = {};
+// cache for connections
+const mongooseConnectionPromises = {};
 
 /**
  * Connects to a MongoDB instance and returns a Mongoose connection.
@@ -20,23 +21,26 @@ const _getMongoose = async ({ server = mongoConfig.host, db } = {}) => {
   try {
     if (!db) throw new Error('missing db name');
 
-    if (mongooseConnections[server]?.[db]) {
+    if (mongooseConnectionPromises[server]?.[db]) {
       logger.debug(`reusing connection ${server}${db}`);
-      return mongooseConnections[server][db];
+      return await mongooseConnectionPromises[server][db];
     }
 
     logger.log(`creating connection ${server}${db}`);
-    mongooseConnections[server] = mongooseConnections[server] || {};
+    mongooseConnectionPromises[server] =
+      mongooseConnectionPromises[server] || {};
 
     const uri = `${server}${db}`;
-    const connection = mongoose.createConnection(uri, {
-      autoIndex: mongoConfig.createIndex || false,
-      bufferCommands: false, // ⛔ Disable buffering (required in Mongoose 8+)
-    });
+    const connectionPromise = mongoose
+      .createConnection(uri, {
+        autoIndex: mongoConfig.createIndex || false,
+        bufferCommands: false, // ⛔ Disable buffering (required in Mongoose 8+)
+      })
+      .asPromise();
 
-    mongooseConnections[server][db] = connection;
+    mongooseConnectionPromises[server][db] = connectionPromise;
 
-    await connection.asPromise();
+    const connection = await connectionPromise;
     logger.log(`opened connection ${server}${db}`);
 
     return connection;
