@@ -6,31 +6,46 @@ import { traceAll } from '../utils/trace.js';
 const mongoConfig = config.mongo;
 const logger = getLogger('mongoose');
 
-const mongooseConnections = {};
+// cache for connections
+const mongooseConnectionPromises = {};
 
+/**
+ * Connects to a MongoDB instance and returns a Mongoose connection.
+ *
+ * Mongoose v8 Notes:
+ * - `bufferCommands: false` disables legacy buffering behavior.
+ * - `createConnection()` is preferred over `connect()` for scoped, multi-db setups.
+ * - This loader reuses existing connections per `server + db` pair.
+ */
 const _getMongoose = async ({ server = mongoConfig.host, db } = {}) => {
   try {
-    if (db === undefined) {
-      throw Error('missing db name');
-    }
-    if (mongooseConnections[server] && mongooseConnections[server][db]) {
+    if (!db) throw new Error('missing db name');
+
+    if (mongooseConnectionPromises[server]?.[db]) {
       logger.debug(`reusing connection ${server}${db}`);
-      return await mongooseConnections[server][db];
+      return await mongooseConnectionPromises[server][db];
     }
+
     logger.log(`creating connection ${server}${db}`);
-    mongooseConnections[server] = mongooseConnections[server] || {};
-    mongooseConnections[server][db] = mongoose
-      .createConnection(`${server}${db}`, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true,
+    mongooseConnectionPromises[server] =
+      mongooseConnectionPromises[server] || {};
+
+    const uri = `${server}${db}`;
+    const connectionPromise = mongoose
+      .createConnection(uri, {
         autoIndex: mongoConfig.createIndex || false,
+        bufferCommands: false, // ⛔ Disable buffering (required in Mongoose 8+)
       })
       .asPromise();
-    const connection = await mongooseConnections[server][db];
+
+    mongooseConnectionPromises[server][db] = connectionPromise;
+
+    const connection = await connectionPromise;
     logger.log(`opened connection ${server}${db}`);
+
     return connection;
   } catch (error) {
-    logger.warn('getMongoose', error);
+    logger.warn('getMongoose() failed', error);
     throw error;
   }
 };

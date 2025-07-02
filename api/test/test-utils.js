@@ -8,7 +8,7 @@ import * as apporderModel from '../src/models/apporderModel.js';
 import * as datasetorderModel from '../src/models/datasetorderModel.js';
 import * as workerpoolorderModel from '../src/models/workerpoolorderModel.js';
 import * as requestorderModel from '../src/models/requestorderModel.js';
-
+import * as challengeModel from '../src/models/challengeModel.js';
 const sleep = (ms) =>
   new Promise((res) => {
     setTimeout(res, ms);
@@ -245,14 +245,21 @@ const dropDB = async (dbName) => {
   );
 };
 
+/**
+ * Inserts or updates a challenge in the database using the Mongoose model.
+ * Ensures compatibility with Mongoose v8 and avoids connection mismatches.
+ */
 const setChallenge = async (dbName, challenge) => {
-  const { db } = await getMongoose({ db: dbName });
-  await db.collection('challenges').findOneAndUpdate(
+  const ChallengeModel = await challengeModel.getModel(dbName);
+  await ChallengeModel.findOneAndUpdate(
     { hash: challenge.hash },
-    { $set: challenge },
     {
-      upsert: true,
+      $set: {
+        ...challenge,
+        address: challenge.address,
+      },
     },
+    { upsert: true, new: true },
   );
 };
 
