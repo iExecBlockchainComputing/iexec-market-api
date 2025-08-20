@@ -1,0 +1,65 @@
+name: API PR checks
+description: check the API PR
+
+on:
+  pull_request:
+    paths: ["api/**"]
+
+concurrency:
+  group: ${{ github.ref }}-api-pr-checks
+  cancel-in-progress: true
+
+jobs:
+  check-code:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: "api/package-lock.json"
+
+      - name: Install dependencies
+        working-directory: api
+        run: npm ci
+
+      - name: Check format
+        working-directory: api
+        run: npm run check-format
+
+      - name: Lint
+        working-directory: api
+        run: npm run lint
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: "api/package-lock.json"
+
+      - name: Install dependencies
+        working-directory: api
+        run: npm ci
+
+      - name: Start e2e test stack
+        working-directory: api
+        run: npm run start-test-stack
+
+      - name: Run tests
+        working-directory: api
+        run: npm test
+
+  docker-dry-run:
+    uses: ./.github/workflows/reusable-api-docker.yml
+    with:
+      dry-run: true

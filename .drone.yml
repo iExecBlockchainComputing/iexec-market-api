@@ -1,61 +1,5 @@
 kind: pipeline
 type: docker
-name: api-default
-
-trigger:
-  event:
-    exclude:
-      - promote
-      - pull_request
-
-steps:
-  - name: install
-    image: node:22.14-alpine3.21
-    commands:
-      - cd api/
-      - npm ci
-
-  - name: format
-    image: node:22.14-alpine3.21
-    commands:
-      - cd api/
-      - npm run check-format
-
-  - name: lint
-    image: node:22.14-alpine3.21
-    commands:
-      - cd api/
-      - npm run lint
-
-  - name: wait services initialization
-    image: bash
-    commands:
-      - sleep 30
-
-  - name: api test
-    image: node:22.14-alpine3.21
-    commands:
-      - cd api/
-      - npm run ci-test-token
-      - npm run ci-test-native
-
-services:
-  - name: chain-token
-    image: iexechub/poco-chaintest:5.3.0-token-parity
-    pull: true
-  - name: chain-native
-    image: iexechub/poco-chaintest:5.3.0-native-parity
-    pull: true
-  - name: mongo
-    image: mongo:latest
-    pull: true
-  - name: redis
-    image: redis:alpine
-    pull: true
-
----
-kind: pipeline
-type: docker
 name: watcher-default
 
 trigger:
@@ -108,25 +52,6 @@ services:
   - name: redis
     image: redis:alpine
     pull: true
-
----
-kind: pipeline
-type: docker
-name: publish api dry-run
-
-trigger:
-  event:
-    exclude:
-      - promote
-
-steps:
-  - name: docker publish dry-run
-    image: plugins/docker
-    pull: always
-    settings:
-      repo: iexechub/iexec-market-api
-      dockerfile: Dockerfile.api
-      dry_run: true
 
 ---
 kind: pipeline
