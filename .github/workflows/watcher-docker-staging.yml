@@ -1,0 +1,20 @@
+name: Watcher docker publish staging
+description: Publish a staging version of the Watcher on Docker Hub
+
+on:
+  workflow_dispatch:
+
+jobs:
+  compute-staging-version:
+    uses: ./.github/workflows/reusable-compute-staging-version.yml
+    with:
+      working-directory: watcher
+
+  docker-publish:
+    needs: compute-staging-version
+    uses: ./.github/workflows/reusable-watcher-docker.yml
+    with:
+      tag: ${{ needs.compute-staging-version.outputs.version }}
+    secrets:
+      docker-username: ${{ secrets.DOCKERHUB_USERNAME }}
+      docker-password: ${{ secrets.DOCKERHUB_PAT }}
