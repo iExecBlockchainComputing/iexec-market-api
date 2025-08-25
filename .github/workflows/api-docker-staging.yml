@@ -1,0 +1,20 @@
+name: API docker publish staging
+description: Publish a staging version of the API on Docker Hub
+
+on:
+  workflow_dispatch:
+
+jobs:
+  compute-staging-version:
+    uses: ./.github/workflows/reusable-compute-staging-version.yml
+    with:
+      working-directory: api
+
+  docker-publish:
+    needs: compute-staging-version
+    uses: ./.github/workflows/reusable-api-docker.yml
+    with:
+      tag: ${{ needs.compute-staging-version.outputs.version }}
+    secrets:
+      docker-username: ${{ secrets.DOCKERHUB_USERNAME }}
+      docker-password: ${{ secrets.DOCKERHUB_PAT }}

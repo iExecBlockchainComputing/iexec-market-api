@@ -1,0 +1,65 @@
+name: Watcher PR checks
+description: check the Watcher PR
+
+on:
+  pull_request:
+    paths: ["watcher/**"]
+
+concurrency:
+  group: ${{ github.ref }}-watcher-pr-checks
+  cancel-in-progress: true
+
+jobs:
+  check-code:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: "watcher/package-lock.json"
+
+      - name: Install dependencies
+        working-directory: watcher
+        run: npm ci
+
+      - name: Check format
+        working-directory: watcher
+        run: npm run check-format
+
+      - name: Lint
+        working-directory: watcher
+        run: npm run lint
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: "watcher/package-lock.json"
+
+      - name: Install dependencies
+        working-directory: watcher
+        run: npm ci
+
+      - name: Start e2e test stack
+        working-directory: watcher
+        run: npm run start-test-stack
+
+      - name: Run tests
+        working-directory: watcher
+        run: npm test
+
+  docker-dry-run:
+    uses: ./.github/workflows/reusable-watcher-docker.yml
+    with:
+      dry-run: true
