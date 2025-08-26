@@ -1,6 +1,5 @@
 name: Compute staging version
-description:
-  compute a staging version from the current version, branch name and commit
+description: compute a staging version from the current version, branch name and commit
 
 on:
   workflow_call:
@@ -23,7 +22,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "22"
       - name: Set publish version
         id: set-publish-version
         working-directory: ${{ inputs.working-directory }}
