@@ -71,19 +71,19 @@ const getWorker = (name, processor, options = {}) => {
 /**
  * Gracefully closes all queues and workers.
  */
-const closeAll = async () => {
+const closeAll = async ({ force = false } = {}) => {
   logger.log('Closing all BullMQ connections...');
 
   const closePromises = [];
 
   // Close all workers
   for (const worker of workers.values()) {
-    closePromises.push(worker.close());
+    closePromises.push(worker.close(force));
   }
 
   // Close all queues
   for (const queue of queues.values()) {
-    closePromises.push(queue.close());
+    closePromises.push(queue.close(force));
   }
 
   await Promise.all(closePromises);
