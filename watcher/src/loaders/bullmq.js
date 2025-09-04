@@ -52,11 +52,11 @@ const getWorker = (name, processor, options = {}) => {
 
   // Handle worker events
   worker.on('completed', (job) => {
-    logger.debug(`Job ${job.id} completed successfully`);
+    logger.debug(`Job ${job.name} ${job.id} completed successfully`);
   });
 
   worker.on('failed', (job, err) => {
-    logger.warn(`Job ${job.id} failed:`, err.message);
+    logger.warn(`Job ${job.name} ${job.id} failed:`, err.message);
   });
 
   worker.on('error', (err) => {
