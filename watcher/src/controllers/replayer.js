@@ -61,7 +61,7 @@ const startReplayer = async () => {
   const queue = getQueue(EVENT_REPLAY_JOB);
 
   // Create worker to process jobs
-  getWorker(EVENT_REPLAY_JOB, async (job) => {
+  getWorker(EVENT_REPLAY_JOB, async () => {
     try {
       await _replayPastOnly({
         handleIndexedBlock: async (blockNumber) => {
