@@ -66,8 +66,6 @@ const startReplayer = async () => {
       await _replayPastOnly({
         handleIndexedBlock: async (blockNumber) => {
           await setCheckpointBlock(blockNumber);
-          // Extend job lock after every iteration
-          await job.updateProgress(100);
         },
       });
     } catch (error) {
