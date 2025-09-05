@@ -1,12 +1,11 @@
 import * as config from '../config.js';
-import { getAgenda } from '../loaders/agenda.js';
+import { getQueue, getWorker } from '../loaders/bullmq.js';
 import { getProvider, getRpcProvider } from '../loaders/ethereum.js';
 import { getLogger } from '../utils/logger.js';
 import { sleep } from '../utils/utils.js';
 import { errorHandler } from '../utils/error.js';
 import { getBlockNumber } from '../utils/eth-utils.js';
 
-const { chainId } = config.chain;
 const { checkSyncInterval } = config.runtime;
 
 const logger = getLogger('controllers:syncWatcher');
@@ -15,7 +14,7 @@ const SYNC_WATCHER_JOB = 'watch-eth-node';
 
 const MAX_ERROR_COUNT = 3;
 
-const checkSync = () => async () => {
+const checkSync = async () => {
   let errorCount = 0;
   let isSync = false;
   await sleep(config.runtime.syncWatcherInterval);
@@ -57,17 +56,32 @@ const checkSync = () => async () => {
 };
 
 const startSyncWatcher = async () => {
-  const agenda = await getAgenda(chainId);
-  agenda.define(SYNC_WATCHER_JOB, { lockLifetime: 16000 }, checkSync());
-  await agenda.every(`${checkSyncInterval} seconds`, SYNC_WATCHER_JOB);
+  const queue = getQueue(SYNC_WATCHER_JOB);
+
+  // Create worker to process jobs
+  getWorker(SYNC_WATCHER_JOB, checkSync);
+
+  // Schedule recurring job
+  await queue.add(
+    SYNC_WATCHER_JOB,
+    {},
+    {
+      repeat: {
+        every: checkSyncInterval * 1000, // Convert seconds to milliseconds
+      },
+    },
+  );
+
   logger.log(
     `${SYNC_WATCHER_JOB} jobs added (run every ${checkSyncInterval} seconds)`,
   );
 };
 
 const stopSyncWatcher = async () => {
-  const agenda = await getAgenda(chainId);
-  await agenda.cancel({ name: SYNC_WATCHER_JOB });
+  // Clear the specific queue instead of obliterating
+  const queue = getQueue(SYNC_WATCHER_JOB);
+  await queue.obliterate({ force: true });
+  logger.log(`Stopped ${SYNC_WATCHER_JOB} jobs`);
 };
 
 export { startSyncWatcher, stopSyncWatcher };

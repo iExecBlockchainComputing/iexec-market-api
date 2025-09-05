@@ -19,6 +19,7 @@ import { startReplayer, stopReplayer } from './controllers/replayer.js';
 import { getNextBlockToProcess, setLastBlock } from './services/counter.js';
 import { getLogger, APP_NAMESPACE } from './utils/logger.js';
 import { errorHandler } from './utils/error.js';
+import { clearAllQueues } from './loaders/bullmq.js';
 
 const logger = getLogger(APP_NAMESPACE);
 
@@ -92,6 +93,10 @@ const stop = async () => {
     logger.log('STOPPING...');
     await Promise.all([stopSyncWatcher(), stopReplayer()]);
     unsubscribeAllEvents();
+
+    // Clear BullMQ queues instead of closing connections
+    await clearAllQueues();
+
     logger.log('STOPPED');
   } catch (error) {
     errorHandler(error, {

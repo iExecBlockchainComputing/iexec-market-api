@@ -1,3 +1,4 @@
+import { closeAll } from '../loaders/bullmq.js';
 import { getLogger, APP_NAMESPACE } from './logger.js';
 import { sleep } from './utils.js';
 
@@ -61,7 +62,8 @@ const recoverOnCriticalError = async () => {
     logError(
       `A critical error has occurred - Stopping process in ${GRACE_PERIOD}ms`,
     );
-    sleep(GRACE_PERIOD);
+    closeAll({ force: true });
+    await sleep(GRACE_PERIOD);
     logError('A critical error has occurred - Stopping process now');
     process.exit(1);
   }

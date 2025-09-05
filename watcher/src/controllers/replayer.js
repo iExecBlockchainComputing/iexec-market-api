@@ -1,5 +1,5 @@
 import * as config from '../config.js';
-import { getAgenda } from '../loaders/agenda.js';
+import { getQueue, getWorker } from '../loaders/bullmq.js';
 import * as ethereum from '../loaders/ethereum.js';
 import { replayPastEvents } from './ethEventsWatcher.js';
 import {
@@ -12,7 +12,6 @@ import { getBlockNumber } from '../utils/eth-utils.js';
 import { errorHandler } from '../utils/error.js';
 import { traceAll } from '../utils/trace.js';
 
-const { chainId } = config.chain;
 const { replayInterval } = config.runtime;
 
 const logger = getLogger('controllers:replayer');
@@ -59,34 +58,43 @@ const _replayPastOnly = async ({
 };
 
 const startReplayer = async () => {
-  const agenda = await getAgenda(chainId);
-  agenda.define(
+  const queue = getQueue(EVENT_REPLAY_JOB);
+
+  // Create worker to process jobs
+  getWorker(EVENT_REPLAY_JOB, async () => {
+    try {
+      await _replayPastOnly({
+        handleIndexedBlock: async (blockNumber) => {
+          await setCheckpointBlock(blockNumber);
+        },
+      });
+    } catch (error) {
+      errorHandler(error, { type: 'replay-job' });
+      throw error;
+    }
+  });
+
+  // Schedule recurring job
+  await queue.add(
     EVENT_REPLAY_JOB,
-    { lockLifetime: 10 * 60 * 1000 },
-    async (job) => {
-      try {
-        await _replayPastOnly({
-          handleIndexedBlock: async (blockNumber) => {
-            await setCheckpointBlock(blockNumber);
-            // reset job lock after every iteration
-            await job.touch();
-          },
-        });
-      } catch (error) {
-        errorHandler(error, { type: 'replay-job' });
-        throw error;
-      }
+    {},
+    {
+      repeat: {
+        every: replayInterval * 1000, // Convert seconds to milliseconds
+      },
     },
   );
-  await agenda.every(`${replayInterval} seconds`, EVENT_REPLAY_JOB);
+
   logger.log(
     `${EVENT_REPLAY_JOB} jobs added (run every ${replayInterval} seconds)`,
   );
 };
 
 const stopReplayer = async () => {
-  const agenda = await getAgenda(chainId);
-  await agenda.cancel({ name: EVENT_REPLAY_JOB });
+  // Clear the specific queue instead of obliterating
+  const queue = getQueue(EVENT_REPLAY_JOB);
+  await queue.obliterate({ force: true });
+  logger.log(`Stopped ${EVENT_REPLAY_JOB} jobs`);
 };
 
 const replayPastOnly = traceAll(_replayPastOnly, { logger });

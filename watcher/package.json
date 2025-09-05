@@ -35,7 +35,7 @@
   "dependencies": {
     "@iexec/poco": "^5.5.0",
     "@socket.io/redis-adapter": "^8.3.0",
-    "agenda": "^5.0.0",
+    "bullmq": "^5.58.4",
     "debug": "^4.4.0",
     "dotenv": "^16.5.0",
     "ethers": "^6.13.5",
