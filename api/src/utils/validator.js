@@ -13,14 +13,10 @@ const integerSchema = () => number().integer();
 const booleanSchema = () => boolean();
 
 const positiveIntSchema = () =>
-  integerSchema()
-    .min(0)
-    .max(Number.MAX_SAFE_INTEGER - 1);
+  integerSchema().min(0).max(Number.MAX_SAFE_INTEGER);
 
 const positiveStrictIntSchema = () =>
-  integerSchema()
-    .min(1)
-    .max(Number.MAX_SAFE_INTEGER - 1);
+  integerSchema().min(1).max(Number.MAX_SAFE_INTEGER);
 
 const timestampSchema = () =>
   string().match(
