@@ -1829,7 +1829,7 @@ describe('Offchain marketplace', () => {
     });
 
     test('GET /datasetorders (bulkOnly filter)', async () => {
-      const { data, status } = await request
+      const onlyBulkRes = await request
         .get(
           buildQuery('/datasetorders', {
             chainId, // *
@@ -1838,12 +1838,40 @@ describe('Offchain marketplace', () => {
           }),
         )
         .then(parseResult);
-      expect(status).toBe(OK_STATUS);
-      expect(data.ok).toBe(true);
-      expect(data.count).toBe(bulkOrders.length);
-      expect(data.orders).toBeDefined();
-      expect(Array.isArray(data.orders)).toBe(true);
-      expect(data.orders.length).toBe(bulkOrders.length);
+      expect(onlyBulkRes.status).toBe(OK_STATUS);
+      expect(onlyBulkRes.data.ok).toBe(true);
+      expect(onlyBulkRes.data.count).toBe(bulkOrders.length);
+      expect(onlyBulkRes.data.orders).toBeDefined();
+      expect(Array.isArray(onlyBulkRes.data.orders)).toBe(true);
+      expect(onlyBulkRes.data.orders.length).toBe(bulkOrders.length);
+      onlyBulkRes.data.orders.forEach((e) => {
+        expect(e.bulk).toBe(true);
+      });
+
+      const notOnlyBulkRes = await request
+        .get(
+          buildQuery('/datasetorders', {
+            chainId, // *
+            dataset: datasetAddress, // *
+            // bulkOnly: false,
+          }),
+        )
+        .then(parseResult);
+      expect(notOnlyBulkRes.status).toBe(OK_STATUS);
+      expect(notOnlyBulkRes.data.ok).toBe(true);
+      expect(notOnlyBulkRes.data.count).toBe(publicOrders.length);
+      expect(notOnlyBulkRes.data.orders).toBeDefined();
+      expect(Array.isArray(notOnlyBulkRes.data.orders)).toBe(true);
+      notOnlyBulkRes.data.orders.forEach((e) => {
+        if (
+          e.order.volume >= Number.MAX_SAFE_INTEGER &&
+          e.order.datasetprice === 0
+        ) {
+          expect(e.bulk).toBe(true);
+        } else {
+          expect(e.bulk).toBe(false);
+        }
+      });
     });
 
     test('GET /datasetorders (isAppStrict = true & app = undefined): should return public orders including "any" app', async () => {

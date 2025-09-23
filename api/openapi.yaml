@@ -1135,6 +1135,12 @@ components:
         remaining:
           type: number
 
+    OrderBulkMetadata:
+      properties:
+        bulk:
+          type: boolean
+          example: false
+
     AppOrder:
       properties:
         app:
@@ -1248,6 +1254,7 @@ components:
     DatasetOrderWithMetadata:
       allOf:
         - $ref: '#/components/schemas/OrderMetadata'
+        - $ref: '#/components/schemas/OrderBulkMetadata'
         - type: object
           properties:
             order:
