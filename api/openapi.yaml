@@ -477,6 +477,11 @@ paths:
           description: exclude orders with permissions allowing "any" requester (default false, ignored if `requester` is not specified)
           schema:
             type: boolean
+        - name: bulkOnly
+          in: query
+          description: exclude orders not eligible to bulk processing (default false)
+          schema:
+            type: boolean
         - $ref: '#/components/parameters/PageIndex'
         - $ref: '#/components/parameters/PageSize'
         - $ref: '#/components/parameters/Page'

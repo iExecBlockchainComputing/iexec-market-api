@@ -904,6 +904,7 @@ describe('Offchain marketplace', () => {
     const maxGpuTagOrders = [];
     const minMaxTeeTagOrders = [];
     const minVolumeOrders = [];
+    const bulkOrders = [];
     let consumedOrders;
     let deadOrders;
     let datasetAddress;
@@ -948,6 +949,30 @@ describe('Offchain marketplace', () => {
       );
       noRestrictOrders.push(...datasetPrice0);
       allOrders.push(...datasetPrice0);
+
+      const bulk = await Promise.all(
+        Array(2)
+          .fill(null)
+          .map(async () => {
+            const order = await iexecUser.order
+              .createDatasetorder({
+                dataset: datasetAddress,
+                datasetprice: 0, // bulk order must be free
+                volume: Number.MAX_SAFE_INTEGER, // bulk order must have max volume
+              })
+              .then(iexecUser.order.signDatasetorder);
+            const orderHash = await iexecUser.order.hashDatasetorder(order);
+            return {
+              order,
+              orderHash,
+              signer: ownerAddress,
+            };
+          }),
+      );
+      bulkOrders.push(...bulk);
+      minVolumeOrders.push(...bulk);
+      noRestrictOrders.push(...bulk);
+      allOrders.push(...bulk);
 
       const datasetPrice20 = await Promise.all(
         Array(5)
@@ -1801,6 +1826,24 @@ describe('Offchain marketplace', () => {
       data.orders.forEach((e) => {
         expect(e.remaining >= 1234).toBe(true);
       });
+    });
+
+    test('GET /datasetorders (bulkOnly filter)', async () => {
+      const { data, status } = await request
+        .get(
+          buildQuery('/datasetorders', {
+            chainId, // *
+            dataset: datasetAddress, // *
+            bulkOnly: true,
+          }),
+        )
+        .then(parseResult);
+      expect(status).toBe(OK_STATUS);
+      expect(data.ok).toBe(true);
+      expect(data.count).toBe(bulkOrders.length);
+      expect(data.orders).toBeDefined();
+      expect(Array.isArray(data.orders)).toBe(true);
+      expect(data.orders.length).toBe(bulkOrders.length);
     });
 
     test('GET /datasetorders (isAppStrict = true & app = undefined): should return public orders including "any" app', async () => {
