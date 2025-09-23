@@ -1,5 +1,28 @@
 # CHANGELOG
 
+## [7.0.0](https://github.com/iExecBlockchainComputing/iexec-market-api/compare/iexec-market-watcher-v6.4.1...iexec-market-watcher-v7.0.0) (2025-09-23)
+
+
+### ⚠ BREAKING CHANGES
+
+* iExec Enterprise (eRLC) is no longer supported
+
+### Added
+
+* add engines requirements ([df420fd](https://github.com/iExecBlockchainComputing/iexec-market-api/commit/df420fd442ef2d3bad09ef983cb288dfa51ea114))
+* **watcher:** migrate from Agenda to BullMQ for job queuing ([#35](https://github.com/iExecBlockchainComputing/iexec-market-api/issues/35)) ([c79f28f](https://github.com/iExecBlockchainComputing/iexec-market-api/commit/c79f28f6464b39ca641ae3b3863dc67633e4dee6))
+
+
+### Changed
+
+* avoid possible withdraw 0 in tests ([e652743](https://github.com/iExecBlockchainComputing/iexec-market-api/commit/e6527436d6a4a3cc5800b3661d3c8f7325c3f42e))
+* **watcher:** resolve mongoose connection race condition with asPromise() ([97de644](https://github.com/iExecBlockchainComputing/iexec-market-api/commit/97de644090bfb24bd28298bd02b444944a1e1d9e))
+
+
+### Misc
+
+* migrate codebase to esm (migrate to iexec v8 + drop enterprise) ([bd9b536](https://github.com/iExecBlockchainComputing/iexec-market-api/commit/bd9b53695617c43e39ffeb0c005f2e5c6f449559))
+
 ## v6.4.1
 
 * fix openapi for `GET /requestorders`
