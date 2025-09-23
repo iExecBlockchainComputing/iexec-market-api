@@ -9,7 +9,11 @@ info:
     url: http://www.apache.org/licenses/LICENSE-2.0.html
 servers:
   - url: https://api.market.iex.ec
+    description: Bellecour
+  - url: https://api.market.arbitrum-mainnet.iex.ec
+    description: Arbitrum mainnet
   - url: http://localhost:3000
+    description: Local server
 
 paths:
   /version:
@@ -891,8 +895,7 @@ components:
       description: chain id
       required: true
       schema:
-        type: number
-        example: 134
+        $ref: '#/components/schemas/ChainIdEnum'
     Authorization:
       name: authorization
       in: header
@@ -927,6 +930,10 @@ components:
         type: number
 
   schemas:
+    ChainIdEnum:
+      type: number
+      enum: [134, 42161, 421614]
+      description: Supported chain IDs
     ApiResponse:
       properties:
         ok:
