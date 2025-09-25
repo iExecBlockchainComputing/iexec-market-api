@@ -50,7 +50,8 @@ const DEFAULT_CHAINS_CONFIG = {
     id: '134',
     isNative: true,
     host: BELLECOUR_ETH_RPC_HOST || 'https://bellecour.iex.ec',
-    hubAddress: BELLECOUR_IEXEC_ADDRESS,
+    hubAddress:
+      BELLECOUR_IEXEC_ADDRESS || '0x3eca1B216A7DF1C7689aEb259fFB83ADFB894E7f',
   },
 };
 
