@@ -19,7 +19,7 @@ jobs:
           node-version: "22"
       - name: Set publish version
         id: set-publish-version
-        working-directory: api
+        working-directory: watcher
         run: |
           VERSION=$(npm pkg get version | tr -d '"')
           echo "VERSION=${VERSION}" | tee -a $GITHUB_OUTPUT
@@ -29,7 +29,7 @@ jobs:
   docker-publish:
     if: startsWith(github.ref_name,'iexec-market-watcher-v')
     needs: get-version
-    uses: ./.github/workflows/reusable-api-docker.yml
+    uses: ./.github/workflows/reusable-watcher-docker.yml
     with:
       tag: ${{ needs.get-version.outputs.version }}
     secrets:
