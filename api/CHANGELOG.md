@@ -1,5 +1,29 @@
 # CHANGELOG
 
+## [7.0.0](https://github.com/iExecBlockchainComputing/iexec-market-api/compare/iexec-market-api-v6.4.1...iexec-market-api-v7.0.0) (2025-09-30)
+
+
+### ⚠ BREAKING CHANGES
+
+* iExec Enterprise (eRLC) is no longer supported
+
+### Added
+
+* add engines requirements ([df420fd](https://github.com/iExecBlockchainComputing/iexec-market-api/commit/df420fd442ef2d3bad09ef983cb288dfa51ea114))
+* raise orders volume limit to MAX_SAFE_INTEGER ([#36](https://github.com/iExecBlockchainComputing/iexec-market-api/issues/36)) ([549a6f8](https://github.com/iExecBlockchainComputing/iexec-market-api/commit/549a6f88017a4d4a73c106cf83ce8d9c71d22087))
+
+
+### Changed
+
+* **api:** resolve mongoose connection race condition with asPromise() ([b52a1db](https://github.com/iExecBlockchainComputing/iexec-market-api/commit/b52a1db580ea46dc21dfc45e0acc66d9e81268f4))
+* avoid possible withdraw 0 in tests ([e652743](https://github.com/iExecBlockchainComputing/iexec-market-api/commit/e6527436d6a4a3cc5800b3661d3c8f7325c3f42e))
+* set default value for BELLECOUR_IEXEC_ADDRESS ([9e0c7bd](https://github.com/iExecBlockchainComputing/iexec-market-api/commit/9e0c7bdfafb61adc51d3f56624bb389e33c244fc))
+
+
+### Misc
+
+* migrate codebase to esm (migrate to iexec v8 + drop enterprise) ([bd9b536](https://github.com/iExecBlockchainComputing/iexec-market-api/commit/bd9b53695617c43e39ffeb0c005f2e5c6f449559))
+
 ## v6.4.1
 
 * fix openapi for `GET /requestorders`
