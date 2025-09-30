@@ -139,6 +139,10 @@ const excludeTagArray = (tagArray) =>
     })
     .filter((e) => e !== null);
 
+const isDatasetBulkOrder = (order = {}) => {
+  return order?.volume >= Number.MAX_SAFE_INTEGER && order?.datasetprice === 0;
+};
+
 export {
   OBJ_MAP,
   STATUS_MAP,
@@ -146,4 +150,5 @@ export {
   UNPUBLISH_TARGET_MAP,
   tagToArray,
   excludeTagArray,
+  isDatasetBulkOrder,
 };

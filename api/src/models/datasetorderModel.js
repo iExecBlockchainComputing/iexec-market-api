@@ -2,6 +2,7 @@ import { Schema } from 'mongoose';
 import { getMongoose } from '../loaders/mongoose.js';
 import { logger } from '../utils/logger.js';
 import { option, schema } from './common.js';
+import { isDatasetBulkOrder } from '../utils/order-utils.js';
 
 const {
   AddressSchema,
@@ -19,6 +20,16 @@ const { orderToJsonOption } = option;
 const log = logger.extend('models:datasetorderModel');
 
 const connectedModels = {};
+
+const toJSON = {
+  ...orderToJsonOption.toJSON,
+  transform(doc, ret) {
+    // Apply base transform
+    orderToJsonOption.toJSON.transform(doc, ret);
+    // Add bulk field
+    ret.bulk = isDatasetBulkOrder(ret?.order);
+  },
+};
 
 const datasetorderSchema = new Schema(
   {
@@ -42,7 +53,7 @@ const datasetorderSchema = new Schema(
     signer: { ...AddressSchema, index: true },
   },
   {
-    ...orderToJsonOption,
+    toJSON,
   },
 );
 
