@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## [7.1.0](https://github.com/iExecBlockchainComputing/iexec-market-api/compare/iexec-market-api-v7.0.0...iexec-market-api-v7.1.0) (2025-10-14)
+
+
+### Added
+
+* add support for dataset bulk orders ([#38](https://github.com/iExecBlockchainComputing/iexec-market-api/issues/38)) ([edd32cc](https://github.com/iExecBlockchainComputing/iexec-market-api/commit/edd32ccad62735698cc033e36ab229a57a4b8fa7))
+
 ## [7.0.0](https://github.com/iExecBlockchainComputing/iexec-market-api/compare/iexec-market-api-v6.4.1...iexec-market-api-v7.0.0) (2025-09-30)
 
 
