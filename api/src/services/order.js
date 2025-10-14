@@ -576,6 +576,7 @@ const getDatasetorders = async ({
   minTag,
   maxTag,
   minVolume,
+  bulkOnly,
   page,
   pageIndex,
   pageSize,
@@ -586,6 +587,10 @@ const getDatasetorders = async ({
       status: STATUS_MAP.OPEN,
       ...(dataset && requiredDatasetOrAnyClause(dataset)),
       ...(datasetOwner && { signer: datasetOwner }),
+      ...(bulkOnly && {
+        'order.volume': Number.MAX_SAFE_INTEGER,
+        'order.datasetprice': 0,
+      }),
       ...apprestrictOrAnyClause(app, isAppStrict),
       ...workerpoolrestrictOrAnyClause(workerpool, isWorkerpoolStrict),
       ...requesterrestrictOrAnyClause(requester, isRequesterStrict),

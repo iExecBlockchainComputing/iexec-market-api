@@ -904,6 +904,7 @@ describe('Offchain marketplace', () => {
     const maxGpuTagOrders = [];
     const minMaxTeeTagOrders = [];
     const minVolumeOrders = [];
+    const bulkOrders = [];
     let consumedOrders;
     let deadOrders;
     let datasetAddress;
@@ -948,6 +949,30 @@ describe('Offchain marketplace', () => {
       );
       noRestrictOrders.push(...datasetPrice0);
       allOrders.push(...datasetPrice0);
+
+      const bulk = await Promise.all(
+        Array(2)
+          .fill(null)
+          .map(async () => {
+            const order = await iexecUser.order
+              .createDatasetorder({
+                dataset: datasetAddress,
+                datasetprice: 0, // bulk order must be free
+                volume: Number.MAX_SAFE_INTEGER, // bulk order must have max volume
+              })
+              .then(iexecUser.order.signDatasetorder);
+            const orderHash = await iexecUser.order.hashDatasetorder(order);
+            return {
+              order,
+              orderHash,
+              signer: ownerAddress,
+            };
+          }),
+      );
+      bulkOrders.push(...bulk);
+      minVolumeOrders.push(...bulk);
+      noRestrictOrders.push(...bulk);
+      allOrders.push(...bulk);
 
       const datasetPrice20 = await Promise.all(
         Array(5)
@@ -1800,6 +1825,52 @@ describe('Offchain marketplace', () => {
       expect(data.orders.length).toBe(minVolumeOrders.length);
       data.orders.forEach((e) => {
         expect(e.remaining >= 1234).toBe(true);
+      });
+    });
+
+    test('GET /datasetorders (bulkOnly filter)', async () => {
+      const onlyBulkRes = await request
+        .get(
+          buildQuery('/datasetorders', {
+            chainId, // *
+            dataset: datasetAddress, // *
+            bulkOnly: true,
+          }),
+        )
+        .then(parseResult);
+      expect(onlyBulkRes.status).toBe(OK_STATUS);
+      expect(onlyBulkRes.data.ok).toBe(true);
+      expect(onlyBulkRes.data.count).toBe(bulkOrders.length);
+      expect(onlyBulkRes.data.orders).toBeDefined();
+      expect(Array.isArray(onlyBulkRes.data.orders)).toBe(true);
+      expect(onlyBulkRes.data.orders.length).toBe(bulkOrders.length);
+      onlyBulkRes.data.orders.forEach((e) => {
+        expect(e.bulk).toBe(true);
+      });
+
+      const notOnlyBulkRes = await request
+        .get(
+          buildQuery('/datasetorders', {
+            chainId, // *
+            dataset: datasetAddress, // *
+            // bulkOnly: false,
+          }),
+        )
+        .then(parseResult);
+      expect(notOnlyBulkRes.status).toBe(OK_STATUS);
+      expect(notOnlyBulkRes.data.ok).toBe(true);
+      expect(notOnlyBulkRes.data.count).toBe(publicOrders.length);
+      expect(notOnlyBulkRes.data.orders).toBeDefined();
+      expect(Array.isArray(notOnlyBulkRes.data.orders)).toBe(true);
+      notOnlyBulkRes.data.orders.forEach((e) => {
+        if (
+          e.order.volume >= Number.MAX_SAFE_INTEGER &&
+          e.order.datasetprice === 0
+        ) {
+          expect(e.bulk).toBe(true);
+        } else {
+          expect(e.bulk).toBe(false);
+        }
       });
     });
 
