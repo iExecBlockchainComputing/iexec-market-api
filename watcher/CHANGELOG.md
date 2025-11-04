@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## [7.0.1](https://github.com/iExecBlockchainComputing/iexec-market-api/compare/iexec-market-watcher-v7.0.0...iexec-market-watcher-v7.0.1) (2025-11-04)
+
+
+### Changed
+
+* add status index to solve search performance issues ([#41](https://github.com/iExecBlockchainComputing/iexec-market-api/issues/41)) ([6115a2b](https://github.com/iExecBlockchainComputing/iexec-market-api/commit/6115a2ba1a6fe00241e9bbaef6a6798440bb5be8))
+
 ## [7.0.0](https://github.com/iExecBlockchainComputing/iexec-market-api/compare/iexec-market-watcher-v6.4.1...iexec-market-watcher-v7.0.0) (2025-09-23)
 
 
