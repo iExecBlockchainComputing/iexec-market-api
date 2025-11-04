@@ -48,7 +48,7 @@ const datasetorderSchema = new Schema(
     chainId: ChainIdSchema,
     tagArray: TagArraySchema,
     remaining: SafeUintSchema,
-    status: OrderStatusSchema,
+    status: { ...OrderStatusSchema, index: true },
     publicationTimestamp: TimestampSchema,
     signer: { ...AddressSchema, index: true },
   },
