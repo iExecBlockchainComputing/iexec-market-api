@@ -1,6 +1,6 @@
 {
   "name": "iexec-market-watcher",
-  "version": "7.0.0",
+  "version": "7.0.1",
   "type": "module",
   "description": "watch iexec contract to keep off-chain orderbook up to date",
   "main": "src/index.js",
