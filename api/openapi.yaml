@@ -3,7 +3,7 @@ info:
   title: iExec market API
   description: >-
     iExec market API OpenAPI specification
-  version: 6.4.1
+  version: 7.1.1
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
