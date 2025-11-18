@@ -11,7 +11,10 @@ import supertest from 'supertest';
 import { Wallet } from 'ethers';
 import { IExec, utils } from 'iexec';
 import { chains } from '../src/config.js';
-import { STATUS_MAP } from '../src/utils/order-utils.js';
+import {
+  DATASET_INFINITE_VOLUME,
+  STATUS_MAP,
+} from '../src/utils/order-utils.js';
 import {
   WALLETS,
   sleep,
@@ -950,15 +953,15 @@ describe('Offchain marketplace', () => {
       noRestrictOrders.push(...datasetPrice0);
       allOrders.push(...datasetPrice0);
 
-      const bulk = await Promise.all(
-        Array(2)
+      const bulk = await Promise.all([
+        ...Array(2)
           .fill(null)
           .map(async () => {
             const order = await iexecUser.order
               .createDatasetorder({
                 dataset: datasetAddress,
                 datasetprice: 0, // bulk order must be free
-                volume: Number.MAX_SAFE_INTEGER, // bulk order must have max volume
+                volume: DATASET_INFINITE_VOLUME, // bulk order must have max volume
               })
               .then(iexecUser.order.signDatasetorder);
             const orderHash = await iexecUser.order.hashDatasetorder(order);
@@ -968,7 +971,24 @@ describe('Offchain marketplace', () => {
               signer: ownerAddress,
             };
           }),
-      );
+        ...Array(2)
+          .fill(null)
+          .map(async () => {
+            const order = await iexecUser.order
+              .createDatasetorder({
+                dataset: datasetAddress,
+                datasetprice: 0, // bulk order must be free
+                volume: DATASET_INFINITE_VOLUME - 1, // DATASET_INFINITE_VOLUME - 1 is accepted for compatibility with existing orders
+              })
+              .then(iexecUser.order.signDatasetorder);
+            const orderHash = await iexecUser.order.hashDatasetorder(order);
+            return {
+              order,
+              orderHash,
+              signer: ownerAddress,
+            };
+          }),
+      ]);
       bulkOrders.push(...bulk);
       minVolumeOrders.push(...bulk);
       noRestrictOrders.push(...bulk);
@@ -1864,7 +1884,7 @@ describe('Offchain marketplace', () => {
       expect(Array.isArray(notOnlyBulkRes.data.orders)).toBe(true);
       notOnlyBulkRes.data.orders.forEach((e) => {
         if (
-          e.order.volume >= Number.MAX_SAFE_INTEGER &&
+          e.order.volume >= DATASET_INFINITE_VOLUME - 1 && // DATASET_INFINITE_VOLUME - 1 is accepted for compatibility with existing orders
           e.order.datasetprice === 0
         ) {
           expect(e.bulk).toBe(true);

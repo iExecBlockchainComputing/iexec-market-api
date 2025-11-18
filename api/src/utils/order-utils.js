@@ -139,8 +139,13 @@ const excludeTagArray = (tagArray) =>
     })
     .filter((e) => e !== null);
 
+const DATASET_INFINITE_VOLUME = Number.MAX_SAFE_INTEGER;
+
 const isDatasetBulkOrder = (order = {}) => {
-  return order?.volume >= Number.MAX_SAFE_INTEGER && order?.datasetprice === 0;
+  return (
+    order?.volume >= DATASET_INFINITE_VOLUME - 1 && // DATASET_INFINITE_VOLUME - 1 is accepted for compatibility with existing orders
+    order?.datasetprice === 0
+  );
 };
 
 export {
@@ -148,6 +153,7 @@ export {
   STATUS_MAP,
   TAG_MAP,
   UNPUBLISH_TARGET_MAP,
+  DATASET_INFINITE_VOLUME,
   tagToArray,
   excludeTagArray,
   isDatasetBulkOrder,
