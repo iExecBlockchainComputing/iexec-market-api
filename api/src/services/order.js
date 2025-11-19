@@ -31,6 +31,7 @@ import {
   TAG_MAP,
   tagToArray,
   excludeTagArray,
+  DATASET_INFINITE_VOLUME,
 } from '../utils/order-utils.js';
 import { maxOpenOrdersPerWallet } from '../config.js';
 import { ANY } from '../utils/keywords.js';
@@ -588,7 +589,7 @@ const getDatasetorders = async ({
       ...(dataset && requiredDatasetOrAnyClause(dataset)),
       ...(datasetOwner && { signer: datasetOwner }),
       ...(bulkOnly && {
-        'order.volume': Number.MAX_SAFE_INTEGER,
+        'order.volume': { $gte: DATASET_INFINITE_VOLUME - 1 }, // DATASET_INFINITE_VOLUME - 1 is accepted for compatibility with existing orders
         'order.datasetprice': 0,
       }),
       ...apprestrictOrAnyClause(app, isAppStrict),
