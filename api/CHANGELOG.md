@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## [7.1.2](https://github.com/iExecBlockchainComputing/iexec-market-api/compare/iexec-market-api-v7.1.1...iexec-market-api-v7.1.2) (2025-11-19)
+
+
+### Changed
+
+* allow (DATASET_INFINITE_VOLUME - 1) in bulk datasetorders for compatibility with already signed orders ([#45](https://github.com/iExecBlockchainComputing/iexec-market-api/issues/45)) ([40dedfe](https://github.com/iExecBlockchainComputing/iexec-market-api/commit/40dedfe18e13c57f2cfe4a23d0f04acad6562cf5))
+
 ## [7.1.1](https://github.com/iExecBlockchainComputing/iexec-market-api/compare/iexec-market-api-v7.1.0...iexec-market-api-v7.1.1) (2025-11-04)
 
 
