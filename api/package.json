@@ -9,7 +9,7 @@
     "npm": ">=10.0.0"
   },
   "scripts": {
-    "codegen": "node generateEsModulesFromJson.cjs",
+    "codegen": "node generateEsModulesFromJson.cjs && node updateVersionOpenApi.cjs",
     "postinstall": "npm run codegen",
     "format": "prettier --write .",
     "check-format": "prettier --check .",
