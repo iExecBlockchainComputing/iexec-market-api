@@ -1,7 +1,7 @@
 version: '3'
 services:
   mongo:
-    image: mongo:latest
+    image: mongo:7.0.15
     restart: unless-stopped
     expose:
       - '27017'
