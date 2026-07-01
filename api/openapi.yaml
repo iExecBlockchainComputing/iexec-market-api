@@ -12,6 +12,8 @@ servers:
     description: Bellecour
   - url: https://api.market.arbitrum-mainnet.iex.ec
     description: Arbitrum mainnet
+  - url: https://api-market.arbitrum-sepolia-testnet.iex.ec
+    description: Arbitrum Sepolia testnet
   - url: http://localhost:3000
     description: Local server
 
