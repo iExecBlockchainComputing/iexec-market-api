@@ -1,5 +1,4 @@
 import { abi as iexecTokenAbi } from './generated/@iexec/poco/IexecInterfaceToken.js';
-import { abi as iexecNativeAbi } from './generated/@iexec/poco/IexecInterfaceNative.js';
 import { abi as appRegistryAbi } from './generated/@iexec/poco/AppRegistry.js';
 import { abi as workerpoolRegistryAbi } from './generated/@iexec/poco/WorkerpoolRegistry.js';
 import { abi as datasetRegistryAbi } from './generated/@iexec/poco/DatasetRegistry.js';
@@ -18,7 +17,6 @@ const {
   CHAIN,
   CHAIN_ID,
   IEXEC_ADDRESS,
-  IS_NATIVE,
   START_BLOCK,
   SYNC_CHECK_INTERVAL,
   OUT_OF_SYNC_LIMIT,
@@ -68,11 +66,10 @@ const chain = {
   ...(ETH_WS_HOST && { wsHost: ETH_WS_HOST }),
   ...(ETH_RPC_HOST && { httpHost: ETH_RPC_HOST }),
   ...(IEXEC_ADDRESS && { hubAddress: IEXEC_ADDRESS }),
-  ...(IS_NATIVE !== undefined && { isNative: stringToBoolean(IS_NATIVE) }),
 };
 
 const abi = {
-  hub: chain.isNative ? iexecNativeAbi : iexecTokenAbi,
+  hub: iexecTokenAbi,
   appRegistry: appRegistryAbi,
   datasetRegistry: datasetRegistryAbi,
   workerpoolRegistry: workerpoolRegistryAbi,

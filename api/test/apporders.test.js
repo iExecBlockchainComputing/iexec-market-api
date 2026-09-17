@@ -59,7 +59,6 @@ const iexec = new IExec(
   },
   {
     hubAddress: chains[chainName].hubAddress,
-    isNative: chains[chainName].isNative,
     resultProxyURL: 'http://example.com/',
     smsURL: 'http://example.com/',
   },
@@ -76,7 +75,6 @@ const getIexecRandomSigner = () =>
     },
     {
       hubAddress: chains[chainName].hubAddress,
-      isNative: chains[chainName].isNative,
       resultProxyURL: 'http://example.com/',
       smsURL: 'http://example.com/',
     },

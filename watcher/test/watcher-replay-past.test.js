@@ -57,7 +57,6 @@ const iexec = new IExec(
   },
   {
     hubAddress,
-    isNative: chain.isNative,
     resultProxyURL: 'http://result-proxy.iex.ec',
     smsURL: 'http://sms.iex.ec',
   },
