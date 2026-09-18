@@ -23,6 +23,7 @@ install dependencies
 
 ```sh
 npm i
+npm run codegen
 ```
 
 start project
@@ -35,14 +36,7 @@ npm start
 
 ```sh
 docker-compose -f test/docker-compose.yml up -d
-npm ci
 npm test
-```
-
-## Monitor jobs
-
-```sh
-npx agendash --db=mongodb://localhost:27017/65535_jobs --port=8080
 ```
 
 ## Known issues

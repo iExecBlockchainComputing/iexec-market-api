@@ -22,6 +22,7 @@ install dependencies
 
 ```sh
 npm i
+npm run codegen
 ```
 
 start project

@@ -25,7 +25,9 @@ jobs:
 
       - name: Install dependencies
         working-directory: api
-        run: npm ci
+        run: |
+          npm ci
+          npm run codegen
 
       - name: Check format
         working-directory: api
@@ -49,7 +51,9 @@ jobs:
 
       - name: Install dependencies
         working-directory: api
-        run: npm ci
+        run: |
+          npm ci
+          npm run codegen
 
       - name: Start e2e test stack
         working-directory: api
