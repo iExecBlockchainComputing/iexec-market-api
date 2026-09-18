@@ -1,4 +1,3 @@
-version: '3'
 services:
   mongo:
     image: mongo:6.0.3
@@ -26,3 +25,33 @@ services:
     ports:
       - '8545:8545'
       - '8546:8546'
+    healthcheck:
+      # check port 8545 is open without nc
+      test: (echo >/dev/tcp/$(hostname)/8545) &>/dev/null
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
+
+  sms:
+    platform: linux/amd64
+    image: iexechub/iexec-sms:8.7.0
+    restart: unless-stopped
+    environment:
+      JAVA_TOOL_OPTIONS: '-Xmx256M'
+      IEXEC_SMS_BLOCKCHAIN_NODE_ADDRESS: http://chain-token:8545
+      IEXEC_CHAIN_ID: 65535
+      IEXEC_HUB_ADDRESS: '0xC129e7917b7c7DeDfAa5Fff1FB18d5D7050fE8ca'
+      IEXEC_SMS_TEE_RUNTIME_FRAMEWORK: scone
+      IEXEC_SMS_IMAGE_LAS_IMAGE: 'las-image'
+      IEXEC_TEE_WORKER_PRE_COMPUTE_IMAGE: 'pre-compute-image'
+      IEXEC_TEE_WORKER_PRE_COMPUTE_FINGERPRINT: 'pre-compute-fingerprint'
+      IEXEC_TEE_WORKER_POST_COMPUTE_IMAGE: 'post-compute-image'
+      IEXEC_TEE_WORKER_POST_COMPUTE_FINGERPRINT: 'post-compute-fingerprint'
+    ports:
+      - 13300:13300
+    healthcheck:
+      test: curl -f localhost:13300/actuator/health || exit 1
+    depends_on:
+      chain-token:
+        condition: service_healthy
