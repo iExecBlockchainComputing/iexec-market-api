@@ -15,7 +15,7 @@
     "check-format": "prettier --check .",
     "lint": "eslint src",
     "start": "node --require dotenv/config src/server.js",
-    "test": "CHAINS=TOKEN TOKEN_CHAIN_ID=65535 TOKEN_IEXEC_ADDRESS=0xC129e7917b7c7DeDfAa5Fff1FB18d5D7050fE8ca TOKEN_ETH_RPC_HOST=http://localhost:8545 MONGO_HOST=localhost REDIS_HOST=localhost NODE_OPTIONS=--experimental-vm-modules jest --coverage --runInBand --forceExit",
+    "test": "CHAINS=TOKEN TOKEN_CHAIN_ID=65535 TOKEN_IEXEC_ADDRESS=0xC129e7917b7c7DeDfAa5Fff1FB18d5D7050fE8ca TOKEN_ETH_RPC_HOST=http://localhost:8545 SMS_URL=http://localhost:13300 MONGO_HOST=localhost REDIS_HOST=localhost NODE_OPTIONS=--experimental-vm-modules jest --coverage --runInBand --forceExit",
     "stop-test-stack": "docker compose -f test/docker-compose.yml down -v",
     "start-test-stack": "npm run stop-test-stack && docker compose -f test/docker-compose.yml up -d"
   },
@@ -56,7 +56,7 @@
     "eslint-plugin-import": "^2.31.0",
     "eslint-plugin-sonarjs": "^3.0.2",
     "globals": "^16.0.0",
-    "iexec": "^8.15.0",
+    "iexec": "^9.0.1",
     "jest": "^29.7.0",
     "prettier": "^3.0.3",
     "query-string": "^7.1.3",

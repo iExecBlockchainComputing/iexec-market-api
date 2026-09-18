@@ -25,7 +25,7 @@ import {
   dropDB,
   addDatasetorders,
   getRandomAddress,
-  deployDatasetFor,
+  deployDataset,
   deployAndGetApporder,
   deployAndGetDatasetorder,
   deployAndGetWorkerpoolorder,
@@ -63,8 +63,7 @@ const iexec = new IExec(
   },
   {
     hubAddress: chains[chainName].hubAddress,
-    resultProxyURL: 'http://example.com/',
-    smsURL: 'http://example.com/',
+    smsURL: process.env.SMS_URL,
   },
 );
 
@@ -79,8 +78,7 @@ const getIexecRandomSigner = () =>
     },
     {
       hubAddress: chains[chainName].hubAddress,
-      resultProxyURL: 'http://example.com/',
-      smsURL: 'http://example.com/',
+      smsURL: process.env.SMS_URL,
     },
   );
 
@@ -123,7 +121,7 @@ describe('Offchain marketplace', () => {
       const order = await iexec.order.signDatasetorder(
         {
           ...datasetorderTemplate,
-          tag: '0x1000000000000000000000000000000000000000000000000000000000000103',
+          tag: '0x1000000000000000000000000000000000000000000000000000000000000109',
         },
         { preflightCheck: false },
       );
@@ -199,7 +197,7 @@ describe('Offchain marketplace', () => {
       const order = await iexec.order.signDatasetorder(
         {
           ...datasetorderTemplate,
-          tag: '0x1000000000000000000000000000000000000000000000000000000000000103',
+          tag: '0x1000000000000000000000000000000000000000000000000000000000000109',
         },
         { preflightCheck: false },
       );
@@ -901,9 +899,8 @@ describe('Offchain marketplace', () => {
     const anyAppAllowedOrders = [];
     const anyRequesterAllowedOrders = [];
     const anyWorkerpoolAllowedOrders = [];
-    const minTeeTagOrders = [];
-    const maxGpuTagOrders = [];
-    const minMaxTeeTagOrders = [];
+    const minGpuTagOrders = [];
+    const maxTdxTagOrders = [];
     const minVolumeOrders = [];
     const bulkOrders = [];
     let consumedOrders;
@@ -917,16 +914,18 @@ describe('Offchain marketplace', () => {
 
     beforeAll(async () => {
       await dropDB(chainId);
+
       // prepare documents
       const ownerAddress = await iexecUser.wallet.getAddress();
-      resourceOwnerAddress = await iexecResourceOwner.wallet.getAddress();
+      await iexec.wallet.sendETH('1 ether', ownerAddress);
 
-      datasetAddress = await deployDatasetFor(iexec, ownerAddress);
-      otherAddress = await deployDatasetFor(iexec, ownerAddress);
-      const resourceOwnerDatasetAddress = await deployDatasetFor(
-        iexec,
-        resourceOwnerAddress,
-      );
+      resourceOwnerAddress = await iexecResourceOwner.wallet.getAddress();
+      await iexec.wallet.sendETH('1 ether', resourceOwnerAddress);
+
+      datasetAddress = await deployDataset(iexecUser);
+      otherAddress = await deployDataset(iexecUser);
+      const resourceOwnerDatasetAddress =
+        await deployDataset(iexecResourceOwner);
 
       const noRestrictOrders = [];
 
@@ -949,6 +948,7 @@ describe('Offchain marketplace', () => {
           }),
       );
       noRestrictOrders.push(...datasetPrice0);
+      maxTdxTagOrders.push(...datasetPrice0);
       allOrders.push(...datasetPrice0);
 
       const bulk = await Promise.all([
@@ -988,6 +988,7 @@ describe('Offchain marketplace', () => {
           }),
       ]);
       bulkOrders.push(...bulk);
+      maxTdxTagOrders.push(...bulk);
       minVolumeOrders.push(...bulk);
       noRestrictOrders.push(...bulk);
       allOrders.push(...bulk);
@@ -1011,6 +1012,7 @@ describe('Offchain marketplace', () => {
           }),
       );
       noRestrictOrders.push(...datasetPrice20);
+      maxTdxTagOrders.push(...datasetPrice20);
       allOrders.push(...datasetPrice20);
 
       const datasetPrice10 = await Promise.all(
@@ -1032,6 +1034,7 @@ describe('Offchain marketplace', () => {
           }),
       );
       noRestrictOrders.push(...datasetPrice10);
+      maxTdxTagOrders.push(...datasetPrice10);
       allOrders.push(...datasetPrice10);
 
       const volume1234 = await Promise.all(
@@ -1054,6 +1057,7 @@ describe('Offchain marketplace', () => {
           }),
       );
       minVolumeOrders.push(...volume1234);
+      maxTdxTagOrders.push(...volume1234);
       noRestrictOrders.push(...volume1234);
       allOrders.push(...volume1234);
 
@@ -1080,36 +1084,8 @@ describe('Offchain marketplace', () => {
       ownersOrders.push(...owners);
       allOrders.push(...owners);
 
-      const tagTee = await Promise.all(
-        Array(2)
-          .fill(null)
-          .map(async () => {
-            const order = await iexecUser.order
-              .createDatasetorder({
-                dataset: datasetAddress,
-                datasetprice: 0,
-                tag: ['tee', 'scone'],
-              })
-              .then((o) =>
-                iexecUser.order.signDatasetorder(o, {
-                  preflightCheck: false,
-                }),
-              );
-            const orderHash = await iexecUser.order.hashDatasetorder(order);
-            return {
-              order,
-              orderHash,
-              signer: ownerAddress,
-            };
-          }),
-      );
-      publicOrders.push(...tagTee);
-      minTeeTagOrders.push(...tagTee);
-      minMaxTeeTagOrders.push(...tagTee);
-      allOrders.push(...tagTee);
-
       const tagGpu = await Promise.all(
-        Array(3)
+        Array(4)
           .fill(null)
           .map(async () => {
             const order = await iexecUser.order
@@ -1118,7 +1094,11 @@ describe('Offchain marketplace', () => {
                 datasetprice: 0,
                 tag: ['gpu'],
               })
-              .then(iexecUser.order.signDatasetorder);
+              .then((o) =>
+                iexecUser.order.signDatasetorder(o, {
+                  preflightCheck: false,
+                }),
+              );
             const orderHash = await iexecUser.order.hashDatasetorder(order);
             return {
               order,
@@ -1128,35 +1108,8 @@ describe('Offchain marketplace', () => {
           }),
       );
       publicOrders.push(...tagGpu);
-      maxGpuTagOrders.push(...tagGpu, ...noRestrictOrders); // max gpu accept empty tag
+      minGpuTagOrders.push(...tagGpu);
       allOrders.push(...tagGpu);
-
-      const tagTeeGpu = await Promise.all(
-        Array(4)
-          .fill(null)
-          .map(async () => {
-            const order = await iexecUser.order
-              .createDatasetorder({
-                dataset: datasetAddress,
-                datasetprice: 0,
-                tag: ['tee', 'scone', 'gpu'],
-              })
-              .then((o) =>
-                iexecUser.order.signDatasetorder(o, {
-                  preflightCheck: false,
-                }),
-              );
-            const orderHash = await iexecUser.order.hashDatasetorder(order);
-            return {
-              order,
-              orderHash,
-              signer: ownerAddress,
-            };
-          }),
-      );
-      publicOrders.push(...tagTeeGpu);
-      minTeeTagOrders.push(...tagTeeGpu);
-      allOrders.push(...tagTeeGpu);
 
       const appAllowed = await Promise.all(
         Array(5)
@@ -2173,22 +2126,20 @@ describe('Offchain marketplace', () => {
             chainId, // *
             dataset: datasetAddress, // *
             minTag:
-              '0x0000000000000000000000000000000000000000000000000000000000000003',
+              '0x0000000000000000000000000000000000000000000000000000000000000100',
           }),
         )
         .then(parseResult);
       expect(status).toBe(OK_STATUS);
       expect(data.ok).toBe(true);
-      expect(data.count).toBe(minTeeTagOrders.length);
+      expect(data.count).toBe(minGpuTagOrders.length);
       expect(data.orders).toBeDefined();
       expect(Array.isArray(data.orders)).toBe(true);
-      expect(data.orders.length).toBe(minTeeTagOrders.length);
+      expect(data.orders.length).toBe(minGpuTagOrders.length);
       data.orders.forEach((e) => {
         expect(
           e.order.tag ===
-            '0x0000000000000000000000000000000000000000000000000000000000000003' ||
-            e.order.tag ===
-              '0x0000000000000000000000000000000000000000000000000000000000000103',
+            '0x0000000000000000000000000000000000000000000000000000000000000109',
         ).toBe(true);
       });
     });
@@ -2200,49 +2151,20 @@ describe('Offchain marketplace', () => {
             chainId, // *
             dataset: datasetAddress, // *
             maxTag:
-              '0x0000000000000000000000000000000000000000000000000000000000000100',
+              '0x0000000000000000000000000000000000000000000000000000000000000009',
           }),
         )
         .then(parseResult);
       expect(status).toBe(OK_STATUS);
       expect(data.ok).toBe(true);
-      expect(data.count).toBe(maxGpuTagOrders.length);
+      expect(data.count).toBe(maxTdxTagOrders.length);
       expect(data.orders).toBeDefined();
       expect(Array.isArray(data.orders)).toBe(true);
       expect(data.orders.length).toBe(20);
       data.orders.forEach((e) => {
         expect(
           e.order.tag ===
-            '0x0000000000000000000000000000000000000000000000000000000000000000' ||
-            e.order.tag ===
-              '0x0000000000000000000000000000000000000000000000000000000000000100',
-        ).toBe(true);
-      });
-    });
-
-    test('GET /datasetorders (minTag & maxTag filter)', async () => {
-      const { data, status } = await request
-        .get(
-          buildQuery('/datasetorders', {
-            chainId, // *
-            dataset: datasetAddress, // *
-            minTag:
-              '0x0000000000000000000000000000000000000000000000000000000000000003',
-            maxTag:
-              '0xf000000000000000000000000000000000000000000000000000000000000003',
-          }),
-        )
-        .then(parseResult);
-      expect(status).toBe(OK_STATUS);
-      expect(data.ok).toBe(true);
-      expect(data.count).toBe(minMaxTeeTagOrders.length);
-      expect(data.orders).toBeDefined();
-      expect(Array.isArray(data.orders)).toBe(true);
-      expect(data.orders.length).toBe(minMaxTeeTagOrders.length);
-      data.orders.forEach((e) => {
-        expect(
-          e.order.tag ===
-            '0x0000000000000000000000000000000000000000000000000000000000000003',
+            '0x0000000000000000000000000000000000000000000000000000000000000009',
         ).toBe(true);
       });
     });

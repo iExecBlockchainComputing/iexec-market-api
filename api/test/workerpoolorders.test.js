@@ -57,8 +57,7 @@ const iexec = new IExec(
   },
   {
     hubAddress: chains[chainName].hubAddress,
-    resultProxyURL: 'http://example.com/',
-    smsURL: 'http://example.com/',
+    smsURL: process.env.SMS_URL,
   },
 );
 
@@ -73,8 +72,7 @@ const getIexecRandomSigner = () =>
     },
     {
       hubAddress: chains[chainName].hubAddress,
-      resultProxyURL: 'http://example.com/',
-      smsURL: 'http://example.com/',
+      smsURL: process.env.SMS_URL,
     },
   );
 
@@ -115,7 +113,7 @@ describe('/workerpoolorders', () => {
       const address = await iexec.wallet.getAddress();
       const order = await iexec.order.signWorkerpoolorder({
         ...workerpoolorderTemplate,
-        tag: '0x1000000000000000000000000000000000000000000000000000000000000103',
+        tag: '0x1000000000000000000000000000000000000000000000000000000000000109',
       });
       const hash = await iexec.order.hashWorkerpoolorder(order);
       jest.clearAllMocks();
@@ -188,7 +186,7 @@ describe('/workerpoolorders', () => {
     test('POST /workerpoolorders (missing chainId)', async () => {
       const order = await iexec.order.signWorkerpoolorder({
         ...workerpoolorderTemplate,
-        tag: '0x1000000000000000000000000000000000000000000000000000000000000103',
+        tag: '0x1000000000000000000000000000000000000000000000000000000000000109',
       });
       jest.clearAllMocks();
       await setChallenge(chainId, WALLETS.DEFAULT.challenge);
@@ -664,9 +662,8 @@ describe('/workerpoolorders', () => {
     const anyAppAllowedOrders = [];
     const anyDatasetAllowedOrders = [];
     const anyRequesterAllowedOrders = [];
-    const minTeeTagOrders = [];
-    const maxGpuTagOrders = [];
-    const minMaxTeeTagOrders = [];
+    const maxTdxTagOrders = [];
+    const minGpuTagOrders = [];
     const minVolumeOrders = [];
     const minTrustOrders = [];
     let deadOrders;
@@ -713,6 +710,7 @@ describe('/workerpoolorders', () => {
           }),
       );
       noRestrictOrders.push(...workerpoolPrice0);
+      maxTdxTagOrders.push(...workerpoolPrice0);
       allOrders.push(...workerpoolPrice0);
 
       const workerpoolPrice20 = await Promise.all(
@@ -735,6 +733,7 @@ describe('/workerpoolorders', () => {
           }),
       );
       noRestrictOrders.push(...workerpoolPrice20);
+      maxTdxTagOrders.push(...workerpoolPrice20);
       allOrders.push(...workerpoolPrice20);
 
       const workerpoolPrice10 = await Promise.all(
@@ -757,6 +756,7 @@ describe('/workerpoolorders', () => {
           }),
       );
       noRestrictOrders.push(...workerpoolPrice10);
+      maxTdxTagOrders.push(...workerpoolPrice10);
       allOrders.push(...workerpoolPrice10);
 
       const volume1234 = await Promise.all(
@@ -780,6 +780,7 @@ describe('/workerpoolorders', () => {
           }),
       );
       minVolumeOrders.push(...volume1234);
+      maxTdxTagOrders.push(...volume1234);
       noRestrictOrders.push(...volume1234);
       allOrders.push(...volume1234);
 
@@ -804,6 +805,7 @@ describe('/workerpoolorders', () => {
           }),
       );
       minTrustOrders.push(...minTrust5);
+      maxTdxTagOrders.push(...minTrust5);
       noRestrictOrders.push(...minTrust5);
       allOrders.push(...minTrust5);
 
@@ -827,6 +829,7 @@ describe('/workerpoolorders', () => {
           }),
       );
       category1Orders.push(...category1);
+      maxTdxTagOrders.push(...category1);
       noRestrictOrders.push(...category1);
       allOrders.push(...category1);
 
@@ -850,6 +853,7 @@ describe('/workerpoolorders', () => {
           }),
       );
       workerpoolSpecificOrders.push(...workerpoolSpecific);
+      maxTdxTagOrders.push(...workerpoolSpecific);
       noRestrictOrders.push(...workerpoolSpecific);
       allOrders.push(...workerpoolSpecific);
 
@@ -872,38 +876,14 @@ describe('/workerpoolorders', () => {
           }),
       );
       ownersOrders.push(...owners);
+      maxTdxTagOrders.push(...owners);
       noRestrictOrders.push(...owners);
       allOrders.push(...owners);
 
       publicOrders.push(...noRestrictOrders);
 
-      const tagTee = await Promise.all(
-        Array(2)
-          .fill(null)
-          .map(async () => {
-            const order = await iexecUser.order
-              .createWorkerpoolorder({
-                workerpool: otherAddress,
-                workerpoolprice: 0,
-                tag: ['tee', 'scone'],
-                category: 0,
-              })
-              .then(iexecUser.order.signWorkerpoolorder);
-            const orderHash = await iexecUser.order.hashWorkerpoolorder(order);
-            return {
-              order,
-              orderHash,
-              signer: ownerAddress,
-            };
-          }),
-      );
-      publicOrders.push(...tagTee);
-      minTeeTagOrders.push(...tagTee);
-      minMaxTeeTagOrders.push(...tagTee);
-      allOrders.push(...tagTee);
-
       const tagGpu = await Promise.all(
-        Array(3)
+        Array(4)
           .fill(null)
           .map(async () => {
             const order = await iexecUser.order
@@ -923,32 +903,8 @@ describe('/workerpoolorders', () => {
           }),
       );
       publicOrders.push(...tagGpu);
-      maxGpuTagOrders.push(...tagGpu, ...noRestrictOrders); // max gpu accept empty tag
+      minGpuTagOrders.push(...tagGpu);
       allOrders.push(...tagGpu);
-
-      const tagTeeGpu = await Promise.all(
-        Array(4)
-          .fill(null)
-          .map(async () => {
-            const order = await iexecUser.order
-              .createWorkerpoolorder({
-                workerpool: otherAddress,
-                workerpoolprice: 0,
-                tag: ['tee', 'scone', 'gpu'],
-                category: 0,
-              })
-              .then(iexecUser.order.signWorkerpoolorder);
-            const orderHash = await iexecUser.order.hashWorkerpoolorder(order);
-            return {
-              order,
-              orderHash,
-              signer: ownerAddress,
-            };
-          }),
-      );
-      publicOrders.push(...tagTeeGpu);
-      minTeeTagOrders.push(...tagTeeGpu);
-      allOrders.push(...tagTeeGpu);
 
       const appAllowed = await Promise.all(
         Array(5)
@@ -1929,22 +1885,20 @@ describe('/workerpoolorders', () => {
           buildQuery('/workerpoolorders', {
             chainId, // *
             minTag:
-              '0x0000000000000000000000000000000000000000000000000000000000000003',
+              '0x0000000000000000000000000000000000000000000000000000000000000100',
           }),
         )
         .then(parseResult);
       expect(status).toBe(OK_STATUS);
       expect(data.ok).toBe(true);
-      expect(data.count).toBe(minTeeTagOrders.length);
+      expect(data.count).toBe(minGpuTagOrders.length);
       expect(data.orders).toBeDefined();
       expect(Array.isArray(data.orders)).toBe(true);
-      expect(data.orders.length).toBe(minTeeTagOrders.length);
+      expect(data.orders.length).toBe(minGpuTagOrders.length);
       data.orders.forEach((e) => {
         expect(
           e.order.tag ===
-            '0x0000000000000000000000000000000000000000000000000000000000000003' ||
-            e.order.tag ===
-              '0x0000000000000000000000000000000000000000000000000000000000000103',
+            '0x0000000000000000000000000000000000000000000000000000000000000109',
         ).toBe(true);
       });
     });
@@ -1955,48 +1909,21 @@ describe('/workerpoolorders', () => {
           buildQuery('/workerpoolorders', {
             chainId, // *
             maxTag:
-              '0x0000000000000000000000000000000000000000000000000000000000000100',
+              '0x0000000000000000000000000000000000000000000000000000000000000009',
           }),
         )
         .then(parseResult);
+
       expect(status).toBe(OK_STATUS);
       expect(data.ok).toBe(true);
-      expect(data.count).toBe(maxGpuTagOrders.length);
+      expect(data.count).toBe(maxTdxTagOrders.length);
       expect(data.orders).toBeDefined();
       expect(Array.isArray(data.orders)).toBe(true);
       expect(data.orders.length).toBe(20);
       data.orders.forEach((e) => {
         expect(
           e.order.tag ===
-            '0x0000000000000000000000000000000000000000000000000000000000000000' ||
-            e.order.tag ===
-              '0x0000000000000000000000000000000000000000000000000000000000000100',
-        ).toBe(true);
-      });
-    });
-
-    test('GET /workerpoolorders (minTag & maxTag filter)', async () => {
-      const { data, status } = await request
-        .get(
-          buildQuery('/workerpoolorders', {
-            chainId, // *
-            minTag:
-              '0x0000000000000000000000000000000000000000000000000000000000000003',
-            maxTag:
-              '0xf000000000000000000000000000000000000000000000000000000000000003',
-          }),
-        )
-        .then(parseResult);
-      expect(status).toBe(OK_STATUS);
-      expect(data.ok).toBe(true);
-      expect(data.count).toBe(minMaxTeeTagOrders.length);
-      expect(data.orders).toBeDefined();
-      expect(Array.isArray(data.orders)).toBe(true);
-      expect(data.orders.length).toBe(minMaxTeeTagOrders.length);
-      data.orders.forEach((e) => {
-        expect(
-          e.order.tag ===
-            '0x0000000000000000000000000000000000000000000000000000000000000003',
+            '0x0000000000000000000000000000000000000000000000000000000000000009',
         ).toBe(true);
       });
     });
