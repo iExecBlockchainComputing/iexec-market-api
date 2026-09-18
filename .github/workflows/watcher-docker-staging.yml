@@ -1,5 +1,4 @@
 name: Watcher docker publish staging
-description: Publish a staging version of the Watcher on Docker Hub
 
 on:
   workflow_dispatch:

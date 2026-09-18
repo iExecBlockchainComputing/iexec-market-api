@@ -1,5 +1,4 @@
 name: Conventional Commit Check Commits
-description: checks every commit in the PR respects the conventional commit
 
 on: [pull_request]
 
@@ -7,6 +6,6 @@ jobs:
   check-conventional-commits:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - name: Check Commit Conventions
-        uses: webiny/action-conventional-commits@v1.3.0
+        uses: webiny/action-conventional-commits@8bc41ff4e7d423d56fa4905f6ff79209a78776c7 # v1.3.0
