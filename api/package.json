@@ -30,7 +30,6 @@
   },
   "homepage": "https://github.com/iExecBlockchainComputing/iexec-market-api#readme",
   "dependencies": {
-    "@iexec/poco": "^5.5.0",
     "@socket.io/redis-adapter": "^8.3.0",
     "debug": "^4.4.0",
     "dotenv": "^16.5.0",
@@ -50,6 +49,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.24.0",
+    "@iexec/poco": "^6.1.0",
     "@jest/globals": "^29.7.0",
     "eslint": "^9.24.0",
     "eslint-config-prettier": "^10.1.2",
