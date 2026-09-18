@@ -34,8 +34,8 @@
     "bullmq": "^5.58.4",
     "debug": "^4.4.0",
     "dotenv": "^16.5.0",
-    "ethers": "^6.13.5",
-    "mongoose": "^8.16.0",
+    "ethers": "^6.17.0",
+    "mongoose": "^8.24.4",
     "redis": "^4.7.0",
     "socket.io": "^4.8.1"
   },
