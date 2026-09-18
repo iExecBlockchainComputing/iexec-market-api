@@ -57,9 +57,7 @@ const iexec = new IExec(
   },
   {
     hubAddress: chains[chainName].hubAddress,
-    isNative: chains[chainName].isNative,
-    resultProxyURL: 'http://example.com/',
-    smsURL: 'http://example.com/',
+    smsURL: process.env.SMS_URL,
   },
 );
 
@@ -74,9 +72,7 @@ const getIexecRandomSigner = () =>
     },
     {
       hubAddress: chains[chainName].hubAddress,
-      isNative: chains[chainName].isNative,
-      resultProxyURL: 'http://example.com/',
-      smsURL: 'http://example.com/',
+      smsURL: process.env.SMS_URL,
     },
   );
 
@@ -142,48 +138,6 @@ describe('/requestorders', () => {
         .then(parseResult);
       expect(status).toBe(BUSINESS_ERROR_STATUS);
       expect(data.ok).toBe(false);
-      expect(data.error).toBe(`No apporder published for app ${order.app}`);
-      expect(data.published).toBeUndefined();
-      expect(socketEmitSpy).toHaveBeenCalledTimes(0);
-    });
-
-    test('POST /requestorders (missing tee apporder)', async () => {
-      const order = await iexec.order.signRequestorder(
-        {
-          ...requestorderTemplate,
-          workerpool: utils.NULL_ADDRESS,
-          tag: '0x0000000000000000000000000000000000000000000000000000000000000003',
-        },
-        { preflightCheck: false },
-      );
-      const apporder = await iexec.order.signApporder(apporderTemplate);
-      await setChallenge(chainId, WALLETS.DEFAULT.challenge);
-      await request
-        .post(
-          buildQuery('/apporders', {
-            chainId, // *
-          }),
-        )
-        .send({
-          order: apporder,
-        })
-        .set('authorization', WALLETS.DEFAULT.authorization)
-        .then(parseResult);
-      jest.clearAllMocks();
-      await setChallenge(chainId, WALLETS.DEFAULT.challenge);
-      const { data, status } = await request
-        .post(
-          buildQuery('/requestorders', {
-            chainId, // *
-          }),
-        )
-        .send({
-          order,
-        })
-        .set('authorization', WALLETS.DEFAULT.authorization)
-        .then(parseResult);
-      expect(status).toBe(BUSINESS_ERROR_STATUS);
-      expect(data.ok).toBe(false);
       expect(data.error).toBe(
         `No tee enabled apporder published for app ${order.app}`,
       );
@@ -196,7 +150,7 @@ describe('/requestorders', () => {
         {
           ...requestorderTemplate,
           workerpool: utils.NULL_ADDRESS,
-          tag: '0xf000000000000000000000000000000000000000000000000000000000000003',
+          tag: '0xf000000000000000000000000000000000000000000000000000000000000009',
         },
         { preflightCheck: false },
       );
@@ -204,7 +158,7 @@ describe('/requestorders', () => {
       const apporder = await iexec.order.signApporder(
         {
           ...apporderTemplate,
-          tag: '0x0000000000000000000000000000000000000000000000000000000000000003',
+          tag: '0x0000000000000000000000000000000000000000000000000000000000000009',
         },
         { preflightCheck: false },
       );
@@ -309,7 +263,7 @@ describe('/requestorders', () => {
         {
           ...requestorderTemplate,
           workerpool: utils.NULL_ADDRESS,
-          tag: '0xf000000000000000000000000000000000000000000000000000000000000003',
+          tag: '0xf000000000000000000000000000000000000000000000000000000000000009',
         },
         { preflightCheck: false },
       );
@@ -1032,9 +986,8 @@ describe('/requestorders', () => {
     let appSpecificOrders; // standard filtered by app
     let datasetSpecificOrders; // standard filtered by dataset
     let category1Orders; // standard filtered by category
-    let minTeeTagOrders; // standard filtered by minTag
-    let maxGpuTagOrders; // standard filtered by maxTag
-    let minMaxTeeTagOrders; // standard filtered by minTag & maxTag
+    let maxTdxTagOrders; // standard filtered by maxTag
+    let minGpuTagOrders; // standard filtered by minTag
     let minVolumeOrders; // standard filtered by minVolume
     let maxTrust5Orders; // standard filtered by maxTrust
     let workerpoolAllowedOrders; // standard extended with workerpool exclusive
@@ -1288,34 +1241,8 @@ describe('/requestorders', () => {
       );
       allOrders.push(...datasetSpecific);
 
-      const tagTee = await Promise.all(
-        Array(2)
-          .fill(null)
-          .map(async () => {
-            const order = await iexecUser1.order
-              .createRequestorder({
-                app: getRandomAddress(),
-                workerpoolmaxprice: 0,
-                tag: ['tee', 'scone'],
-                category: 0,
-              })
-              .then((o) =>
-                iexecUser1.order.signRequestorder(o, {
-                  preflightCheck: false,
-                }),
-              );
-            const orderHash = await iexecUser1.order.hashRequestorder(order);
-            return {
-              order,
-              orderHash,
-              signer: otherAddress,
-            };
-          }),
-      );
-      allOrders.push(...tagTee);
-
       const tagGpu = await Promise.all(
-        Array(3)
+        Array(4)
           .fill(null)
           .map(async () => {
             const order = await iexecUser1.order
@@ -1339,32 +1266,6 @@ describe('/requestorders', () => {
           }),
       );
       allOrders.push(...tagGpu);
-
-      const tagTeeGpu = await Promise.all(
-        Array(4)
-          .fill(null)
-          .map(async () => {
-            const order = await iexecUser1.order
-              .createRequestorder({
-                app: getRandomAddress(),
-                workerpoolmaxprice: 0,
-                tag: ['tee', 'scone', 'gpu'],
-                category: 0,
-              })
-              .then((o) =>
-                iexecUser1.order.signRequestorder(o, {
-                  preflightCheck: false,
-                }),
-              );
-            const orderHash = await iexecUser1.order.hashRequestorder(order);
-            return {
-              order,
-              orderHash,
-              signer: otherAddress,
-            };
-          }),
-      );
-      allOrders.push(...tagTeeGpu);
 
       const workerpoolAllowed = await Promise.all(
         Array(2)
@@ -1529,13 +1430,11 @@ describe('/requestorders', () => {
         ...workerpoolPrice10,
         ...volume1234,
         ...category1,
+        ...tagGpu,
         ...requesterSpecific,
         ...beneficiarySpecific,
         ...appSpecific,
         ...datasetSpecific,
-        ...tagTee,
-        ...tagGpu,
-        ...tagTeeGpu,
         ...maxTrust5,
         ...exceedMaxTrust5,
       ];
@@ -1547,9 +1446,8 @@ describe('/requestorders', () => {
       beneficiarySpecificOrders = beneficiarySpecific;
       appSpecificOrders = appSpecific;
       datasetSpecificOrders = datasetSpecific;
-      minTeeTagOrders = [...tagTee, ...tagTeeGpu];
-      minMaxTeeTagOrders = tagTee;
-      maxGpuTagOrders = filterOrders(publicOrders, [...tagTee, ...tagTeeGpu]);
+      minGpuTagOrders = [...tagGpu];
+      maxTdxTagOrders = filterOrders(publicOrders, tagGpu);
       maxTrust5Orders = filterOrders(publicOrders, exceedMaxTrust5);
 
       // extended result
@@ -2170,22 +2068,20 @@ describe('/requestorders', () => {
           buildQuery('/requestorders', {
             chainId, // *
             minTag:
-              '0x0000000000000000000000000000000000000000000000000000000000000003',
+              '0x0000000000000000000000000000000000000000000000000000000000000100',
           }),
         )
         .then(parseResult);
       expect(status).toBe(OK_STATUS);
       expect(data.ok).toBe(true);
-      expect(data.count).toBe(minTeeTagOrders.length);
+      expect(data.count).toBe(minGpuTagOrders.length);
       expect(data.orders).toBeDefined();
       expect(Array.isArray(data.orders)).toBe(true);
-      expect(data.orders.length).toBe(minTeeTagOrders.length);
+      expect(data.orders.length).toBe(minGpuTagOrders.length);
       data.orders.forEach((e) => {
         expect(
           e.order.tag ===
-            '0x0000000000000000000000000000000000000000000000000000000000000003' ||
-            e.order.tag ===
-              '0x0000000000000000000000000000000000000000000000000000000000000103',
+            '0x0000000000000000000000000000000000000000000000000000000000000109',
         ).toBe(true);
       });
     });
@@ -2196,48 +2092,20 @@ describe('/requestorders', () => {
           buildQuery('/requestorders', {
             chainId, // *
             maxTag:
-              '0x0000000000000000000000000000000000000000000000000000000000000100',
+              '0x0000000000000000000000000000000000000000000000000000000000000009',
           }),
         )
         .then(parseResult);
       expect(status).toBe(OK_STATUS);
       expect(data.ok).toBe(true);
-      expect(data.count).toBe(maxGpuTagOrders.length);
+      expect(data.count).toBe(maxTdxTagOrders.length);
       expect(data.orders).toBeDefined();
       expect(Array.isArray(data.orders)).toBe(true);
       expect(data.orders.length).toBe(20);
       data.orders.forEach((e) => {
         expect(
           e.order.tag ===
-            '0x0000000000000000000000000000000000000000000000000000000000000000' ||
-            e.order.tag ===
-              '0x0000000000000000000000000000000000000000000000000000000000000100',
-        ).toBe(true);
-      });
-    });
-
-    test('GET /requestorders (minTag & maxTag filter)', async () => {
-      const { data, status } = await request
-        .get(
-          buildQuery('/requestorders', {
-            chainId, // *
-            minTag:
-              '0x0000000000000000000000000000000000000000000000000000000000000003',
-            maxTag:
-              '0xf000000000000000000000000000000000000000000000000000000000000003',
-          }),
-        )
-        .then(parseResult);
-      expect(status).toBe(OK_STATUS);
-      expect(data.ok).toBe(true);
-      expect(data.count).toBe(minMaxTeeTagOrders.length);
-      expect(data.orders).toBeDefined();
-      expect(Array.isArray(data.orders)).toBe(true);
-      expect(data.orders.length).toBe(minMaxTeeTagOrders.length);
-      data.orders.forEach((e) => {
-        expect(
-          e.order.tag ===
-            '0x0000000000000000000000000000000000000000000000000000000000000003',
+            '0x0000000000000000000000000000000000000000000000000000000000000009',
         ).toBe(true);
       });
     });

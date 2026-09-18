@@ -95,14 +95,15 @@ const deployAndGetApporder = async (
     .then((o) => iexec.order.signApporder(o, { preflightCheck: false }));
 };
 
-const deployDatasetFor = async (iexec, owner) => {
+const deployDataset = async (iexec) => {
   const { address } = await iexec.dataset.deployDataset({
-    owner,
+    owner: await iexec.wallet.getAddress(),
     name: `dataset${getId()}`,
     multiaddr: '/p2p/QmW2WQi7j6c7UgJTarActp7tDNikE4B2qXtFCfLPdsgaTQ',
     checksum:
       '0x0000000000000000000000000000000000000000000000000000000000000000',
   });
+  await iexec.dataset.pushDatasetSecret(address, 'foo');
   return address;
 };
 
@@ -117,8 +118,7 @@ const deployAndGetDatasetorder = async (
     tag,
   } = {},
 ) => {
-  const address = await iexec.wallet.getAddress();
-  const dataset = await deployDatasetFor(iexec, address);
+  const dataset = await deployDataset(iexec);
   return iexec.order
     .createDatasetorder({
       dataset,
@@ -425,7 +425,7 @@ export {
   getRandomAddress,
   getId,
   deployAppFor,
-  deployDatasetFor,
+  deployDataset,
   deployWorkerpoolFor,
   deployAndGetApporder,
   deployAndGetDatasetorder,

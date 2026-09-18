@@ -1,6 +1,4 @@
 name: Watcher PR checks
-description: check the Watcher PR
-
 on:
   pull_request:
     paths: ["watcher/**"]
@@ -25,7 +23,9 @@ jobs:
 
       - name: Install dependencies
         working-directory: watcher
-        run: npm ci
+        run: |
+          npm ci
+          npm run codegen
 
       - name: Check format
         working-directory: watcher
@@ -49,7 +49,9 @@ jobs:
 
       - name: Install dependencies
         working-directory: watcher
-        run: npm ci
+        run: |
+          npm ci
+          npm run codegen
 
       - name: Start e2e test stack
         working-directory: watcher
@@ -63,3 +65,6 @@ jobs:
     uses: ./.github/workflows/reusable-watcher-docker.yml
     with:
       dry-run: true
+    secrets:
+      dockerhub-username: ${{ secrets.DOCKERHUB_USERNAME }}
+      dockerhub-password: ${{ secrets.DOCKERHUB_PAT }}

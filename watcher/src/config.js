@@ -1,5 +1,4 @@
 import { abi as iexecTokenAbi } from './generated/@iexec/poco/IexecInterfaceToken.js';
-import { abi as iexecNativeAbi } from './generated/@iexec/poco/IexecInterfaceNative.js';
 import { abi as appRegistryAbi } from './generated/@iexec/poco/AppRegistry.js';
 import { abi as workerpoolRegistryAbi } from './generated/@iexec/poco/WorkerpoolRegistry.js';
 import { abi as datasetRegistryAbi } from './generated/@iexec/poco/DatasetRegistry.js';
@@ -18,7 +17,6 @@ const {
   CHAIN,
   CHAIN_ID,
   IEXEC_ADDRESS,
-  IS_NATIVE,
   START_BLOCK,
   SYNC_CHECK_INTERVAL,
   OUT_OF_SYNC_LIMIT,
@@ -45,12 +43,19 @@ const stringToBoolean = (string) => {
 };
 
 const DEFAULT_CHAINS_CONFIG = {
-  BELLECOUR: {
-    httpHost: 'https://bellecour.iex.ec',
-    wsHost: 'wss://bellecour-ws.iex.ec',
-    chainId: '134',
-    hubAddress: '0x3eca1B216A7DF1C7689aEb259fFB83ADFB894E7f',
-    isNative: true,
+  ARBITRUM_MAINNET: {
+    // httpHost: 'https://...',
+    // wsHost: 'wss://...',
+    chainId: '42161',
+    hubAddress: '0x098bFCb1E50ebcA0BaA92C12eA0c3F045A1aD9f0',
+    deploymentBlock: 363864242,
+  },
+  ARBITRUM_SEPOLIA_TESTNET: {
+    // httpHost: 'https://...',
+    // wsHost: 'wss://...',
+    chainId: '421614',
+    hubAddress: '0xB2157BF2fAb286b2A4170E3491Ac39770111Da3E',
+    deploymentBlock: 178282956,
   },
 };
 
@@ -61,11 +66,10 @@ const chain = {
   ...(ETH_WS_HOST && { wsHost: ETH_WS_HOST }),
   ...(ETH_RPC_HOST && { httpHost: ETH_RPC_HOST }),
   ...(IEXEC_ADDRESS && { hubAddress: IEXEC_ADDRESS }),
-  ...(IS_NATIVE !== undefined && { isNative: stringToBoolean(IS_NATIVE) }),
 };
 
 const abi = {
-  hub: chain.isNative ? iexecNativeAbi : iexecTokenAbi,
+  hub: iexecTokenAbi,
   appRegistry: appRegistryAbi,
   datasetRegistry: datasetRegistryAbi,
   workerpoolRegistry: workerpoolRegistryAbi,
@@ -75,7 +79,8 @@ const abi = {
 };
 
 const runtime = {
-  startBlock: (START_BLOCK && parseInt(START_BLOCK, 10)) || 0,
+  startBlock:
+    (START_BLOCK && parseInt(START_BLOCK, 10)) || chain.deploymentBlock || 0,
   retryDelay: (RETRY_DELAY && parseInt(RETRY_DELAY, 10) * 1000) || 5 * 1000,
   checkSyncInterval:
     (SYNC_CHECK_INTERVAL && parseInt(SYNC_CHECK_INTERVAL, 10)) || 30,

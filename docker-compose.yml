@@ -1,5 +1,3 @@
-version: "3.4"
-
 networks:
   database:
   webproxy:
@@ -7,7 +5,7 @@ networks:
 services:
   mongo:
     restart: unless-stopped
-    image: mongo:latest
+    image: mongo:6.0.3
     expose:
       - "27017"
     networks:
@@ -15,7 +13,7 @@ services:
 
   redis:
     restart: unless-stopped
-    image: redis:alpine
+    image: redis:7.2.5-alpine
     command: redis-server --appendonly yes
     expose:
       - "6379"
@@ -32,9 +30,11 @@ services:
     environment:
       # - DEBUG=iexec-market-api:*
       - DEBUG_COLORS=true
-      - CHAINS=BELLECOUR
+      - CHAINS=ARBITRUM_MAINNET
       - MONGO_HOST=mongo
       - REDIS_HOST=redis
+      - ARBITRUM_MAINNET_ETH_RPC_HOST=${ARBITRUM_MAINNET_ETH_RPC_HOST}
+      - ARBITRUM_MAINNET_ETH_WS_HOST=${ARBITRUM_MAINNET_ETH_WS_HOST}
       - CREATE_INDEX=${CREATE_INDEX}
     depends_on:
       - mongo
@@ -43,13 +43,16 @@ services:
       - webproxy
       - database
 
-  bellecour-watcher:
+  arbitrum-mainnet-watcher:
     restart: unless-stopped
     image: iexechub/iexec-market-watcher
     environment:
       - DEBUG=iexec-watcher:app
       - DEBUG_COLORS=true
-      - CHAIN=BELLECOUR
+      - CHAIN=ARBITRUM_MAINNET
+      - BLOCKS_BATCH_SIZE=100000
+      - ETH_RPC_HOST=${ARBITRUM_MAINNET_ETH_RPC_HOST}
+      - ETH_WS_HOST=${ARBITRUM_MAINNET_ETH_WS_HOST}
       - MONGO_HOST=mongo
       - REDIS_HOST=redis
       - CREATE_INDEX=${CREATE_INDEX}
