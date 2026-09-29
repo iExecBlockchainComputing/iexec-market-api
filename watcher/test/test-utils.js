@@ -48,16 +48,7 @@ const deployAndGetApporder = async (
       'docker.io/iexechub/python-hello-world:8.0.0-sconify-5.7.5-v14-production',
     checksum:
       '0xe89eb32fe956d44ed582123b2259dec6ccd60f4b0f680e9b6e262a4734f66486',
-    mrenclave: tag.includes('tee')
-      ? {
-          framework: 'SCONE',
-          version: 'v5',
-          entrypoint: 'python /app/app.py',
-          heapSize: 1073741824,
-          fingerprint:
-            'acf574009a4093846213a000039accaec90c8a242eb26a71063d967a74ac80ac',
-        }
-      : '',
+    mrenclave: '',
   });
   const app = appDeployRes.address;
   return iexec.order
@@ -96,6 +87,7 @@ const deployAndGetDatasetorder = async (
       '0x0000000000000000000000000000000000000000000000000000000000000000',
   });
   const dataset = datasetDeployRes.address;
+  await iexec.dataset.pushDatasetSecret(dataset, 'foo');
   return iexec.order
     .createDatasetorder({
       dataset,

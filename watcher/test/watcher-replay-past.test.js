@@ -57,9 +57,7 @@ const iexec = new IExec(
   },
   {
     hubAddress,
-    isNative: chain.isNative,
-    resultProxyURL: 'http://result-proxy.iex.ec',
-    smsURL: 'http://sms.iex.ec',
+    smsURL: process.env.SMS_URL,
   },
 );
 const network = await iexec.network.getNetwork();
@@ -599,83 +597,6 @@ describe('Replay Past', () => {
     expect(savedIndependentRequestorder.status).toBe(STATUS_MAP.OPEN);
   });
 
-  test('OrderMatched (clean app dependant TEE requestOrders)', async () => {
-    await iexec.account.deposit(100);
-    const apporderTee = await deployAndGetApporder(iexec, {
-      tag: ['tee', 'scone'],
-    });
-    const apporderTee5nRlc = await iexec.order.signApporder({
-      ...apporderTee,
-      appprice: 5,
-    });
-    const workerpoolorder = await deployAndGetWorkerpoolorder(iexec, {
-      tag: ['tee', 'scone'],
-    });
-    const requestorderAppTee = await getMatchableRequestorder(iexec, {
-      apporder: apporderTee,
-      workerpoolorder,
-    });
-    const requestorderAppTee5nRlc = await getMatchableRequestorder(iexec, {
-      apporder: apporderTee5nRlc,
-      workerpoolorder,
-    });
-    const [
-      appTeeHash,
-      appTee5nRlcHash,
-      requestAppTeeHash,
-      requestAppTee5nRlcHash,
-    ] = await Promise.all([
-      iexec.order.hashApporder(apporderTee),
-      iexec.order.hashApporder(apporderTee5nRlc),
-      iexec.order.hashRequestorder(requestorderAppTee),
-      iexec.order.hashRequestorder(requestorderAppTee5nRlc),
-    ]);
-    await Promise.all([
-      addApporders(chainId, [
-        {
-          orderHash: appTeeHash,
-          order: apporderTee,
-        },
-        {
-          orderHash: appTee5nRlcHash,
-          order: apporderTee5nRlc,
-        },
-      ]),
-      addRequestorders(chainId, [
-        {
-          orderHash: requestAppTeeHash,
-          order: requestorderAppTee,
-        },
-        {
-          orderHash: requestAppTee5nRlcHash,
-          order: requestorderAppTee5nRlc,
-        },
-      ]),
-    ]);
-    await iexec.order.matchOrders(
-      {
-        apporder: apporderTee,
-        workerpoolorder,
-        requestorder: await iexec.order.signRequestorder(requestorderAppTee),
-      },
-      { preflightCheck: false },
-    );
-    await fastForwardToLastBlock(chainId, rpc);
-    await replayPastOnly({ nbConfirmation: 0 });
-    await sleep(PROCESS_TRIGGERED_EVENT_TIMEOUT);
-    const [[savedRequestorderAppTee], [savedRequestorderAppTee5nRlc]] =
-      await Promise.all([
-        find(chainId, REQUESTORDERS_COLLECTION, {
-          orderHash: requestAppTeeHash,
-        }),
-        find(chainId, REQUESTORDERS_COLLECTION, {
-          orderHash: requestAppTee5nRlcHash,
-        }),
-      ]);
-    expect(savedRequestorderAppTee.status).toBe(STATUS_MAP.DEAD);
-    expect(savedRequestorderAppTee5nRlc.status).toBe(STATUS_MAP.OPEN);
-  });
-
   test('OrderMatched (clean dataset dependant requestOrders)', async () => {
     const apporder = await deployAndGetApporder(iexec, { volume: 2 });
     const datasetorder = await deployAndGetDatasetorder(iexec);
@@ -922,87 +843,6 @@ describe('Replay Past', () => {
     expect(updatedDatasetorder.status).toBe(STATUS_MAP.OPEN);
     expect(updatedRequestorder.status).toBe(STATUS_MAP.DEAD);
     expect(updatedIndependentRequestorder.status).toBe(STATUS_MAP.OPEN);
-  });
-
-  test('ClosedAppOrder (clean dependant TEE requestorder)', async () => {
-    await iexec.account.deposit(100);
-    const apporderTee = await deployAndGetApporder(iexec, {
-      tag: ['tee', 'scone'],
-    });
-    const apporderTee5nRlc = await iexec.order.signApporder({
-      ...apporderTee,
-      appprice: 5,
-    });
-    const requestorderTee = await iexec.order
-      .createRequestorder({
-        app: apporderTee.app,
-        appmaxprice: 0,
-        workerpoolmaxprice: 0,
-        requester: await iexec.wallet.getAddress(),
-        category: 0,
-        volume: 10,
-        tag: ['tee', 'scone'],
-      })
-      .then((o) => iexec.order.signRequestorder(o, { preflightCheck: false }));
-    const requestorderTee5nRlc = await iexec.order.signRequestorder(
-      {
-        ...requestorderTee,
-        appmaxprice: 5,
-      },
-      { preflightCheck: false },
-    );
-    const [appTeeHash, appTee5nRlcHash, requestTeeHash, requestTee5nRlcHash] =
-      await Promise.all([
-        iexec.order.hashApporder(apporderTee),
-        iexec.order.hashApporder(apporderTee5nRlc),
-        iexec.order.hashRequestorder(requestorderTee),
-        iexec.order.hashRequestorder(requestorderTee5nRlc),
-      ]);
-    await Promise.all([
-      addApporders(chainId, [
-        {
-          orderHash: appTeeHash,
-          order: apporderTee,
-        },
-        {
-          orderHash: appTee5nRlcHash,
-          order: apporderTee5nRlc,
-        },
-      ]),
-      addRequestorders(chainId, [
-        {
-          orderHash: requestTeeHash,
-          order: requestorderTee,
-        },
-        {
-          orderHash: requestTee5nRlcHash,
-          order: requestorderTee5nRlc,
-        },
-      ]),
-    ]);
-    await iexec.order.cancelApporder(apporderTee);
-    await fastForwardToLastBlock(chainId, rpc);
-    await replayPastOnly({ nbConfirmation: 0 });
-    await sleep(PROCESS_TRIGGERED_EVENT_TIMEOUT);
-    const [
-      [savedApporderTee],
-      [savedRequestorderTee],
-      [savedRequestorderTee5nRlc],
-    ] = await Promise.all([
-      find(chainId, APPORDERS_COLLECTION, {
-        orderHash: appTeeHash,
-      }),
-      find(chainId, REQUESTORDERS_COLLECTION, {
-        orderHash: requestTeeHash,
-      }),
-      find(chainId, REQUESTORDERS_COLLECTION, {
-        orderHash: requestTee5nRlcHash,
-      }),
-    ]);
-    expect(savedApporderTee.status).toBe(STATUS_MAP.CANCELED);
-    expect(savedApporderTee.remaining).toBe(0);
-    expect(savedRequestorderTee.status).toBe(STATUS_MAP.DEAD);
-    expect(savedRequestorderTee5nRlc.status).toBe(STATUS_MAP.OPEN);
   });
 
   test('ClosedDatasetOrder (cancel order)', async () => {

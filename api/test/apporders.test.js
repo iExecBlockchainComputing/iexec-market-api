@@ -59,9 +59,7 @@ const iexec = new IExec(
   },
   {
     hubAddress: chains[chainName].hubAddress,
-    isNative: chains[chainName].isNative,
-    resultProxyURL: 'http://example.com/',
-    smsURL: 'http://example.com/',
+    smsURL: process.env.SMS_URL,
   },
 );
 
@@ -76,9 +74,7 @@ const getIexecRandomSigner = () =>
     },
     {
       hubAddress: chains[chainName].hubAddress,
-      isNative: chains[chainName].isNative,
-      resultProxyURL: 'http://example.com/',
-      smsURL: 'http://example.com/',
+      smsURL: process.env.SMS_URL,
     },
   );
 
@@ -119,7 +115,7 @@ describe('/apporders', () => {
       const order = await iexec.order.signApporder(
         {
           ...apporderTemplate,
-          tag: '0x1000000000000000000000000000000000000000000000000000000000000103',
+          tag: '0x1000000000000000000000000000000000000000000000000000000000000109',
         },
         { preflightCheck: false },
       );
@@ -194,7 +190,7 @@ describe('/apporders', () => {
       const order = await iexec.order.signApporder(
         {
           ...apporderTemplate,
-          tag: '0x1000000000000000000000000000000000000000000000000000000000000103',
+          tag: '0x1000000000000000000000000000000000000000000000000000000000000109',
         },
         { preflightCheck: false },
       );
@@ -838,130 +834,6 @@ describe('/apporders', () => {
         request2nRlcHash,
       );
     });
-
-    test('PUT /apporders (clean dependant tee requestorders)', async () => {
-      const order = await iexec.order.signApporder(apporderTemplate);
-      const orderTee = await iexec.order.signApporder(
-        {
-          ...apporderTemplate,
-          tag: ['tee', 'scone'],
-        },
-        { preflightCheck: false },
-      );
-      const appTeeHash = await iexec.order.hashApporder(orderTee);
-      const matchableRequestorder = await getMatchableRequestorder(iexec, {
-        apporder: orderTee,
-        workerpoolorder: workerpoolorderTemplate,
-      });
-      const requestorder = await iexec.order.signRequestorder(
-        {
-          ...matchableRequestorder,
-          appmaxprice: 0,
-          workerpool: utils.NULL_ADDRESS,
-        },
-        { preflightCheck: false },
-      );
-      const requestorderTee = await iexec.order.signRequestorder(
-        {
-          ...matchableRequestorder,
-          appmaxprice: 0,
-          workerpool: utils.NULL_ADDRESS,
-          tag: ['tee', 'scone'],
-        },
-        { preflightCheck: false },
-      );
-
-      const requestHash = await iexec.order.hashRequestorder(requestorder);
-      const requestTeeHash =
-        await iexec.order.hashRequestorder(requestorderTee);
-      await setChallenge(chainId, WALLETS.DEFAULT.challenge);
-      await request
-        .post(
-          buildQuery('/apporders', {
-            chainId, // *
-          }),
-        )
-        .send({
-          chainId,
-          order,
-        })
-        .set('authorization', WALLETS.DEFAULT.authorization)
-        .then(parseResult);
-      await setChallenge(chainId, WALLETS.DEFAULT.challenge);
-      await request
-        .post(
-          buildQuery('/apporders', {
-            chainId, // *
-          }),
-        )
-        .send({
-          chainId,
-          order: orderTee,
-        })
-        .set('authorization', WALLETS.DEFAULT.authorization)
-        .then(parseResult);
-      await setChallenge(chainId, WALLETS.DEFAULT.challenge);
-      await request
-        .post(
-          buildQuery('/requestorders', {
-            chainId, // *
-          }),
-        )
-        .send({
-          chainId,
-          order: requestorder,
-        })
-        .set('authorization', WALLETS.DEFAULT.authorization)
-        .then(parseResult);
-      await setChallenge(chainId, WALLETS.DEFAULT.challenge);
-      await request
-        .post(
-          buildQuery('/requestorders', {
-            chainId, // *
-          }),
-        )
-        .send({
-          chainId,
-          order: requestorderTee,
-        })
-        .set('authorization', WALLETS.DEFAULT.authorization)
-        .then(parseResult);
-      jest.clearAllMocks();
-      await setChallenge(chainId, WALLETS.DEFAULT.challenge);
-      await request
-        .put(
-          buildQuery('/apporders', {
-            chainId, // *
-          }),
-        )
-        .send({
-          chainId,
-          orderHash: appTeeHash,
-        })
-        .set('authorization', WALLETS.DEFAULT.authorization)
-        .then(parseResult);
-
-      await sleep(1000);
-      const [[savedRequestorder], [savedRequestorderTee]] = await Promise.all([
-        find(chainId, 'requestorders', {
-          orderHash: requestHash,
-        }),
-        find(chainId, 'requestorders', {
-          orderHash: requestTeeHash,
-        }),
-      ]);
-      expect(savedRequestorder).toBeDefined();
-      expect(savedRequestorder.status).toBe('open');
-      expect(savedRequestorderTee).toBeDefined();
-      expect(savedRequestorderTee.status).toBe('dead');
-      expect(socketEmitSpy).toHaveBeenCalledTimes(2);
-      expect(socketEmitSpy).toHaveBeenNthCalledWith(
-        2,
-        `${chainId}:orders`,
-        'requestorder_unpublished',
-        requestTeeHash,
-      );
-    });
   });
 
   describe('GET /apporders', () => {
@@ -976,9 +848,8 @@ describe('/apporders', () => {
     const anyDatasetAllowedOrders = [];
     const anyWorkerpoolAllowedOrders = [];
     const anyRequesterAllowedOrders = [];
-    const minTeeTagOrders = [];
-    const maxGpuTagOrders = [];
-    const minMaxTeeTagOrders = [];
+    const minGpuTagOrders = [];
+    const maxTdxTagOrders = [];
     const minVolumeOrders = [];
     let consumedOrders;
     let deadOrders;
@@ -1009,7 +880,10 @@ describe('/apporders', () => {
           .fill(null)
           .map(async () => {
             const order = await iexecUser.order
-              .createApporder({ app: appAddress, appprice: 0 })
+              .createApporder({
+                app: appAddress,
+                appprice: 0,
+              })
               .then(iexecUser.order.signApporder);
             const orderHash = await iexecUser.order.hashApporder(order);
             return {
@@ -1020,6 +894,7 @@ describe('/apporders', () => {
           }),
       );
       noRestrictOrders.push(...appPrice0);
+      maxTdxTagOrders.push(...appPrice0);
       allOrders.push(...appPrice0);
 
       const appPrice20 = await Promise.all(
@@ -1027,7 +902,10 @@ describe('/apporders', () => {
           .fill(null)
           .map(async () => {
             const order = await iexecUser.order
-              .createApporder({ app: appAddress, appprice: 20 })
+              .createApporder({
+                app: appAddress,
+                appprice: 20,
+              })
               .then(iexecUser.order.signApporder);
             const orderHash = await iexecUser.order.hashApporder(order);
             return {
@@ -1038,6 +916,7 @@ describe('/apporders', () => {
           }),
       );
       noRestrictOrders.push(...appPrice20);
+      maxTdxTagOrders.push(...appPrice20);
       allOrders.push(...appPrice20);
 
       const appPrice10 = await Promise.all(
@@ -1045,7 +924,10 @@ describe('/apporders', () => {
           .fill(null)
           .map(async () => {
             const order = await iexecUser.order
-              .createApporder({ app: appAddress, appprice: 10 })
+              .createApporder({
+                app: appAddress,
+                appprice: 10,
+              })
               .then(iexecUser.order.signApporder);
             const orderHash = await iexecUser.order.hashApporder(order);
             return {
@@ -1056,6 +938,7 @@ describe('/apporders', () => {
           }),
       );
       noRestrictOrders.push(...appPrice10);
+      maxTdxTagOrders.push(...appPrice10);
       allOrders.push(...appPrice10);
 
       const volume1234 = await Promise.all(
@@ -1079,6 +962,7 @@ describe('/apporders', () => {
       );
       minVolumeOrders.push(...volume1234);
       noRestrictOrders.push(...volume1234);
+      maxTdxTagOrders.push(...volume1234);
       allOrders.push(...volume1234);
 
       publicOrders.push(...noRestrictOrders);
@@ -1104,36 +988,8 @@ describe('/apporders', () => {
       ownersOrders.push(...owners);
       allOrders.push(...owners);
 
-      const tagTee = await Promise.all(
-        Array(2)
-          .fill(null)
-          .map(async () => {
-            const order = await iexecUser.order
-              .createApporder({
-                app: appAddress,
-                appprice: 0,
-                tag: ['tee', 'scone'],
-              })
-              .then((o) =>
-                iexecUser.order.signApporder(o, {
-                  preflightCheck: false,
-                }),
-              );
-            const orderHash = await iexecUser.order.hashApporder(order);
-            return {
-              order,
-              orderHash,
-              signer: ownerAddress,
-            };
-          }),
-      );
-      publicOrders.push(...tagTee);
-      minTeeTagOrders.push(...tagTee);
-      minMaxTeeTagOrders.push(...tagTee);
-      allOrders.push(...tagTee);
-
       const tagGpu = await Promise.all(
-        Array(3)
+        Array(4)
           .fill(null)
           .map(async () => {
             const order = await iexecUser.order
@@ -1154,33 +1010,8 @@ describe('/apporders', () => {
           }),
       );
       publicOrders.push(...tagGpu);
-      maxGpuTagOrders.push(...tagGpu, ...noRestrictOrders); // max gpu accept empty tag
+      minGpuTagOrders.push(...tagGpu);
       allOrders.push(...tagGpu);
-
-      const tagTeeGpu = await Promise.all(
-        Array(4)
-          .fill(null)
-          .map(async () => {
-            const order = await iexecUser.order
-              .createApporder({
-                app: appAddress,
-                appprice: 0,
-                tag: ['tee', 'scone', 'gpu'],
-              })
-              .then((o) =>
-                iexecUser.order.signApporder(o, { preflightCheck: false }),
-              );
-            const orderHash = await iexecUser.order.hashApporder(order);
-            return {
-              order,
-              orderHash,
-              signer: ownerAddress,
-            };
-          }),
-      );
-      publicOrders.push(...tagTeeGpu);
-      minTeeTagOrders.push(...tagTeeGpu);
-      allOrders.push(...tagTeeGpu);
 
       const datasetAllowed = await Promise.all(
         Array(5)
@@ -1331,7 +1162,10 @@ describe('/apporders', () => {
           .fill(null)
           .map(async () => {
             const order = await iexecUser.order
-              .createApporder({ app: appAddress, appprice: 0 })
+              .createApporder({
+                app: appAddress,
+                appprice: 0,
+              })
               .then(iexecUser.order.signApporder);
             const orderHash = await iexecUser.order.hashApporder(order);
             return {
@@ -1349,7 +1183,10 @@ describe('/apporders', () => {
           .fill(null)
           .map(async () => {
             const order = await iexecUser.order
-              .createApporder({ app: appAddress, appprice: 0 })
+              .createApporder({
+                app: appAddress,
+                appprice: 0,
+              })
               .then(iexecUser.order.signApporder);
             const orderHash = await iexecUser.order.hashApporder(order);
             return {
@@ -1367,7 +1204,10 @@ describe('/apporders', () => {
           .fill(null)
           .map(async () => {
             const order = await iexecUser.order
-              .createApporder({ app: otherAddress, appprice: 0 })
+              .createApporder({
+                app: otherAddress,
+                appprice: 0,
+              })
               .then(iexecUser.order.signApporder);
             const orderHash = await iexecUser.order.hashApporder(order);
             return {
@@ -1542,7 +1382,7 @@ describe('/apporders', () => {
           buildQuery('/apporders', {
             chainId, // *
             app: appAddress, // *
-            pageSize: 25,
+            pageSize: 22,
           }),
         )
         .then(parseResult);
@@ -1581,14 +1421,14 @@ describe('/apporders', () => {
         }
         return curr;
       });
-      expect(res1.data.orders.length).toBe(25);
+      expect(res1.data.orders.length).toBe(22);
       const res2 = await request
         .get(
           buildQuery('/apporders', {
             chainId, // *
             app: appAddress, // *
             pageIndex: 1,
-            pageSize: 25,
+            pageSize: 22,
           }),
         )
         .then(parseResult);
@@ -1627,14 +1467,14 @@ describe('/apporders', () => {
         }
         return curr;
       });
-      expect(res2.data.orders.length).toBe(res1.data.count - 25);
+      expect(res2.data.orders.length).toBe(res1.data.count - 22);
       const res3 = await request
         .get(
           buildQuery('/apporders', {
             chainId, // *
             app: appAddress, // *
             pageIndex: 100,
-            pageSize: 25,
+            pageSize: 22,
           }),
         )
         .then(parseResult);
@@ -2142,22 +1982,20 @@ describe('/apporders', () => {
             chainId, // *
             app: appAddress, // *
             minTag:
-              '0x0000000000000000000000000000000000000000000000000000000000000003',
+              '0x0000000000000000000000000000000000000000000000000000000000000100',
           }),
         )
         .then(parseResult);
       expect(status).toBe(OK_STATUS);
       expect(data.ok).toBe(true);
-      expect(data.count).toBe(minTeeTagOrders.length);
+      expect(data.count).toBe(minGpuTagOrders.length);
       expect(data.orders).toBeDefined();
       expect(Array.isArray(data.orders)).toBe(true);
-      expect(data.orders.length).toBe(minTeeTagOrders.length);
+      expect(data.orders.length).toBe(minGpuTagOrders.length);
       data.orders.forEach((e) => {
         expect(
           e.order.tag ===
-            '0x0000000000000000000000000000000000000000000000000000000000000003' ||
-            e.order.tag ===
-              '0x0000000000000000000000000000000000000000000000000000000000000103',
+            '0x0000000000000000000000000000000000000000000000000000000000000109',
         ).toBe(true);
       });
     });
@@ -2169,51 +2007,16 @@ describe('/apporders', () => {
             chainId, // *
             app: appAddress, // *
             maxTag:
-              '0x0000000000000000000000000000000000000000000000000000000000000100',
+              '0x0000000000000000000000000000000000000000000000000000000000000009',
           }),
         )
         .then(parseResult);
       expect(status).toBe(OK_STATUS);
       expect(data.ok).toBe(true);
-      expect(data.count).toBe(maxGpuTagOrders.length);
+      expect(data.count).toBe(maxTdxTagOrders.length);
       expect(data.orders).toBeDefined();
       expect(Array.isArray(data.orders)).toBe(true);
       expect(data.orders.length).toBe(20);
-      data.orders.forEach((e) => {
-        expect(
-          e.order.tag ===
-            '0x0000000000000000000000000000000000000000000000000000000000000000' ||
-            e.order.tag ===
-              '0x0000000000000000000000000000000000000000000000000000000000000100',
-        ).toBe(true);
-      });
-    });
-
-    test('GET /apporders (minTag & maxTag filter)', async () => {
-      const { data, status } = await request
-        .get(
-          buildQuery('/apporders', {
-            chainId, // *
-            app: appAddress, // *
-            minTag:
-              '0x0000000000000000000000000000000000000000000000000000000000000003',
-            maxTag:
-              '0xf000000000000000000000000000000000000000000000000000000000000003',
-          }),
-        )
-        .then(parseResult);
-      expect(status).toBe(OK_STATUS);
-      expect(data.ok).toBe(true);
-      expect(data.count).toBe(minMaxTeeTagOrders.length);
-      expect(data.orders).toBeDefined();
-      expect(Array.isArray(data.orders)).toBe(true);
-      expect(data.orders.length).toBe(minMaxTeeTagOrders.length);
-      data.orders.forEach((e) => {
-        expect(
-          e.order.tag ===
-            '0x0000000000000000000000000000000000000000000000000000000000000003',
-        ).toBe(true);
-      });
     });
   });
 });

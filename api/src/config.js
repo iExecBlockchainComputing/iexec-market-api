@@ -1,5 +1,4 @@
 import { abi as iexecTokenAbi } from './generated/@iexec/poco/IexecInterfaceToken.js';
-import { abi as iexecNativeAbi } from './generated/@iexec/poco/IexecInterfaceNative.js';
 import { abi as appRegistryAbi } from './generated/@iexec/poco/AppRegistry.js';
 import { abi as workerpoolRegistryAbi } from './generated/@iexec/poco/WorkerpoolRegistry.js';
 import { abi as datasetRegistryAbi } from './generated/@iexec/poco/DatasetRegistry.js';
@@ -19,14 +18,17 @@ const {
   MAX_OPEN_ORDERS_PER_WALLET,
   RATE_LIMIT_MAX,
   RATE_LIMIT_PERIOD,
-  BELLECOUR_ETH_RPC_HOST,
-  BELLECOUR_IEXEC_ADDRESS,
   CREATE_INDEX,
+  ARBITRUM_MAINNET_ETH_RPC_HOST,
+  ARBITRUM_MAINNET_IEXEC_ADDRESS,
+  ARBITRUM_SEPOLIA_TESTNET_ETH_RPC_HOST,
+  ARBITRUM_SEPOLIA_TESTNET_IEXEC_ADDRESS,
 } = process.env;
 
 const chainsNames = CHAINS.split(',').map((e) => e.toUpperCase());
 
 const abis = {
+  hub: iexecTokenAbi,
   app: appAbi,
   dataset: datasetAbi,
   workerpool: workerpoolAbi,
@@ -35,23 +37,20 @@ const abis = {
   workerpoolregistry: workerpoolRegistryAbi,
 };
 
-const tokenAbis = {
-  hub: iexecTokenAbi,
-  ...abis,
-};
-
-const nativeAbis = {
-  hub: iexecNativeAbi,
-  ...abis,
-};
-
 const DEFAULT_CHAINS_CONFIG = {
-  BELLECOUR: {
-    id: '134',
-    isNative: true,
-    host: BELLECOUR_ETH_RPC_HOST || 'https://bellecour.iex.ec',
+  ARBITRUM_MAINNET: {
+    id: '42161',
+    host: ARBITRUM_MAINNET_ETH_RPC_HOST,
     hubAddress:
-      BELLECOUR_IEXEC_ADDRESS || '0x3eca1B216A7DF1C7689aEb259fFB83ADFB894E7f',
+      ARBITRUM_MAINNET_IEXEC_ADDRESS ||
+      '0x098bFCb1E50ebcA0BaA92C12eA0c3F045A1aD9f0',
+  },
+  ARBITRUM_SEPOLIA_TESTNET: {
+    id: '421614',
+    host: ARBITRUM_SEPOLIA_TESTNET_ETH_RPC_HOST,
+    hubAddress:
+      ARBITRUM_SEPOLIA_TESTNET_IEXEC_ADDRESS ||
+      '0xB2157BF2fAb286b2A4170E3491Ac39770111Da3E',
   },
 };
 
@@ -82,7 +81,6 @@ chainsNames.forEach((name) => {
   } else {
     chains[name] = {
       id: getEnv(name, 'CHAIN_ID'),
-      isNative: stringToBoolean(getEnv(name, 'IS_NATIVE', { strict: false })),
       host: getEnv(name, 'ETH_RPC_HOST'),
       hubAddress: getEnv(name, 'IEXEC_ADDRESS'),
     };
@@ -117,10 +115,6 @@ Object.entries(chains).forEach(([name, { host }]) => {
 });
 
 log('chains', chains);
-
-Object.entries(chains).forEach(([key, val]) => {
-  chains[key].abi = val.isNative ? nativeAbis : tokenAbis;
-});
 
 const supportedChainsIds = Object.values(chains).map((e) => e.id);
 
@@ -172,4 +166,5 @@ export {
   maxOpenOrdersPerWallet,
   serverPort,
   api,
+  abis,
 };
