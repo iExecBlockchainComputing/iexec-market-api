@@ -1,5 +1,4 @@
 name: docker publish watcher
-description: reusable docker workflow for this project
 
 on:
   workflow_call:
@@ -28,7 +27,7 @@ on:
 
 jobs:
   docker-publish:
-    uses: iExecBlockchainComputing/github-actions-workflows/.github/workflows/docker-build.yml@a69a25679b7d47df1256596f1fc9df0fdc38a8a8 # docker-build-v3.5.2
+    uses: iExecBlockchainComputing/github-actions-workflows/.github/workflows/docker-build.yml@0b4bde3c948a886b7df750a3ccbda169102d94b4 # docker-build-v3.5.2
     with:
       image-name: "iexechub/iexec-market-watcher"
       registry: "docker.io"

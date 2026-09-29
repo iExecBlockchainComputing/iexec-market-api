@@ -1,5 +1,4 @@
 name: API docker publish staging
-description: Publish a staging version of the API on Docker Hub
 
 on:
   workflow_dispatch:
