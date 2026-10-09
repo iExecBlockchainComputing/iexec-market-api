@@ -10,4 +10,6 @@ permissions: {}
 jobs:
   release-please:
     uses: iExecBlockchainComputing/github-actions-workflows/.github/workflows/release-please.yml@1c4f92368b01037ca4f209c2f9179cf8a07f00ff # release-please-v2.2.1
-    secrets: inherit
+    secrets:
+      RELEASE_PLEASE_APPLICATION_ID: ${{ secrets.RELEASE_PLEASE_APPLICATION_ID }}
+      RELEASE_PLEASE_PRIVATE_KEY: ${{ secrets.RELEASE_PLEASE_PRIVATE_KEY }}
