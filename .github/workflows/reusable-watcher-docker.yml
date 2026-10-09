@@ -26,7 +26,8 @@ on:
         required: true
 
 jobs:
-  docker-publish:
+  # permissions are inherited from the caller job, which scopes them per event
+  docker-publish: # zizmor: ignore[excessive-permissions]
     uses: iExecBlockchainComputing/github-actions-workflows/.github/workflows/docker-build.yml@0b4bde3c948a886b7df750a3ccbda169102d94b4 # docker-build-v3.5.2
     with:
       image-name: "iexechub/iexec-market-watcher"

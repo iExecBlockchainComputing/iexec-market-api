@@ -14,6 +14,8 @@ on:
 
 jobs:
   compute-staging-version:
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code

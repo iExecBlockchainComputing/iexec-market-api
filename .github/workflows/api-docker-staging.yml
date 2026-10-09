@@ -3,13 +3,19 @@ name: API docker publish staging
 on:
   workflow_dispatch:
 
+permissions: {}
+
 jobs:
   compute-staging-version:
+    permissions:
+      contents: read
     uses: ./.github/workflows/reusable-compute-staging-version.yml
     with:
       working-directory: api
 
   docker-publish:
+    permissions:
+      contents: read
     needs: compute-staging-version
     uses: ./.github/workflows/reusable-api-docker.yml
     with:

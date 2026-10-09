@@ -4,10 +4,14 @@ on:
   release:
     types: [published]
 
+permissions: {}
+
 jobs:
   get-version:
     # only run for releases with tag 'iexec-market-watcher-v*' as created by release-please for API
     if: startsWith(github.ref_name,'iexec-market-watcher-v')
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -26,6 +30,8 @@ jobs:
       version: ${{ steps.set-publish-version.outputs.VERSION }}
 
   docker-publish:
+    permissions:
+      contents: read
     if: startsWith(github.ref_name,'iexec-market-watcher-v')
     needs: get-version
     uses: ./.github/workflows/reusable-watcher-docker.yml
