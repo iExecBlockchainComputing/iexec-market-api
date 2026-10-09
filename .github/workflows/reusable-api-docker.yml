@@ -26,8 +26,9 @@ on:
         required: true
 
 jobs:
-  docker-publish:
-    uses: iExecBlockchainComputing/github-actions-workflows/.github/workflows/docker-build.yml@0b4bde3c948a886b7df750a3ccbda169102d94b4 # docker-build-v3.5.2
+  # permissions are inherited from the caller job, which scopes them per event
+  docker-publish: # zizmor: ignore[excessive-permissions]
+    uses: iExecBlockchainComputing/github-actions-workflows/.github/workflows/docker-build.yml@fc54a889aaabffc2acf96451d54592a90d068af9 # docker-build-v3.7.0
     with:
       image-name: "iexechub/iexec-market-api"
       registry: "docker.io"
@@ -38,6 +39,7 @@ jobs:
       hadolint: true
       push: ${{ !inputs.dry-run }}
       image-tag: ${{ inputs.tag }}
+      attest: true
     secrets:
       username: ${{ secrets.docker-username }}
       password: ${{ secrets.docker-password }}

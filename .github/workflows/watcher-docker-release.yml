@@ -4,18 +4,20 @@ on:
   release:
     types: [published]
 
+permissions: {}
+
 jobs:
   get-version:
     # only run for releases with tag 'iexec-market-watcher-v*' as created by release-please for API
     if: startsWith(github.ref_name,'iexec-market-watcher-v')
+    permissions:
+      contents: read
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
-      - name: Set up Node.js
-        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          node-version: "22"
+          persist-credentials: false
       - name: Set publish version
         id: set-publish-version
         working-directory: watcher
@@ -26,6 +28,10 @@ jobs:
       version: ${{ steps.set-publish-version.outputs.VERSION }}
 
   docker-publish:
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
     if: startsWith(github.ref_name,'iexec-market-watcher-v')
     needs: get-version
     uses: ./.github/workflows/reusable-watcher-docker.yml
