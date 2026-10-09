@@ -1,10 +1,11 @@
 {
   "$schema": "https://raw.githubusercontent.com/googleapis/release-please/main/schemas/config.json",
-  "separate-pull-requests": true,
+  "always-update": true,
   "include-component-in-tag": true,
+  "include-v-in-tag": true,
+  "separate-pull-requests": true,
   "changelog-sections": [
     { "type": "feat", "section": "Added", "hidden": false },
-
     { "type": "fix", "section": "Changed", "hidden": false },
     { "type": "change", "section": "Changed", "hidden": false },
     { "type": "deprecate", "section": "Changed", "hidden": false },
@@ -12,9 +13,7 @@
     { "type": "security", "section": "Changed", "hidden": false },
     { "type": "perf", "section": "Changed", "hidden": false },
     { "type": "refactor", "section": "Changed", "hidden": false },
-
     { "type": "remove", "section": "Removed", "hidden": false },
-
     { "type": "style", "section": "Misc", "hidden": true },
     { "type": "build", "section": "Misc", "hidden": true },
     { "type": "chore", "section": "Misc", "hidden": true },
@@ -26,13 +25,11 @@
   "packages": {
     "api": {
       "release-type": "node",
-      "changelog-path": "CHANGELOG.md",
-      "include-v-in-tag": true
+      "changelog-path": "CHANGELOG.md"
     },
     "watcher": {
       "release-type": "node",
-      "changelog-path": "CHANGELOG.md",
-      "include-v-in-tag": true
+      "changelog-path": "CHANGELOG.md"
     }
   }
 }
