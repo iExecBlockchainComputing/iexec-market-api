@@ -16,6 +16,8 @@ jobs:
   docker-publish:
     permissions:
       contents: read
+      id-token: write
+      attestations: write
     needs: compute-staging-version
     uses: ./.github/workflows/reusable-watcher-docker.yml
     with:
