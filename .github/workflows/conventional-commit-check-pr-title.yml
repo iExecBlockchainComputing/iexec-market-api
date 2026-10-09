@@ -14,4 +14,4 @@ jobs:
   lint-pr-title:
     permissions:
       pull-requests: read
-    uses: iExecBlockchainComputing/github-actions-workflows/.github/workflows/conventional-commits.yml@7825b11bd6f0b141075368add5223c873d76a2d3 # conventional-commits-v1.2.1
+    uses: iExecBlockchainComputing/github-actions-workflows/.github/workflows/conventional-commits.yml@080cd7070517853f1a1352855a6f47fa1725f08f # conventional-commits-v1.2.2
