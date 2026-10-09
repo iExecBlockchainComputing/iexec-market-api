@@ -1,5 +1,16 @@
 # CHANGELOG
 
+## [8.0.0](https://github.com/iExecBlockchainComputing/iexec-market-api/compare/iexec-market-watcher-v7.0.1...iexec-market-watcher-v8.0.0) (2026-10-09)
+
+
+### ⚠ BREAKING CHANGES
+
+* **config:** BELLECOUR is no longer a supported chain. ARBITRUM_MAINNET and ARBITRUM_SEPOLIA_TESTNET are now shipped in defaults. The new chains have no built-in RPC endpoint, so <CHAIN>_ETH_RPC_HOST for the api and ETH_RPC_HOST/ETH_WS_HOST for the watcher are now required.
+
+### Added
+
+* **config:** replace bellecour with arbitrum default chains ([#49](https://github.com/iExecBlockchainComputing/iexec-market-api/issues/49)) ([3077603](https://github.com/iExecBlockchainComputing/iexec-market-api/commit/3077603e5db1de922b66d50fe8d09040036a4c1a))
+
 ## [7.0.1](https://github.com/iExecBlockchainComputing/iexec-market-api/compare/iexec-market-watcher-v7.0.0...iexec-market-watcher-v7.0.1) (2025-11-04)
 
 
