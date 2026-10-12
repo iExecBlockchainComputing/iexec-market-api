@@ -62,14 +62,12 @@ const startSyncWatcher = async () => {
   getWorker(SYNC_WATCHER_JOB, checkSync);
 
   // Schedule recurring job
-  await queue.add(
+  await queue.upsertJobScheduler(
     SYNC_WATCHER_JOB,
-    {},
     {
-      repeat: {
-        every: checkSyncInterval * 1000, // Convert seconds to milliseconds
-      },
+      every: checkSyncInterval * 1000, // Convert seconds to milliseconds
     },
+    { name: SYNC_WATCHER_JOB, data: {} },
   );
 
   logger.log(
