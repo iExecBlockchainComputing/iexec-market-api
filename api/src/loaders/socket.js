@@ -17,15 +17,22 @@ const getWs = () => {
 const init = async (server = throwIfMissing()) => {
   try {
     log('init socket');
-    const pubClient = createClient(redisConfig);
-    const subClient = createClient(redisConfig);
+    const clientConfig = {
+      ...redisConfig,
+      // node-redis v6 rejects commands still queued after 5s (e.g. during a redis outage).
+      // @socket.io/redis-adapter never catches publish() rejections, which would crash the process.
+      // Disable the timeout to keep commands queued until reconnection (node-redis v4 behavior).
+      commandOptions: { timeout: 0 },
+    };
+    const pubClient = createClient(clientConfig);
+    const subClient = createClient(clientConfig);
     pubClient.on('error', (err) => log('pubClient', 'Error', err));
     subClient.on('error', (err) => log('subClient', 'Error', err));
     pubClient.on('connect', () => log('pubClient connect'));
     subClient.on('connect', () => log('subClient connect'));
     pubClient.on('end', () => log('pubClient end'));
     subClient.on('end', () => log('subClient end'));
-    await Promise.all[(pubClient.connect(), subClient.connect())];
+    await Promise.all([pubClient.connect(), subClient.connect()]);
     const redisAdapter = createAdapter(pubClient, subClient);
     ws = new SocketIo(server, { path: '/ws', cors: { origin: '*' } });
     ws.adapter(redisAdapter);
