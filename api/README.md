@@ -14,8 +14,10 @@ docker run --rm -p 6379:6379 redis:alpine redis-server --appendonly yes
 configure blockchain access in `.env` file (see [.env.template](.env.template))
 
 ```text
-## configure the ethereum RPC endpoint
-# MAINNET_ETH_RPC_HOST=https://mainnet-node:8545
+## enabled chains (comma separated names: ARBITRUM_MAINNET,ARBITRUM_SEPOLIA_TESTNET)
+CHAINS=ARBITRUM_MAINNET
+## configure the ethereum RPC endpoint for each enabled chain
+ARBITRUM_MAINNET_ETH_RPC_HOST=https://my-node:8545
 ```
 
 install dependencies
@@ -33,10 +35,24 @@ npm start
 
 ## Test
 
+start the test stack (mongo, redis, local chain and SMS)
+
 ```sh
-docker-compose -f test/docker-compose.yml up -d
+npm run start-test-stack
+```
+
+install dependencies and run tests
+
+```sh
 npm ci
+npm run codegen
 npm test
+```
+
+stop the test stack
+
+```sh
+npm run stop-test-stack
 ```
 
 ## API
@@ -49,24 +65,25 @@ A swagger interface is exposed under the `/docs` endpoint.
 
 rooms:
 
-- chainId
-- topic: 'orders' | 'deals'
+- `${chainId}:${topic}` with topic `'orders' | 'deals'` (join by emitting `join` with `{ chainId, topic }`)
 
 orders events:
 
 - `apporder_published`: order
-- `apporder_published`: order
+- `apporder_updated`: order
 - `apporder_unpublished`: orderHash
 - `datasetorder_published`: order
-- `datasetorder_published`: order
+- `datasetorder_updated`: order
 - `datasetorder_unpublished`: orderHash
 - `workerpoolorder_published`: order
-- `workerpoolorder_published`: order
+- `workerpoolorder_updated`: order
 - `workerpoolorder_unpublished`: orderHash
 - `requestorder_published`: order
-- `requestorder_published`: order
+- `requestorder_updated`: order
 - `requestorder_unpublished`: orderHash
 
 deals events:
 
 - `deal_created`: deal
+
+> `*_updated` and `deal_created` events are emitted by the [watcher](../watcher/README.md) when on-chain events are processed.
