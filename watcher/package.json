@@ -5,8 +5,7 @@
   "description": "watch iexec contract to keep off-chain orderbook up to date",
   "main": "src/index.js",
   "engines": {
-    "node": ">=22.0.0",
-    "npm": ">=10.0.0"
+    "node": ">=26.0.0"
   },
   "scripts": {
     "codegen": "node generateEsModulesFromJson.cjs",
