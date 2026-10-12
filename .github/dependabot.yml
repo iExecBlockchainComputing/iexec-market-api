@@ -11,6 +11,8 @@ version: 2
 #   that security updates remain applicable when they are needed.
 # - Dev dependency excluded from proactive updates.
 # - Updates are grouped and monthly to keep the PR volume low.
+# - npm updates are committed as `fix(deps)` so release-please ships them in a
+#   release; docker and github-actions updates keep Dependabot's default prefix.
 # - `api` and `watcher` are released independently, so each gets its own `updates`
 #   entry (one shared entry with `directories` would group both into a single PR).
 # - `socket-client` is a snippet, not a released package: not tracked here.
@@ -30,6 +32,9 @@ updates:
     open-pull-requests-limit: 3
     cooldown:
       default-days: 7
+    commit-message:
+      prefix: "fix"
+      include: "scope"
 
   - package-ecosystem: "npm"
     directory: "/watcher"
@@ -45,6 +50,9 @@ updates:
     open-pull-requests-limit: 3
     cooldown:
       default-days: 7
+    commit-message:
+      prefix: "fix"
+      include: "scope"
 
   - package-ecosystem: "docker"
     directory: "/api"
