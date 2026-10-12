@@ -1,4 +1,4 @@
-import Router from 'koa-router';
+import { Router } from '@koa/router';
 import bodyParser from 'koa-bodyparser';
 import yamljs from 'yamljs';
 import { koaSwagger } from 'koa2-swagger-ui';
