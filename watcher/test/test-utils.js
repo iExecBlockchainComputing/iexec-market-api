@@ -336,7 +336,7 @@ const fastForwardToLastBlock = async (dbName, provider) => {
   await CounterModel.findOneAndUpdate(
     { name: 'lastBlock' },
     { value: blockNumber },
-    { new: true, upsert: true },
+    { returnDocument: 'after', upsert: true },
   );
 };
 
@@ -346,7 +346,7 @@ const setCheckpointToLastBlock = async (dbName) => {
   await CounterModel.findOneAndUpdate(
     { name: 'checkpointBlock' },
     { value: lastBlock.value },
-    { new: true, upsert: true },
+    { returnDocument: 'after', upsert: true },
   );
 };
 

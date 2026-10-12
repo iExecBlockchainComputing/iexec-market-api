@@ -34,7 +34,7 @@ const cleanApporders = async ({
         {
           status: STATUS_MAP.DEAD,
         },
-        { returnOriginal: false },
+        { returnDocument: 'after' },
       ),
     ),
   );
@@ -59,7 +59,7 @@ const cleanDatasetorders = async ({
         {
           status: STATUS_MAP.DEAD,
         },
-        { returnOriginal: false },
+        { returnDocument: 'after' },
       ),
     ),
   );
@@ -84,7 +84,7 @@ const cleanWorkerpoolorders = async ({
         {
           status: STATUS_MAP.DEAD,
         },
-        { returnOriginal: false },
+        { returnDocument: 'after' },
       ),
     ),
   );
@@ -109,7 +109,7 @@ const cleanRequestorders = async ({
         {
           status: STATUS_MAP.DEAD,
         },
-        { returnOriginal: false },
+        { returnDocument: 'after' },
       ),
     ),
   );
@@ -520,7 +520,7 @@ const _updateApporder = async ({
       const saved = await ApporderModel.findOneAndUpdate(
         { orderHash },
         update,
-        { returnOriginal: false },
+        { returnDocument: 'after' },
       );
       if (saved && saved.status === STATUS_MAP.OPEN) {
         logger.debug('apporder updated', orderHash);
@@ -567,7 +567,7 @@ const _updateDatasetorder = async ({
       const saved = await DatasetorderModel.findOneAndUpdate(
         { orderHash },
         update,
-        { returnOriginal: false },
+        { returnDocument: 'after' },
       );
       if (saved && saved.status === STATUS_MAP.OPEN) {
         logger.debug('datasetorder updated', orderHash);
@@ -614,7 +614,7 @@ const _updateWorkerpoolorder = async ({
       const saved = await WorkerpoolorderModel.findOneAndUpdate(
         { orderHash },
         update,
-        { returnOriginal: false },
+        { returnDocument: 'after' },
       );
       if (saved && saved.status === STATUS_MAP.OPEN) {
         logger.debug('workerpoolorder updated', orderHash);
@@ -661,7 +661,7 @@ const _updateRequestorder = async ({
       const saved = await RequestorderModel.findOneAndUpdate(
         { orderHash },
         update,
-        { returnOriginal: false },
+        { returnDocument: 'after' },
       );
       if (saved && saved.status === STATUS_MAP.OPEN) {
         logger.debug('requestorder updated', orderHash);
@@ -689,7 +689,7 @@ const _cancelApporder = async ({ orderHash = throwIfMissing() } = {}) => {
         remaining: 0,
         status: STATUS_MAP.CANCELED,
       },
-      { returnOriginal: true, upsert: false },
+      { returnDocument: 'before', upsert: false },
     );
     if (published && published.status === STATUS_MAP.OPEN) {
       logger.debug('apporder canceled', orderHash);
@@ -712,7 +712,7 @@ const _cancelDatasetorder = async ({ orderHash = throwIfMissing() } = {}) => {
         remaining: 0,
         status: STATUS_MAP.CANCELED,
       },
-      { returnOriginal: true, upsert: false },
+      { returnDocument: 'before', upsert: false },
     );
     if (published && published.status === STATUS_MAP.OPEN) {
       logger.debug('datasetorder canceled', orderHash);
@@ -737,7 +737,7 @@ const _cancelWorkerpoolorder = async ({
         remaining: 0,
         status: STATUS_MAP.CANCELED,
       },
-      { returnOriginal: true, upsert: false },
+      { returnDocument: 'before', upsert: false },
     );
     if (published && published.status === STATUS_MAP.OPEN) {
       logger.debug('workerpoolorder canceled', orderHash);
@@ -760,7 +760,7 @@ const _cancelRequestorder = async ({ orderHash = throwIfMissing() } = {}) => {
         remaining: 0,
         status: STATUS_MAP.CANCELED,
       },
-      { returnOriginal: true, upsert: false },
+      { returnDocument: 'before', upsert: false },
     );
     if (published && published.status === STATUS_MAP.OPEN) {
       logger.debug('requestorder canceled', orderHash);

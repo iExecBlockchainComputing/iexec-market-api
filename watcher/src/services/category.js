@@ -41,7 +41,7 @@ const _addCategory = async ({
       },
       {
         upsert: true,
-        new: true,
+        returnDocument: 'after',
       },
     );
   } catch (e) {
