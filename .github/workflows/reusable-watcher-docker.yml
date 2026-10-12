@@ -39,7 +39,7 @@ jobs:
       dockerfile: "watcher/Dockerfile"
       context: "watcher"
       security-scan: ${{ inputs.security-scan }}
-      security-report: "comment"
+      security-report: "sarif"
       hadolint: true
       push: ${{ !inputs.dry-run }}
       image-tag: ${{ inputs.tag }}
