@@ -5,8 +5,7 @@
   "description": "iexec marketplace api gateway",
   "main": "src/index.js",
   "engines": {
-    "node": ">=22.0.0",
-    "npm": ">=10.0.0"
+    "node": ">=26.0.0"
   },
   "scripts": {
     "codegen": "node generateEsModulesFromJson.cjs && node updateVersionOpenApi.cjs",
