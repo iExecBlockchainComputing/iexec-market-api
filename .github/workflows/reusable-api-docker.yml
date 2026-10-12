@@ -11,6 +11,10 @@ on:
         description: "Tag of Docker Image"
         default: "latest"
         type: string
+      security-scan:
+        description: "Run security scan on image"
+        default: true
+        type: boolean
     secrets:
       docker-username:
         description: "Docker registry username (required unless `dry-run: true`)"
@@ -34,8 +38,8 @@ jobs:
       registry: "docker.io"
       dockerfile: "api/Dockerfile"
       context: "api"
-      security-scan: true
-      security-report: "sarif"
+      security-scan: ${{ inputs.security-scan }}
+      security-report: "comment"
       hadolint: true
       push: ${{ !inputs.dry-run }}
       image-tag: ${{ inputs.tag }}
