@@ -1,0 +1,77 @@
+version: 2
+
+# Low-maintenance setup
+#
+# Rationale:
+# - Dependabot *security* updates are NOT configured here: they are a repository
+#   setting (Settings > Code security) and run off the dependency graph. They stay
+#   active for every ecosystem below, including dependencies filtered out by `allow`,
+#   and they ignore `open-pull-requests-limit`.
+# - Everything below is about *version* updates, whose only job is to limit drift so
+#   that security updates remain applicable when they are needed.
+# - Dev dependency excluded from proactive updates.
+# - Updates are grouped and monthly to keep the PR volume low.
+# - `api` and `watcher` are released independently, so each gets its own `updates`
+#   entry (one shared entry with `directories` would group both into a single PR).
+# - `socket-client` is a snippet, not a released package: not tracked here.
+
+updates:
+  - package-ecosystem: "npm"
+    directory: "/api"
+    schedule:
+      interval: "monthly"
+    versioning-strategy: "increase"
+    allow:
+      - dependency-type: "production"
+    groups:
+      api-production-dependencies:
+        patterns:
+          - "*"
+    open-pull-requests-limit: 3
+    cooldown:
+      default-days: 7
+
+  - package-ecosystem: "npm"
+    directory: "/watcher"
+    schedule:
+      interval: "monthly"
+    versioning-strategy: "increase"
+    allow:
+      - dependency-type: "production"
+    groups:
+      watcher-production-dependencies:
+        patterns:
+          - "*"
+    open-pull-requests-limit: 3
+    cooldown:
+      default-days: 7
+
+  - package-ecosystem: "docker"
+    directory: "/api"
+    schedule:
+      interval: "monthly"
+    groups:
+      api-docker:
+        patterns:
+          - "*"
+    open-pull-requests-limit: 1
+
+  - package-ecosystem: "docker"
+    directory: "/watcher"
+    schedule:
+      interval: "monthly"
+    groups:
+      watcher-docker:
+        patterns:
+          - "*"
+    open-pull-requests-limit: 1
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "monthly"
+    groups:
+      github-actions:
+        patterns:
+          - "*"
+    open-pull-requests-limit: 2
