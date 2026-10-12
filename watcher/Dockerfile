@@ -1,5 +1,5 @@
 
-FROM node:26.8.2-alpine3.24 AS builder
+FROM node:26.11.1-alpine3.24 AS builder
 
 RUN apk update && apk upgrade
 
@@ -13,7 +13,7 @@ COPY generateEsModulesFromJson.cjs .
 RUN npm ci
 RUN npm run codegen
 
-FROM node:26.8.2-alpine3.24
+FROM node:26.11.1-alpine3.24
 
 RUN apk update && apk upgrade
 
