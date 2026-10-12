@@ -328,7 +328,7 @@ const cleanApporderDependantOrders = async ({
           {
             status: STATUS_MAP.DEAD,
           },
-          { returnOriginal: false },
+          { returnDocument: 'after' },
         ),
       ),
     );
@@ -399,7 +399,7 @@ const cleanDatasetorderDependantOrders = async ({
           {
             status: STATUS_MAP.DEAD,
           },
-          { returnOriginal: false },
+          { returnDocument: 'after' },
         ),
       ),
     );
