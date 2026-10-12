@@ -75,14 +75,12 @@ const startReplayer = async () => {
   });
 
   // Schedule recurring job
-  await queue.add(
+  await queue.upsertJobScheduler(
     EVENT_REPLAY_JOB,
-    {},
     {
-      repeat: {
-        every: replayInterval * 1000, // Convert seconds to milliseconds
-      },
+      every: replayInterval * 1000, // Convert seconds to milliseconds
     },
+    { name: EVENT_REPLAY_JOB, data: {} },
   );
 
   logger.log(

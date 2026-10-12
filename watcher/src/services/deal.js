@@ -81,7 +81,7 @@ const _addDeal = async ({
       },
       {
         upsert: true,
-        new: true,
+        returnDocument: 'after',
       },
     );
 

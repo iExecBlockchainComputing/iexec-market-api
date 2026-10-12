@@ -39,7 +39,7 @@ const _setLastBlock = async (blockNumber) => {
     const lastBlockCounter = await CounterModel.findOneAndUpdate(
       { name: 'lastBlock' },
       { $max: { value: blockNumber } },
-      { new: true, upsert: true },
+      { returnDocument: 'after', upsert: true },
     );
     logger.log('lastBlockCounter', lastBlockCounter.value);
   } catch (e) {
@@ -68,7 +68,7 @@ const _setCheckpointBlock = async (blockNumber) => {
     const checkpointBlockCounter = await CounterModel.findOneAndUpdate(
       { name: 'checkpointBlock' },
       { value: blockNumber },
-      { new: true, upsert: true },
+      { returnDocument: 'after', upsert: true },
     );
     logger.log('checkpointBlockCounter', checkpointBlockCounter.value);
   } catch (e) {
