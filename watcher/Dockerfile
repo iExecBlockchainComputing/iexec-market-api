@@ -11,6 +11,8 @@ COPY package-lock.json .
 COPY generateEsModulesFromJson.cjs .
 
 RUN npm ci
+
+COPY src ./src
 RUN npm run codegen
 
 FROM node:26.11.1-alpine3.24
