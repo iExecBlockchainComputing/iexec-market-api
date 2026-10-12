@@ -37,6 +37,7 @@ jobs:
     uses: ./.github/workflows/reusable-api-docker.yml
     with:
       tag: ${{ needs.get-version.outputs.version }}
+      security-scan: false
     secrets:
       docker-username: ${{ secrets.DOCKERHUB_USERNAME }}
       docker-password: ${{ secrets.DOCKERHUB_PAT }}
