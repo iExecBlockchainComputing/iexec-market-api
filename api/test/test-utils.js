@@ -259,7 +259,7 @@ const setChallenge = async (dbName, challenge) => {
         address: challenge.address,
       },
     },
-    { upsert: true, new: true },
+    { upsert: true, returnDocument: 'after' },
   );
 };
 
