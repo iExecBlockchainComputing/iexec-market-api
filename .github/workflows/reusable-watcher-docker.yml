@@ -23,11 +23,11 @@ on:
         description: "Docker registry password or PAT (required unless `dry-run: true`)"
         required: false
       dockerhub-username:
-        description: "DockerHub username (required for authenticated pulls)"
-        required: true
+        description: "DockerHub username for authenticated pulls (required when `dry-run: true`, unused otherwise as the push login already covers Docker Hub)"
+        required: false
       dockerhub-password:
-        description: "DockerHub password or PAT (required for authenticated pulls)"
-        required: true
+        description: "DockerHub password or PAT for authenticated pulls (required when `dry-run: true`, unused otherwise as the push login already covers Docker Hub)"
+        required: false
 
 jobs:
   # permissions are inherited from the caller job, which scopes them per event
