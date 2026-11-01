@@ -1,4 +1,4 @@
-FROM node:26.11.1-alpine3.24 AS builder
+FROM node:26.13.0-alpine3.24 AS builder
 
 RUN apk update && apk upgrade
 
@@ -14,7 +14,7 @@ RUN npm ci
 COPY src ./src
 RUN npm run codegen
 
-FROM node:26.11.1-alpine3.24 AS deps
+FROM node:26.13.0-alpine3.24 AS deps
 
 RUN apk update && apk upgrade
 
@@ -30,7 +30,7 @@ RUN npm ci --omit=dev
 # https://github.com/nodejs/docker-node/blob/main/docs/BestPractices.md#smaller-images-without-npmyarn
 # Keep this Alpine version aligned with the node images above (node:*-alpineX.Y):
 # the node binary and the node_modules (including native addons) are copied from them.
-FROM alpine:3.24.2
+FROM alpine:3.24.3
 
 RUN apk update && apk upgrade
 
