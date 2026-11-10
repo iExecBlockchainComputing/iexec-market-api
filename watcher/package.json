@@ -35,7 +35,7 @@
     "dotenv": "^18.0.5",
     "ethers": "^6.17.0",
     "ioredis": "^6.0.0",
-    "mongoose": "^9.10.4",
+    "mongoose": "^9.11.4",
     "redis": "^6.3.0",
     "socket.io": "^4.8.4"
   },
